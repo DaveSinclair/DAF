@@ -1,0 +1,544 @@
+
+SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
+
+
+-- --------------------------------------------------------
+--
+-- Database: `daf`
+--
+-- --------------------------------------------------------
+
+USE daf;
+
+--
+-- Table structure for table `action`
+--
+
+CREATE TABLE IF NOT EXISTS `action` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `ScenarioID` int(11) NOT NULL,
+  `ActiontypeID` int(11) NOT NULL,
+  `Description` varchar(64) NOT NULL,
+  `Stepnumber` int(11) NOT NULL,
+  `Hostselectortype` enum('Any','BySelectorValue','UsePrimaryHost') NOT NULL,
+  `Hostselectorvalue` varchar(32) NOT NULL,
+  `CollectorsetID` int(11) NOT NULL,
+  `TestcaseID` int(11) NOT NULL,
+  `Parameters` varchar(256) NOT NULL,
+  `EnvironmentID` int(11) NOT NULL,
+  `Duration` enum('Rununtilcomplete','RunforNminutes','TimeoutafterNminutes') NOT NULL,
+  `Maxduration` int(11) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `actiontype`
+--
+
+CREATE TABLE IF NOT EXISTS `actiontype` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Type` varchar(32) NOT NULL,
+  `Description` varchar(64) NOT NULL,
+  PRIMARY KEY (`ID`),
+  UNIQUE KEY `Type` (`Type`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `collectorset`
+--
+
+CREATE TABLE IF NOT EXISTS `collectorset` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Name` varchar(32) NOT NULL,
+  `Description` varchar(128) NOT NULL,
+  PRIMARY KEY (`ID`),
+  UNIQUE KEY `Name` (`Name`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `collectorsetmember`
+--
+
+CREATE TABLE IF NOT EXISTS `collectorsetmember` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `CollectortypeID` int(11) NOT NULL,
+  `Requiredvalue` varchar(256) NOT NULL,
+  `Comparator` enum('==','<','<=','>','>=','!=','EQ','NE') NOT NULL,
+  `CollectorsetID` int(11) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `collectortype`
+--
+
+CREATE TABLE IF NOT EXISTS `collectortype` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Name` varchar(32) NOT NULL,
+  `Builtin` tinyint(1) NOT NULL,
+  `OStype` varchar(32) NOT NULL,
+  `Invocation` varchar(256) NOT NULL,
+  PRIMARY KEY (`ID`),
+  UNIQUE KEY `Name` (`Name`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `collectorvalue`
+--
+
+CREATE TABLE IF NOT EXISTS `collectorvalue` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `CollectortypeID` int(11) NOT NULL,
+  `HostID` int(11) NOT NULL,
+  `Value` varchar(256) NOT NULL,
+  `Valuestatusdate` datetime NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `environment`
+--
+
+CREATE TABLE IF NOT EXISTS `environment` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Name` varchar(32) NOT NULL,
+  `Description` varchar(128) NOT NULL,
+  PRIMARY KEY (`ID`),
+  UNIQUE KEY `Name` (`Name`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `environmentvalue`
+--
+
+CREATE TABLE IF NOT EXISTS `environmentvalue` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Name` varchar(32) NOT NULL,
+  `Value` varchar(255) NOT NULL,
+  `EnvironmentID` varchar(11) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `host`
+--
+
+CREATE TABLE IF NOT EXISTS `host` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `TeststandID` int(11) NOT NULL,
+  `Name` varchar(32) NOT NULL,
+  `Type` varchar(16) NOT NULL,
+  `Model` varchar(16) NOT NULL,
+  `Serial` varchar(16) NOT NULL,
+  `Hostselectorvalue` varchar(32) NOT NULL DEFAULT '''none''',
+  `Teststandprimary` tinyint(1) NOT NULL DEFAULT '0',
+  `Comments` varchar(128) NOT NULL,
+  `Agentstatus` enum('Online','Agent_offline') NOT NULL DEFAULT 'Agent_offline',
+  `Agentstatusdate` datetime NOT NULL,
+  PRIMARY KEY (`ID`),
+  UNIQUE KEY `Name` (`Name`),
+  UNIQUE KEY `Name_2` (`Name`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `hostselectortype`
+--
+
+CREATE TABLE IF NOT EXISTS `hostselectortype` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Name` varchar(16) NOT NULL,
+  PRIMARY KEY (`ID`),
+  UNIQUE KEY `Name` (`Name`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `hostselectorvalue`
+--
+
+CREATE TABLE IF NOT EXISTS `hostselectorvalue` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Name` varchar(32) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `level`
+--
+
+CREATE TABLE IF NOT EXISTS `level` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Name` varchar(32) NOT NULL,
+  `Description` varchar(128) NOT NULL,
+  `ObjecttypeID` int(11) NOT NULL,
+  `CollectortypeID` int(11) NOT NULL,
+  `ProxycollectorsetID` int(11) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `levelinstance`
+--
+
+CREATE TABLE IF NOT EXISTS `levelinstance` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `LevelID` int(11) NOT NULL,
+  `Value` varchar(256) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `maillist`
+--
+
+CREATE TABLE IF NOT EXISTS `maillist` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Name` varchar(32) NOT NULL,
+  `Description` varchar(128) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `maillistmember`
+--
+
+CREATE TABLE IF NOT EXISTS `maillistmember` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `MaillistID` int(11) NOT NULL,
+  `UserID` int(11) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `objecttype`
+--
+
+CREATE TABLE IF NOT EXISTS `objecttype` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `ParentID` int(11) NOT NULL,
+  `Name` varchar(32) NOT NULL,
+  `Description` varchar(128) NOT NULL,
+  PRIMARY KEY (`ID`),
+  UNIQUE KEY `Name` (`Name`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `outcomeaction`
+--
+
+CREATE TABLE IF NOT EXISTS `outcomeaction` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Name` varchar(32) NOT NULL,
+  `Actiononpass` enum('None','Runscenario') NOT NULL DEFAULT 'None',
+  `Actiononfail` enum('None','Runscenario') NOT NULL DEFAULT 'None',
+  `Scenariotoberunonpass` int(11) NOT NULL,
+  `Scenariotoberunonfail` int(11) NOT NULL,
+  `Erroraction` enum('Terminatescenario','ContinueScenario') NOT NULL DEFAULT 'Terminatescenario',
+  `Notificationonpass` enum('None','Tester','Maillist') NOT NULL DEFAULT 'None',
+  `Notificationonfail` enum('None','Tester','Maillist') NOT NULL DEFAULT 'Tester',
+  `TesterID` int(11) NOT NULL,
+  `MaillistID` int(11) NOT NULL,
+  PRIMARY KEY (`ID`),
+  UNIQUE KEY `Name` (`Name`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `phase`
+--
+
+CREATE TABLE IF NOT EXISTS `phase` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Name` varchar(24) NOT NULL,
+  `Description` varchar(256) NOT NULL,
+  `ProjectID` int(11) NOT NULL,
+  `Logdirectory` varchar(128) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `project`
+--
+
+CREATE TABLE IF NOT EXISTS `project` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Name` varchar(24) NOT NULL,
+  `Description` varchar(256) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `scenario`
+--
+
+CREATE TABLE IF NOT EXISTS `scenario` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Name` varchar(48) NOT NULL,
+  `Author` varchar(32) NOT NULL,
+  `OutcomeactionID` int(11) NOT NULL,
+  `Createdon` datetime NOT NULL,
+  `Lastchanged` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`ID`),
+  UNIQUE KEY `Name` (`Name`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `scenarioset`
+--
+
+CREATE TABLE IF NOT EXISTS `scenarioset` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Name` varchar(32) NOT NULL,
+  `Description` varchar(128) NOT NULL,
+  `ProjectID` int(11) NOT NULL,
+  `PhaseID` int(11) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `scenariosetmember`
+--
+
+CREATE TABLE IF NOT EXISTS `scenariosetmember` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `ScenarioID` int(11) NOT NULL,
+  `ScenariosetID` int(11) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `step`
+--
+
+CREATE TABLE IF NOT EXISTS `step` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `ScenarioID` int(11) NOT NULL,
+  `Stepnumber` int(11) NOT NULL,
+  `Description` varchar(128) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `testcase`
+--
+
+CREATE TABLE IF NOT EXISTS `testcase` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Name` varchar(32) NOT NULL,
+  `Description` varchar(128) NOT NULL,
+  PRIMARY KEY (`ID`),
+  UNIQUE KEY `Name` (`Name`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `testlevel`
+--
+
+CREATE TABLE IF NOT EXISTS `testlevel` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Name` varchar(32) NOT NULL,
+  `Description` varchar(128) NOT NULL,
+  PRIMARY KEY (`ID`),
+  UNIQUE KEY `Name` (`Name`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `testlevelmember`
+--
+
+CREATE TABLE IF NOT EXISTS `testlevelmember` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `TestlevelID` int(11) NOT NULL,
+  `LevelinstanceID` int(11) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `teststand`
+--
+
+CREATE TABLE IF NOT EXISTS `teststand` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Name` varchar(32) NOT NULL,
+  `Comments` varchar(128) NOT NULL,
+  PRIMARY KEY (`ID`),
+  UNIQUE KEY `Name` (`Name`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `user`
+--
+
+CREATE TABLE IF NOT EXISTS `user` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Firstname` varchar(32) NOT NULL,
+  `Lastname` varchar(32) NOT NULL,
+  `Area` varchar(32) NOT NULL,
+  `Email` varchar(64) NOT NULL,
+  `Admin` tinyint(1) NOT NULL,
+  `Password` varchar(32) NOT NULL,
+  `Masteruser` int(11) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `workqueue`
+--
+
+CREATE TABLE IF NOT EXISTS `workqueue` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Project` varchar(32) NOT NULL,
+  `Phase` varchar(32) NOT NULL,
+  `ScenarioID` int(11) NOT NULL,
+  `TestlevelID` int(11) NOT NULL,
+  `TeststandID` int(11) NOT NULL,
+  `ScenarioresultID` int(11) NOT NULL,
+  `ActionresultID` int(11) NOT NULL,
+  `EnvironmentID` int(11) NOT NULL,
+  `OutcomeactionID` int(11) NOT NULL,
+  `TesterID` int(11) NOT NULL,
+  `MaillistID` int(11) NOT NULL,
+  `Actiontype` varchar(32) NOT NULL,
+  `Stepnumber` int(11) NOT NULL,
+  `Hostname` varchar(64) NOT NULL,
+  `State` enum('Notstarted','Tobecanceled','Preparing','Running','Pendingcompletion','Completed') NOT NULL,
+  `Statemodifier` enum('None','Canceled_due_to_error_in_step','Completed','No_available_host','No_remote_host_connect','Clnt_call_failed','Prepare_cmd_failed','Execute_cmd_failed') NOT NULL,
+  `Testcase` varchar(32) NOT NULL,
+  `Invocation` varchar(1024) NOT NULL,
+  `Duration` enum('Rununtilcomplete','RunforNminutes','TimeoutafterNminutes') NOT NULL,
+  `Maxduration` int(11) NOT NULL,
+  `Pass` int(11) NOT NULL,
+  `Start` datetime NOT NULL,
+  `End` datetime NOT NULL,
+  `Tag` int(11) NOT NULL,
+  `Loglocation` varchar(128) NOT NULL,
+  `Scenariologfilename` varchar(64) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `workrequest`
+--
+
+CREATE TABLE IF NOT EXISTS `workrequest` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Project` varchar(32) NOT NULL,
+  `Phase` varchar(32) NOT NULL,
+  `RequestType` enum('Scenario') NOT NULL,
+  `TesterID` int(11) NOT NULL,
+  `State` enum('Idle','Failedtestlevelvalidation','Running','Canceled','Completed') NOT NULL,
+  `Tablename1` varchar(32) NOT NULL,
+  `ObjectID1` int(11) NOT NULL,
+  `Tablename2` varchar(32) NOT NULL,
+  `ObjectID2` int(11) NOT NULL,
+  `Tablename3` varchar(32) NOT NULL,
+  `ObjectID3` int(11) NOT NULL,
+  `Tablename4` varchar(32) NOT NULL,
+  `ObjectID4` int(11) NOT NULL,
+  `Tablename5` varchar(32) NOT NULL,
+  `ObjectID5` int(11) NOT NULL,
+  `Start` datetime NOT NULL,
+  `End` datetime NOT NULL,
+  `Logdirectory` varchar(128) NOT NULL,
+  `Scenariologfilename` varchar(64) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `objectattributetype`
+--
+
+CREATE TABLE IF NOT EXISTS `objectattributetype` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Name` varchar(32) NOT NULL,
+  `ObjecttypeID` int(11) NOT NULL,
+  `Type` enum('varchar','enum') NOT NULL,
+  `Varcharwidth` int(11) NOT NULL,
+  `Enumvalues` varchar(1024) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `auditlog`
+--
+
+CREATE TABLE IF NOT EXISTS `auditlog` (
+  `ID` INT(11) NOT NULL AUTO_INCREMENT,
+  `Date` DATETIME NOT NULL ,
+  `User` VARCHAR(64) NOT NULL ,
+  `Originip` VARCHAR(16) NOT NULL ,
+  `Errno` int(11) NOT NULL ,
+  `Content` VARCHAR(1024) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE = InnoDB DEFAULT CHARSET=latin1;
+
+
+-- --------------------------------------------------------
+
+--
+-- Create an audit log entry to record the fact that this
+-- DAF installation has just been created
+--
+
+INSERT INTO daf.auditlog (Date,User,Originip,Content,Errno) VALUES(NOW(),'administrator','localhost','DAF installed','0');
