@@ -1,0 +1,9 @@
+
+-- --------------------------------------------------------
+--
+-- Create the daf master test user
+-- Well known initial password is 'passw0rd'
+--
+-- --------------------------------------------------------
+
+INSERT INTO daf.user (Firstname, Lastname, Area, Email, Password, Admin, Masteruser) VALUES('daf','administrator','daf','nobody@nowhere.com','9a6cf5dab3076c049438aa7d0fedf667','1','0');

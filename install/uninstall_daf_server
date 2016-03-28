@@ -1,0 +1,156 @@
+#!/bin/bash
+
+# -------------------------------------------------------------------------------------------------------------------- #
+#                                                                                                                      #
+# uninstall_daf_server                                                                                                 #
+#                                                                                                                      #
+# This file is part of the daf test automation programme.                                                              #
+#                                                                                                                      #
+# Purpose:   performs an uninstall of an existing DAF server code                                                      #
+#                                                                                                                      #
+# -------------------------------------------------------------------------------------------------------------------- #
+
+err_report() {
+    echo "Error on line $1"
+}
+
+trap 'err_report $LINENO; exit 1' ERR
+
+XAMPPDIR=/opt/lampp
+DAFWEB=/opt/lampp/htdocs/daf
+
+# ----------------------------------------------------------
+# we need root to run this script
+# ----------------------------------------------------------
+
+if test "`id -u`" -ne 0
+then
+   echo "You need to be root to uninstall the DAF server" | tee -a $LOGFILE
+   exit 1
+fi
+
+# ----------------------------------------------------------
+# This uninstall only works on Linux
+# ----------------------------------------------------------
+if [[ `uname` != "Linux" ]]
+then
+  echo "This uninstallation script must be run on a Linux box - this machine is " `uname` | tee -a $LOGFILE
+  exit 1
+fi
+
+# ----------------------------------------------------------
+# is this a 32 bit or 64 bit server?
+# ----------------------------------------------------------
+
+uname -a | grep x86_64 2>/dev/null 1>/dev/null
+if [[ $? -eq 0 ]]
+then 
+   CPUBITS=64
+   XAMPINSTALLER=xampp-linux-x64-5.6.19-0-installer.run
+else
+   CPUBITS=32
+   XAMPINSTALLER=xampp-linux-5.6.19-0-installer.run
+fi
+
+echo "This is a " $CPUBITS "bit machine" | tee -a $LOGFILE
+
+# ----------------------------------------------------------
+# Try and find out what Linux release this is
+# ----------------------------------------------------------
+
+if [[ -f "/etc/redhat-release" ]]
+then
+   LINUXRELEASE=Redhat 
+   echo "This is a $LINUXRELEASE distribution" | tee -a $LOGFILE
+   cat /etc/issue 2>/dev/null | tee -a $LOGFILE
+elif [[ -f "/etc/fedora_version" ]]
+then
+   LINUXRELEASE=Fedora  
+   echo "This is a $LINUXRELEASE distribution" | tee -a $LOGFILE
+   cat /etc/issue 2>/dev/null | tee -a $LOGFILE
+elif [[ -f "/etc/SuSE_version" ]]
+then
+   LINUXRELEASE=SuSE
+   echo "This is a $LINUXRELEASE distribution" | tee -a $LOGFILE
+   cat /etc/issue 2>/dev/null | tee -a $LOGFILE
+else
+   echo "Cannot determine what type of Linux distribution is running on this server - do you want to continue (Ubuntu will be assumed)?" | tee -a $LOGFILE
+   read  answer
+   case $answer in
+	yes|Yes|y)
+                echo "Assuming Ubuntu..."  | tee -a $LOGFILE
+                LINUXRELEASE=Ubuntu
+		;;
+	*)
+                echo "Not continuing..."  | tee -a $LOGFILE
+                exit
+		;;
+   esac    
+fi
+
+
+# ----------------------------------------------------------
+# is there an existing DAF server installation on this machine
+# if so, it must be removed before we install this new one
+# ----------------------------------------------------------
+
+if [[ -d $DAFWEB ]] 
+then
+  # okay to proceed
+  :
+else
+  echo "There does not appear to be a DAF installation  present on this test host - so cannot proceed!"
+  exit 1;
+fi
+
+
+echo
+echo "This script will uninstall the DAF server on this host"
+echo "This will permanently DELETE any data in the DAF results database"
+echo "If you wish to preserve test results etc from the DAF results databases - use the DAF web interface to take a"
+echo "backup of each project/phase result database and also of the main DAF server database if required"
+echo "These backups must be copied to a safe place before deleting the DAF server as the backup process places the"
+echo "backup files in the /opt/lampp/htdocs/daf/backup directory on this machine, and this directory is deleted when"
+echo "the DAF installation is uninstalled"
+echo "Do you wish to proceed and uninstall the DAF server (y/N)?"
+read  answer
+case $answer in
+        yes|Yes|y)
+                echo "DAF will be uninstalled...."
+                sleep 10;
+                ;;
+        *)
+                echo "DAF will not be uninstalled"
+                exit;
+                ;;
+esac
+
+
+echo "Stopping Xampp"
+/opt/lampp/lampp stop
+
+echo "------- uninstalling daf executable ----------"
+/opt/daf/daf -service stop delete
+
+echo "------- deleting installed files and databases ----------"
+rm -rf /opt/lampp
+rm -rf /opt/daf
+
+echo "------- removing boot up start of lampp ----------"
+# undo the ln -s /opt/lampp/lampp /etc/init.d/lampp link
+if [[ $LINUXRELEASE == "Redhat" ]] 
+then
+   chkconfig --del lampp
+elif [[ $LINUXRELEASE == "Suse" ]]
+then
+   chkconfig lampp 
+elif [[ $LINUXRELEASE == "Ubuntu" ]]
+then
+   update-rc.d lampp stop 30 0 1 2 3 4 5 6 .
+else
+   chkconfig --del lampp
+fi
+
+echo
+echo "The DAF agent has successfully been uninstalled"
+echo

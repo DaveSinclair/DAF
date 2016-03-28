@@ -1,0 +1,2 @@
+. /opt/daf/daf_agent_command_profile
+/opt/daf/daf_agent -service run -consolelog /opt/daf/logs/daf_agent.log >/dev/null 2>&1

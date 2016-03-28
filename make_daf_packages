@@ -1,0 +1,81 @@
+#!/bin/bash
+
+# -------------------------------------------------------------------------------------------------------------------- # 
+#                                                                                                                      #
+# make_daf packages                                                                                                    #
+#                                                                                                                      #
+# This file is part of DAF - the Distributed Automation Framework                                                      #
+#                                                                                                                      #
+# Purpose:   create a daf.tar.gz file that can be transferred to a DAF server and installed there                      #
+#            create a daf_agent.tar.gz file that can be transferred to a DAF slave and installed there                 #
+# -------------------------------------------------------------------------------------------------------------------- #
+
+trap "echo 'Failed due to error'; exit 1" ERR
+
+rm -f daf_agent.tar.gz daf_server.tar.gz daf_web.tar.gz daf.tar.gz
+thisdir=`pwd`
+
+echo    
+echo "Creating the daf_web.tar.gz package"
+echo  
+   
+# create web package
+cd web
+tar -czf $thisdir/daf_web.tar.gz *.php rest js css dojo
+
+echo     
+echo "Creating the daf_agent.tar.gz package"
+echo  
+   
+cd ../install
+tar -cf $thisdir/daf_agent.tar \
+   install_daf_agent \
+   uninstall_daf_agent
+cd ../src
+tar -rf $thisdir/daf_agent.tar *
+cd $thisdir
+gzip daf_agent.tar
+ 
+echo    
+echo "Creating the daf_server.tar.gz package"
+echo  
+   
+cd install
+tar -cf $thisdir/daf_server.tar \
+   install_daf_server \
+   uninstall_daf_server
+cd ../scripts
+tar -rf $thisdir/daf_server.tar \
+   create_daf_admin \
+   create_daf_database \
+   create_daf_tables \
+   create_master_test_user
+cd ../src
+tar -rf $thisdir/daf_server.tar *
+cd $thisdir
+gzip daf_server.tar
+ 
+echo  
+echo "Creating the daf.tar.gz package"
+echo  
+   
+# create overall package
+cd install
+tar -cf $thisdir/daf.tar \
+   install_daf_server \
+   install_daf_agent
+cd $thisdir
+
+tar -rf daf.tar \
+   daf_web.tar.gz \
+   daf_agent.tar.gz \
+   daf_server.tar.gz \
+   xampp/xampp-linux-5.6.19-0-installer.run \
+   xampp/xampp-linux-x64-5.6.19-0-installer.run
+gzip daf.tar
+   
+rm -f daf_agent.tar.gz daf_server.tar.gz daf_web.tar.gz
+
+trap - ERR
+
+exit 0

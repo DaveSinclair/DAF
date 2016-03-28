@@ -1,0 +1,50 @@
+#!/bin/bash
+
+err_report() {
+    echo "Error on line $1"
+}
+
+trap 'err_report $LINENO; exit 1' ERR
+
+
+# we need root to run
+if test "`id -u`" -ne 0
+then
+        echo "You need to be root to install the DAF agent"
+        exit 1
+fi
+
+echo
+echo "------- compiling daf_agent executable ----------"
+echo
+
+thisdir=`pwd`
+mkdir -p ./agent
+cp daf_agent.tar.gz ./agent
+cd agent
+tar -xzvf daf_agent.tar.gz
+make -f Makefile.agent clean all
+
+echo
+echo "------- installing daf_agent executable ----------"
+echo
+
+./daf_agent -service delete stop install start
+
+echo
+echo "------- copying uninstall script to /opt ---"
+echo
+
+cp uninstall_daf_agent /opt
+
+cd $thisdir
+rm -rf $thisdir/agent
+
+trap - ERR
+
+echo
+echo "The DAF agent has now been successfully installed"
+echo
+echo "Note: to deinstall the DAF agent, run     /opt/uninstall_daf_agent"
+echo
+

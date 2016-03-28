@@ -1,0 +1,344 @@
+#!/bin/bash
+
+# -------------------------------------------------------------------------------------------------------------------- # 
+
+# install_daf_server                                                                                                   #
+#                                                                                                                      #
+# This file is part of the daf test automation programme.                                                              #
+#                                                                                                                      #
+# Purpose:   performs the initial install of the DAF server code                                                       #
+#                                                                                                                      #
+# -------------------------------------------------------------------------------------------------------------------- #
+
+err_report() {
+    echo "Error on line $1"
+}
+
+trap 'err_report $LINENO; exit 1' ERR
+
+MysqlPort=8902
+ApachePort=8901
+PASSWORD=passw0rd
+
+LOGFILE=/tmp/dafinstall.log
+rm -f /tmp/dafinstall.log
+
+XAMPPDIR=/opt/lampp
+DAFWEB=/opt/lampp/htdocs/daf
+HOSTNAME=`hostname -s`
+FULLHOSTNAME=`hostname`
+
+# ----------------------------------------------------------
+# we need root to run this script
+# ----------------------------------------------------------
+
+if test "`id -u`" -ne 0
+then
+   echo "You need to be root to install the DAF server" | tee -a $LOGFILE
+   exit 1
+fi
+
+# ----------------------------------------------------------
+# This install only works on Linux
+# ----------------------------------------------------------
+if [[ `uname` != "Linux" ]]
+then
+  echo "This installation script must be run on a Linux box - this machine is " `uname` | tee -a $LOGFILE
+  exit 1
+fi
+
+# ----------------------------------------------------------
+# is this a 32 bit or 64 bit server?
+# ----------------------------------------------------------
+
+uname -a | grep x86_64 2>/dev/null 1>/dev/null
+if [[ $? -eq 0 ]]
+then 
+   CPUBITS=64
+   XAMPINSTALLER=xampp-linux-x64-5.6.19-0-installer.run
+else
+   CPUBITS=32
+   XAMPINSTALLER=xampp-linux-5.6.19-0-installer.run
+fi
+
+echo "$FULLHOSTNAME is a " $CPUBITS "bit machine" | tee -a $LOGFILE
+
+# ----------------------------------------------------------
+# Try and find out what Linux release this is
+# ----------------------------------------------------------
+
+if [[ -f "/etc/redhat-release" ]]
+then
+   LINUXRELEASE=Redhat 
+   echo "This is a $LINUXRELEASE distribution" | tee -a $LOGFILE
+   cat /etc/issue 2>/dev/null | tee -a $LOGFILE
+elif [[ -f "/etc/fedora_version" ]]
+then
+   LINUXRELEASE=Fedora  
+   echo "This is a $LINUXRELEASE distribution" | tee -a $LOGFILE
+   cat /etc/issue 2>/dev/null | tee -a $LOGFILE
+elif [[ -f "/etc/SuSE_version" ]]
+then
+   LINUXRELEASE=SuSE
+   echo "This is a $LINUXRELEASE distribution" | tee -a $LOGFILE
+   cat /etc/issue 2>/dev/null | tee -a $LOGFILE
+else
+   echo "Cannot determine what type of Linux distribution is running on this server - do you want to continue (Ubuntu will be assumed)?" | tee -a $LOGFILE
+   read  answer
+   case $answer in
+	yes|Yes|y)
+                echo "Assuming Ubuntu..."  | tee -a $LOGFILE
+                LINUXRELEASE=Ubuntu
+		;;
+	*)
+                echo "Not continuing..."  | tee -a $LOGFILE
+                exit
+		;;
+   esac    
+fi
+
+
+# ----------------------------------------------------------
+# is there an existing DAF server installation on this machine
+# if so, it must be removed before we install this new one
+# ----------------------------------------------------------
+
+if [[ -d $DAFWEB ]] 
+then
+  echo "There appears to be a DAF installation already present on this test host - cannot proceed!"
+  echo "An existing DAF installation can be un-installed using the /opt/uninstall_daf_server script"
+  echo "Note: this will delete all existing DAF test results - save a backup of each project if you"
+  echo "wish to preserve these results"
+  exit 1;
+fi
+
+# ----------------------------------------------------------
+# Find out which ports we are to use for Apache and MySql
+# The defaults are 8901 (Apache) and 8902 (MySql)
+# ----------------------------------------------------------
+
+thisdir=`pwd`
+mkdir -p /opt/daf
+
+echo "Do you wish to use the default port of $MysqlPort for the DAF SQL database (Y/n)?"
+read  answer
+case $answer in
+	yes|Yes|y)
+                echo "Using port $MysqlPort for the DAF SQL database"  | tee -a $LOGFILE
+		;;
+	no|n)
+                echo "Enter the port number to be used for the DAF SQL database:"
+                read  MyslqPort
+                echo "Using port $MysqlPort for the DAF SQL database"  | tee -a $LOGFILE
+		;;
+	*)
+                echo "Using port $MysqlPort for the DAF SQL database"  | tee -a $LOGFILE
+		;;
+esac
+
+echo "Do you wish to use the default port of $ApachePort for the DAF Web Server (Y/n)?"
+read  answer
+case $answer in
+	yes|Yes|y)
+                echo "Using port $ApachePort for the DAF Web Server"  | tee -a $LOGFILE
+		;;
+	no|n)
+                echo "Enter the port number to be used for the DAF Web Server:"
+                read  ApachePort
+                echo "Using port $MysqlPort for the DAF SQL database"  | tee -a $LOGFILE
+		;;
+		
+	*)
+                echo "Using port $ApachePort for the DAF Web Server"  | tee -a $LOGFILE
+		;;
+esac
+
+# ----------------------------------------------------------
+# Install XAMPP
+# ----------------------------------------------------------
+
+today=`date`
+echo "Installing DAF on $HOSTNAME on $today" >>$LOGFILE
+echo
+echo "Installing Xampp" | tee -a $LOGFILE
+cd xampp
+./$XAMPINSTALLER --mode unattended
+
+cd $thisdir
+
+# ----------------------------------------------------------
+# Install the php scripts part of DAF - these go in /opt/lampp/htdocs/daf
+# ----------------------------------------------------------
+
+echo "------- installing DAF php scripts  ----------" | tee -a $LOGFILE
+mkdir -p $XAMPPDIR/htdocs/daf 2>&1 | tee -a $LOGFILE
+tar -xzf daf_web.tar.gz -C $DAFWEB 2>&1 | tee -a $LOGFILE
+
+# ----------------------------------------------------------
+# Set the port values for Apache and MySql in the
+# /opt/lampp/etc/my.conf file, /opt/lampp/lampp, /opt/lampp/etc/httpd.conf
+# ----------------------------------------------------------
+
+echo "Modify mysql to use port $MysqlPort"  2>&1 | tee -a $LOGFILE
+sed "s%3306%$MysqlPort%" -i $XAMPDIR/etc/my.cnf  2>&1 | tee -a $LOGFILE
+sed "s%if testport 3306%if testport $MysqlPort%" -i $XAMPPDIR/lampp 2>&1 | tee -a $LOGFILE
+
+echo "Modify Apache to use port $ApachePort"  2>&1 | tee -a $LOGFILE
+sed "s%Listen 80%Listen $ApachePort%" -i $XAMPPDIR/etc/httpd.conf  2>&1 | tee -a $LOGFILE
+sed "s%if testport 80%if testport $ApachePort%" -i $XAMPPDIR/lampp  2>&1 | tee -a $LOGFILE
+
+# ----------------------------------------------------------
+# Adjust settings in /opt/lampp/etc/extra/httpd-xampp.conf so that 
+# hosts other than the localhost can access phpmyadmin
+# ----------------------------------------------------------
+
+sed "s%Require local%Require all granted%" -i $XAMPPDIR/etc/extra/httpd-xampp.conf  2>&1 | tee -a $LOGFILE
+
+# ----------------------------------------------------------
+# Check that the XAMPP install is good - run PHP
+# ----------------------------------------------------------
+
+if $XAMPPDIR/bin/php -v > /dev/null 2>&1
+then
+  :
+else
+  echo "$XAMPPDIR/lampp/bin/php -v not running without error - cannot proceed - please check installation pre-requisites"  2>&1 | tee -a $LOGFILE
+  exit   
+fi
+
+# ----------------------------------------------------------
+# Start up lampp
+#-----------------------------------------------------------
+
+echo "Starting Xampp"  2>&1 | tee -a $LOGFILE
+$XAMPPDIR/lampp startapache startmsql  2>&1 | tee -a $LOGFILE
+if [[ $? -ne 0 ]]
+then
+  echo "Problem starting Xampp - cannot proceed - refer to $LOGFILE for failure details" 2>&1 | tee -a $LOGFILE
+  exit 1;
+fi
+
+# ----------------------------------------------------------
+# Create users and DAF tables the MySql database
+#-----------------------------------------------------------
+
+echo "------- creating DAF_admin user ----------"  2>&1 | tee -a $LOGFILE
+$XAMPPDIR/bin/mysql <$thisdir/server/create_daf_admin  2>&1 | tee -a $LOGFILE
+
+echo "------- creating DAF database user ----------"
+$XAMPPDIR/bin/mysql <$thisdir/server/create_daf_database 2>&1 | tee -a $LOGFILE
+
+echo "------- creating DAF tables  ----------"
+$XAMPPDIR/bin/mysql <$thisdir/server/create_daf_tables 2>&1 | tee -a $LOGFILE
+
+echo "------- creating DAF master test user  ----------"
+$XAMPPDIR/bin/mysql <$thisdir/server/create_master_test_user 2>&1 | tee -a $LOGFILE
+
+mkdir $XAMPPDIR/htdocs/daf/backup 2>&1 | tee -a $LOGFILE
+chown nobody $XAMPPDIR/htdocs/daf/ 2>&1 | tee -a $LOGFILE
+
+# ----------------------------------------------------------
+# Compile and install the C code for the daf_server daemon
+# ----------------------------------------------------------
+
+echo "------- compiling and installing DAF server daemon  ----------" | tee -a $LOGFILE
+mkdir -p $thisdir/server
+tar -xzf daf_server.tar.gz -C $thisdir/server
+cd server
+
+# Modify afconstants.h so that it contains the correct host name and password
+cat afconstants.h | grep -v SQLSERVERNAME | grep -v DEFAULT_SQLPASSWORD >afconstants.h.temp
+echo "#define DEFAULT_SQLSERVERNAME \"$HOSTNAME\"" >afconstants.h
+echo "#define DEFAULT_SQLPASSWORD \"passw0rd\"" >>afconstants.h
+cat afconstants.h.temp >>afconstants.h
+
+make -f Makefile clean all
+cd $thisdir
+
+echo "------- installing DAF executable ----------" | tee -a $LOGFILE
+# since daf uses the SQL libraries and we want to use the particular libraries in the LAMPP distribution
+# we need to update the library path
+if test -z $LD_LIBRARY_PATH
+then
+        export LD_LIBRARY_PATH=$XAMPPDIR/lib
+else
+        export LD_LIBRARY_PATH=$XAMPPDIR/lib:$LD_LIBRARY_PATH
+fi
+echo "LD_LIBRARY_PATH was set to $LD_LIBRARY_PATH" | tee -a $LOGFILE
+
+cd $thisdir/server
+./daf -service delete stop install start 2>&1 | tee -a $LOGFILE
+if [[ $? -ne 0 ]]
+then
+  echo "Problem starting the DAF service - cannot proceed - refer to $LOGFILE for failure details" 2>&1 | tee -a $LOGFILE
+  exit 1;
+fi
+
+# ----------------------------------------------------------
+# Copy the daf_licence utility to /opt/daf
+# ----------------------------------------------------------
+
+cp ./daf_licence /opt/daf 2>&1 | tee -a $LOGFILE
+chmod 777 /opt/daf 2>&1 | tee -a $LOGFILE                 # <<<<<<<<<<<< to make the licence file writeable  ?????
+
+# ----------------------------------------------------------
+# Copy the uninstall script to /opt
+# ----------------------------------------------------------
+
+echo "------- copying uninstall script to /opt ---" | tee -a $LOGFILE
+cp $thisdir/server/uninstall_daf_server /opt 2>&1 | tee -a $LOGFILE
+cd $thisdir
+
+# ----------------------------------------------------------
+# Fix up the MySql root password
+# ----------------------------------------------------------
+
+echo "------- setting up MySQL - setting root $PASSWORD ---" | tee -a $LOGFILE
+echo "Setting new MySQL root password to $PASSWORD" 2>&1 | tee -a $LOGFILE
+echo "update user set Password=password('$PASSWORD') where User = 'root';" | $XAMPPDIR/bin/mysql -uroot mysql  2>&1 | tee -a $LOGFILE
+$XAMPPDIR/bin/mysqladmin reload  2>&1 | tee -a $LOGFILE
+sed "s%\$cfg\['Servers'\]\[\$i\]\['password'\] = '';%\$cfg\['Servers'\]\[\$i\]\['password'\] = '$PASSWORD';%" -i $XAMPPDIR/phpmyadmin/config.inc.php 2>&1 | tee -a $LOGFILE
+
+# ----------------------------------------------------------
+# Ensure the DAF server starts up when the server is booted
+# ----------------------------------------------------------
+
+echo "------- Ensure the DAF server starts up when the server is booted ---" | tee -a $LOGFILE
+ln -sf /opt/lampp/lampp /etc/init.d/lampp
+if [[ $LINUXRELEASE == "Redhat" ]] 
+then
+   chkconfig --add lampp
+elif [[ $LINUXRELEASE == "Suse" ]]
+then
+   chkconfig lampp 2345
+elif [[ $LINUXRELEASE == "Ubuntu" ]]
+then
+   update-rc.d lampp start 80 2 3 4 5 . stop 30 0 1 6 .
+else
+   chkconfig lampp on
+fi
+
+# ----------------------------------------------------------
+# Summarise the various URLs etc for the user
+# ----------------------------------------------------------
+
+echo 
+echo
+echo "The DAF server has now been successfully installed" | tee -a $LOGFILE
+echo 
+echo "Now connect a web browser to    http://${FULLHOSTNAME}:${ApachePort}/daf    to complete the installation"  2>&1 | tee -a $LOGFILE
+echo "Login with the 'daf administrator' userid, password '$PASSWORD'" | tee -a $LOGFILE
+echo "Use the following licence:" | tee -a $LOGFILE
+$thisdir/server/daf_generate_licence | tee -a $LOGFILE
+echo | tee -a $LOGFILE
+echo "Note: phpmyadmin is available at:   http://${FULLHOSTNAME}:${ApachePort}/phpmyadmin/" | tee -a $LOGFILE
+echo "Note: mysql is available at port ${MysqlPort}, root user, password $PASSWORD" | tee -a $LOGFILE
+echo "Note: the xampp dashboard is available at: http://${FULLHOSTNAME}:${ApachePort}/dashboard/" | tee -a $LOGFILE
+echo
+echo "Note: run     /opt/lampp/lampp stopapache stopmysql      to stop Apache and MySql" | tee -a $LOGFILE
+echo "Note: run     /opt/lampp/lampp startapache startmysql    to start Apache and MySql" | tee -a $LOGFILE
+echo "Note: run     /opt/lampp/lampp reloadapache reloadmysql  to restart Apache and MySql" | tee -a $LOGFILE
+echo
+echo "Note: to deinstall the DAF server, run     /opt/uninstall_daf_server" | tee -a $LOGFILE
+echo
+

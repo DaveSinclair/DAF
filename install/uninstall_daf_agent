@@ -1,0 +1,20 @@
+#!/bin/bash
+
+err_report() {
+    echo "Error on line $1"
+}
+
+trap 'err_report $LINENO; exit 1' ERR
+
+
+echo
+
+echo "------- uninstalling daf_agent executable ----------"
+/opt/daf/daf_agent -service stop delete
+
+echo "------- deleting daf_agent ----------"
+rm -rf /opt/daf/daf_agent
+rm -rf /opt/daf/logs/daf_agent.log
+
+
+
