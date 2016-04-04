@@ -154,7 +154,7 @@ function set_field_widths() {
    define("DAF_LOGFILENAME_LEN", 64);
    define("DAF_STATE_LEN", 24);
    define("DAF_STATUS_LEN", 32);
-   define("DAF_TESTCASE_LEN", 32);
+   define("DAF_TESTCASE_LEN", 64);
    define("DAF_TESTCASE_DESCRIPTION_LEN", 64);
    define("DAF_TESTSTAND_LEN", 32);
    define("DAF_TESTSTAND_COMMENTS_LEN", 128);

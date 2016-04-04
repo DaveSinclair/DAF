@@ -8,10 +8,10 @@ ifeq ($(OS),Linux)
      OS = LINUX
      CFLAGS = -Wall -g 
      CFLAGS1 = -g
-     LIBS = -L /usr/lib64/mysql -lpthread -lmysqlclient -lz
+     LIBS = -L /opt/lampp/lib -lpthread -lmysqlclient -lz
      LIBS_AGENT = -lpthread
      INCLUDES = -I/usr/include/mysql
-     DEFINES = -DUNAME="\"$(shell uname -a)\"" -DBUILDMACHINE="\"$(HOSTNAME)\""  -D_GNU_SOURCE -D_THREAD_SAFE -DLINUX
+     DEFINES = -DUNAME="\"$(shell uname -a)\"" -DBUILDMACHINE="\"$(HOSTNAME)\""  -D_GNU_SOURCE -D_THREAD_SAFE -DLINUX -DPOLLING_SERVER
 endif
 
 ifeq ($(OS),SunOS)
@@ -21,7 +21,7 @@ ifeq ($(OS),SunOS)
      CFLAGS1 = -g
      LIBS = -lpthread -lsocket -lnsl  -lmysqlclient -lz
      INCLUDES = -I/usr/include/mysql
-     DEFINES = -DUNAME="\"$(shell uname -a)\"" -DBUILDMACHINE="\"$(HOSTNAME)\"" -DSOLARIS
+     DEFINES = -DUNAME="\"$(shell uname -a)\"" -DBUILDMACHINE="\"$(HOSTNAME)\"" -DSOLARIS -DPOLLING_SERVER
 endif
 
 # check to see if we are running this compile on a 64 bit machine
@@ -42,9 +42,8 @@ endif
 #endif
 
 
-DAFOBJ = dafservice.o dafclient.o daf_util.o OSstuff.o daf_service_environment.o daf_shared_memory.o afmysql.o af_mysql.o daf.o daf_protocol_xdr.o email.o licence.o
-#DAFAGENTOBJ =  dafservice.o dafclient.o daf_util.o OSstuff.o daf_service_environment.o daf_shared_memory.o afmysql.o af_mysql.o daf_agent.o daf_protocol_xdr.o email.o licence.o
-DAFAGENTOBJ =  dafservice_agent.o dafclient.o daf_util.o OSstuff.o daf_service_environment.o daf_shared_memory.o daf_agent.o daf_protocol_xdr.o 
+DAFOBJ = dafservice.o dafclient.o daf_util.o OSstuff.o daf_service_environment.o daf_shared_memory.o afmysql.o af_mysql.o daf.o daf_protocol_xdr.o email.o licence.o daf_threads.o
+DAFAGENTOBJ =  dafservice_agent.o dafclient.o daf_util.o OSstuff.o daf_service_environment.o daf_shared_memory.o daf_agent.o daf_protocol_xdr.o daf_threads.o
 DAFGENERATELICENCEOBJ = daf_generate_licence.o licence.o daf_util.o
 DAFLICENCEOBJ = daf_licence.o licence.o daf_util.o
 
@@ -101,7 +100,7 @@ OSstuff.o: OSstuff.c OSstuff.h
 	gcc $(CFLAGS) $(DEFINES) $(INCLUDES) OSstuff.c -c
 
 daf_protocol.h: daf_protocol.x
-	$(RPCGEN) -h daf_protocol.x -o daf_protocol.h
+	$(RPCGEN) -h daf_protocol.x -o daf_protocol.h 
 
 af_mysql.o: af_mysql.c
 	gcc $(CFLAGS) $(DEFINES) $(INCLUDES) af_mysql.c -c
@@ -110,7 +109,7 @@ afmysql.o: afmysql.c
 	gcc $(CFLAGS) $(DEFINES) $(INCLUDES) afmysql.c -c
 
 daf_protocol_xdr.o: daf_protocol_xdr.c 
-	gcc $(CFLAGS) $(DEFINES) $(INCLUDES) daf_protocol_xdr.c -c
+	gcc $(CFLAGS) $(DEFINES) $(INCLUDES) daf_protocol_xdr.c -c -Wno-unused-variable
 
 daf_licence.o: daf_licence.c
 	gcc $(CFLAGS) $(DEFINES) $(INCLUDES) daf_licence.c -c

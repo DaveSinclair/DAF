@@ -14,14 +14,14 @@
 #include <rpc/rpc.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h> 
+#include <unistd.h>
 
 #include <assert.h>
 #include "OSstuff.h"
-#include "daf_protocol.h" 
+#include "daf_protocol.h"
 #include "daf_util.h"
-#include "dafclient.h" 
-#include "dafservice.h" 
+#include "dafclient.h"
+#include "dafservice.h"
 
 static struct timeval TIMEOUT = { 100, 0 };                       /* <<<<<<<<<<<<<<<<<<<<<< */
 
@@ -63,64 +63,73 @@ extern char *daf_version_string;
 /* -------------------------------------------------------------------------------- */
 
 int remote_client_cntrl(char *remotehostname,
-                        bool_t clear_shared_memory_flag) {
+                        bool_t clear_shared_memory_flag)
+{
 
 #undef  SUBNAME
 #define SUBNAME "remote_client_cntrl"
 
-  remote_client_cntrl_args  args;
-  remote_client_cntrl_res   result;
-  enum clnt_stat            stat;
-  char                      msg[MAX_MSG_LEN];
-  char                      errmsg[MAX_MSG_LEN];
-  int                       return_rc = E_OK;
-  CLIENT *                  remote_client;
+    remote_client_cntrl_args  args;
+    remote_client_cntrl_res   result;
+    enum clnt_stat            stat;
+    char                      msg[MAX_MSG_LEN];
+    char                      errmsg[MAX_MSG_LEN];
+    int                       return_rc = E_OK;
+    CLIENT                   *remote_client;
 
-  remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");  
+    remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");
 
-  if (remote_client == (CLIENT *) NULL) {
+    if (remote_client == (CLIENT *) NULL)
+    {
 
-    snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
-    snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
-    print_msg_to_console(msg);
-    return_rc = E_NOTOK;
-
-  } else {
-
-    memset(&args,      0, sizeof(args));
-    memset(&result,    0, sizeof(result));
- 
-    args.clear_shared_memory_flag  = clear_shared_memory_flag;
-    args.msglevel                  = 0;
-
-    if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_CNTRL,
-                          (xdrproc_t) xdr_remote_client_cntrl_args, (caddr_t) &args,
-                          (xdrproc_t) xdr_remote_client_cntrl_res,  (caddr_t) &result,
-                          TIMEOUT)) != RPC_SUCCESS) {
-       clnt_stat_decode(stat, errmsg, sizeof(errmsg));
-       snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n", 
-                SUBNAME, (long) CLIENT_REMOTE_CLIENT_CNTRL, stat, errmsg);
-       print_msg_to_console(msg);
-       return_rc = E_NOTOK;
-
-    } else {
-
-       if (result.status != E_OK) {
-          return_rc = E_NOTOK;
-       } 
+        snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
+        snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
+        print_msg_to_console(msg);
+        return_rc = E_NOTOK;
 
     }
- 
-    if (remote_client->cl_auth != NULL) {
-       auth_destroy(remote_client->cl_auth);
+    else
+    {
+
+        memset(&args,      0, sizeof(args));
+        memset(&result,    0, sizeof(result));
+
+        args.clear_shared_memory_flag  = clear_shared_memory_flag;
+        args.msglevel                  = 0;
+
+        if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_CNTRL,
+                              (xdrproc_t) xdr_remote_client_cntrl_args, (caddr_t) &args,
+                              (xdrproc_t) xdr_remote_client_cntrl_res,  (caddr_t) &result,
+                              TIMEOUT)) != RPC_SUCCESS)
+        {
+            clnt_stat_decode(stat, errmsg, sizeof(errmsg));
+            snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n",
+                     SUBNAME, (long) CLIENT_REMOTE_CLIENT_CNTRL, stat, errmsg);
+            print_msg_to_console(msg);
+            return_rc = E_NOTOK;
+
+        }
+        else
+        {
+
+            if (result.status != E_OK)
+            {
+                return_rc = E_NOTOK;
+            }
+
+        }
+
+        if (remote_client->cl_auth != NULL)
+        {
+            auth_destroy(remote_client->cl_auth);
+        }
+
+        clnt_destroy(remote_client);
+
     }
 
-    clnt_destroy(remote_client);
-
-  }
-
-  return(return_rc);
-} 
+    return(return_rc);
+}
 
 
 /* -------------------------------------------------------------------------------- */
@@ -162,84 +171,90 @@ int remote_client_cntrl(char *remotehostname,
 /*  with the completion status.                                                     */
 /* -------------------------------------------------------------------------------- */
 
-int remote_client_cmd(char *remotehostname, int run_in_shell, char *cmdstring, char *identstring,  
+int remote_client_cmd(char *remotehostname, int run_in_shell, char *cmdstring, char *identstring,
                       bool_t run_in_background, bool_t workqueueID_flag, Iu32 workqueueID, Iu32 actionresultID,
                       char *sql_servername, char *sql_username, char *sql_password,
-                      char *sql_databasename, Iu16 sql_port) { 
+                      char *sql_databasename, Iu16 sql_port, char *sql_socketname)
+{
 
-  remote_client_cmd_args  args;
-  remote_client_cmd_res   remoteresult;
-  enum clnt_stat          stat;
-  char                    msg[MAX_MSG_LEN];
-  char                    errmsg[MAX_MSG_LEN];
-  int                     return_rc = E_OK;
-  CLIENT *                remote_client;
+    remote_client_cmd_args  args;
+    remote_client_cmd_res   remoteresult;
+    enum clnt_stat          stat;
+    char                    msg[MAX_MSG_LEN];
+    char                    errmsg[MAX_MSG_LEN];
+    int                     return_rc = E_OK;
+    CLIENT                 *remote_client;
 
 #undef  SUBNAME
 #define SUBNAME "remote_client_cmd"
 
-  remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");  
+    remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");
 
-  if (remote_client == (CLIENT *) NULL) {
+    if (remote_client == (CLIENT *) NULL)
+    {
 
-    snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
-    snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
-    print_msg_to_console(msg);
-    return_rc = E_NOTOK;
+        snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
+        snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
+        print_msg_to_console(msg);
+        return_rc = E_NOTOK;
 
-  } else {
+    }
+    else
+    {
 
-    memset(&args,      0, sizeof(args));
-    memset(&remoteresult, 0, sizeof(remoteresult));
+        memset(&args,      0, sizeof(args));
+        memset(&remoteresult, 0, sizeof(remoteresult));
 
-    args.run_in_shell      = run_in_shell;
-    args.cmdstring         = cmdstring;
-    args.identstring       = identstring;
-    args.run_in_background = run_in_background;
-    args.timeout           = 0;                      /* <<<<<<<<<<<<<< */
-    args.fail_on_timeout   = 0;                      /* <<<<<<<<<<<<<< */
-    args.workqueueID_flag  = workqueueID_flag;
-    args.workqueueID       = workqueueID;
-    args.workqueueID       = actionresultID;
-    args.sql_servername    = sql_servername;
-    args.sql_username      = sql_username;
-    args.sql_password      = sql_password;
-    args.sql_databasename  = sql_databasename;
-    args.sql_port          = sql_port;
-    args.msglevel          = 0;
+        args.run_in_shell      = run_in_shell;
+        args.cmdstring         = cmdstring;
+        args.identstring       = identstring;
+        args.run_in_background = run_in_background;
+        args.timeout           = 0;                      /* <<<<<<<<<<<<<< */
+        args.fail_on_timeout   = 0;                      /* <<<<<<<<<<<<<< */
+        args.workqueueID_flag  = workqueueID_flag;
+        args.workqueueID       = workqueueID;
+        args.workqueueID       = actionresultID;
+        args.sql_servername    = sql_servername;
+        args.sql_username      = sql_username;
+        args.sql_password      = sql_password;
+        args.sql_databasename  = sql_databasename;
+        args.sql_port          = sql_port;
+        args.msglevel          = 0;
 
-    /* stringlist x;
+        /* stringlist x;
 
-    x.item = NULL;
-    x.next = NULL;  */
+        x.item = NULL;
+        x.next = NULL;  */
 
-    args.environment_settings.item = NULL;   /* <<<<<<<< temp */
-    args.environment_settings.next = NULL;
+        args.environment_settings.item = NULL;   /* <<<<<<<< temp */
+        args.environment_settings.next = NULL;
 
-    if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_CMD,
-                          (xdrproc_t) xdr_remote_client_cmd_args, (caddr_t) &args,
-                          (xdrproc_t) xdr_remote_client_cmd_res,  (caddr_t) &remoteresult,
-                          TIMEOUT)) != RPC_SUCCESS) {
-       clnt_stat_decode(stat, errmsg, sizeof(errmsg));
-       snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n", SUBNAME, (long) CLIENT_REMOTE_CLIENT_CMD, stat, errmsg);
-       print_msg_to_console(msg);
-       return_rc = E_NOTOK;
+        if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_CMD,
+                              (xdrproc_t) xdr_remote_client_cmd_args, (caddr_t) &args,
+                              (xdrproc_t) xdr_remote_client_cmd_res,  (caddr_t) &remoteresult,
+                              TIMEOUT)) != RPC_SUCCESS)
+        {
+            clnt_stat_decode(stat, errmsg, sizeof(errmsg));
+            snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n", SUBNAME, (long) CLIENT_REMOTE_CLIENT_CMD, stat, errmsg);
+            print_msg_to_console(msg);
+            return_rc = E_NOTOK;
+        }
+
+        if (remote_client->cl_auth != NULL)
+        {
+            auth_destroy(remote_client->cl_auth);
+        }
+
+        clnt_destroy(remote_client);
+
     }
 
-    if (remote_client->cl_auth != NULL) {
-       auth_destroy(remote_client->cl_auth);
-    }
+    printf("system command: %s:  ident=%s, rc=%d, signal=%d\n", args.cmdstring, identstring, remoteresult.remote_client_cmd_res_u.outcome.cmd_exit_code,  remoteresult.remote_client_cmd_res_u.outcome.cmd_exit_signal);
 
-    clnt_destroy(remote_client);
+    return_rc = return_rc | remoteresult.remote_client_cmd_res_u.outcome.cmd_exit_code | remoteresult.remote_client_cmd_res_u.outcome.cmd_exit_signal;
 
-  }
-
-  printf("system command: %s:  ident=%s, rc=%d, signal=%d\n", args.cmdstring, identstring, remoteresult.remote_client_cmd_res_u.outcome.cmd_exit_code,  remoteresult.remote_client_cmd_res_u.outcome.cmd_exit_signal);
-
-  return_rc = return_rc | remoteresult.remote_client_cmd_res_u.outcome.cmd_exit_code | remoteresult.remote_client_cmd_res_u.outcome.cmd_exit_signal;
-
-  return(return_rc);
-} 
+    return(return_rc);
+}
 
 /* -------------------------------------------------------------------------------- */
 /*                                                                                  */
@@ -278,97 +293,111 @@ int remote_client_cmd(char *remotehostname, int run_in_shell, char *cmdstring, c
 int remote_client_query_cmdlog(char         *remotehostname,
                                bool_t       no_headers,
                                bool_t       use_delimiter,
-                               char         *delimiter_string) {
+                               char         *delimiter_string)
+{
 
 #undef  SUBNAME
 #define SUBNAME "remote_client_query_cmdlog"
 
-  remote_client_query_cmdlog_args  args;
-  remote_client_query_cmdlog_res   remoteresult;
-  enum clnt_stat                   stat;
-  char                             msg[MAX_MSG_LEN];
-  char                             errmsg[MAX_MSG_LEN];
-  int                              return_rc = E_OK;
-  Iu32                             index = 0;
-  CLIENT *  remote_client;
+    remote_client_query_cmdlog_args  args;
+    remote_client_query_cmdlog_res   remoteresult;
+    enum clnt_stat                   stat;
+    char                             msg[MAX_MSG_LEN];
+    char                             errmsg[MAX_MSG_LEN];
+    int                              return_rc = E_OK;
+    Iu32                             index = 0;
+    CLIENT   *remote_client;
 
-  cmd_log  cmd_log = {NULL, NULL };  
+    cmd_log  cmd_log = {NULL, NULL };
 
-  remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");  
+    remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");
 
-  /* Make sure the create worked */
-  if (remote_client == (CLIENT *) NULL) {
+    /* Make sure the create worked */
+    if (remote_client == (CLIENT *) NULL)
+    {
 
-    snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
-    snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
-    print_msg_to_console(msg);
-    return_rc = E_NOTOK;
+        snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
+        snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
+        print_msg_to_console(msg);
+        return_rc = E_NOTOK;
 
-  } else {
+    }
+    else
+    {
 
-    memset(&args,      0, sizeof(args));
-    memset(&remoteresult, 0, sizeof(remoteresult));
- 
-    do {
+        memset(&args,      0, sizeof(args));
+        memset(&remoteresult, 0, sizeof(remoteresult));
 
-       args.index     = index;
-       args.msglevel  = 0;
+        do
+        {
 
-       if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_QUERY_CMDLOG,
-                             (xdrproc_t) xdr_remote_client_query_cmdlog_args, (caddr_t) &args,
-                             (xdrproc_t) xdr_remote_client_query_cmdlog_res,  (caddr_t) &remoteresult,
-                             TIMEOUT)) != RPC_SUCCESS) {
-          clnt_stat_decode(stat, errmsg, sizeof(errmsg));
-          snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n", 
-                   SUBNAME, (long) CLIENT_REMOTE_CLIENT_QUERY_CMDLOG, stat, errmsg);
-          print_msg_to_console(msg);
-          return_rc = E_NOTOK;
+            args.index     = index;
+            args.msglevel  = 0;
 
-       } else {
-
-           if (! remoteresult.remote_client_query_cmdlog_res_u.outcome.last) {
-
-             if (add_cmd_log_fragment(&cmd_log, 
-                                      remoteresult.remote_client_query_cmdlog_res_u.outcome.cmdstring,
-                                      remoteresult.remote_client_query_cmdlog_res_u.outcome.identstring,
-                                      remoteresult.remote_client_query_cmdlog_res_u.outcome.tag,
-                                      remoteresult.remote_client_query_cmdlog_res_u.outcome.workqueueID,
-                                      remoteresult.remote_client_query_cmdlog_res_u.outcome.pid,
-                                      remoteresult.remote_client_query_cmdlog_res_u.outcome.state,
-                                      remoteresult.remote_client_query_cmdlog_res_u.outcome.status,
-                                      remoteresult.remote_client_query_cmdlog_res_u.outcome.start_time,
-                                      remoteresult.remote_client_query_cmdlog_res_u.outcome.end_time,
-                                      remoteresult.remote_client_query_cmdlog_res_u.outcome.timeout_at_time,
-                                      remoteresult.remote_client_query_cmdlog_res_u.outcome.fail_on_timeout,
-                                      errmsg, sizeof(errmsg)) != E_OK) {
-                snprintf(msg, sizeof(msg) ,"%s: problem with add_cmd_log_fragment: %s\n", SUBNAME, errmsg);
+            if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_QUERY_CMDLOG,
+                                  (xdrproc_t) xdr_remote_client_query_cmdlog_args, (caddr_t) &args,
+                                  (xdrproc_t) xdr_remote_client_query_cmdlog_res,  (caddr_t) &remoteresult,
+                                  TIMEOUT)) != RPC_SUCCESS)
+            {
+                clnt_stat_decode(stat, errmsg, sizeof(errmsg));
+                snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n",
+                         SUBNAME, (long) CLIENT_REMOTE_CLIENT_QUERY_CMDLOG, stat, errmsg);
                 print_msg_to_console(msg);
                 return_rc = E_NOTOK;
-             }
 
-          } 
+            }
+            else
+            {
 
-       }
-       index++;
- 
-    } while ((! remoteresult.remote_client_query_cmdlog_res_u.outcome.last) && (return_rc == E_OK)); 
+                if (! remoteresult.remote_client_query_cmdlog_res_u.outcome.last)
+                {
 
-    if (remote_client->cl_auth != NULL) {
-       auth_destroy(remote_client->cl_auth);
+                    if (add_cmd_log_fragment(&cmd_log,
+                                             remoteresult.remote_client_query_cmdlog_res_u.outcome.cmdstring,
+                                             remoteresult.remote_client_query_cmdlog_res_u.outcome.identstring,
+                                             remoteresult.remote_client_query_cmdlog_res_u.outcome.tag,
+                                             remoteresult.remote_client_query_cmdlog_res_u.outcome.workqueueID,
+                                             remoteresult.remote_client_query_cmdlog_res_u.outcome.pid,
+                                             remoteresult.remote_client_query_cmdlog_res_u.outcome.state,
+                                             remoteresult.remote_client_query_cmdlog_res_u.outcome.status,
+                                             remoteresult.remote_client_query_cmdlog_res_u.outcome.start_time,
+                                             remoteresult.remote_client_query_cmdlog_res_u.outcome.end_time,
+                                             remoteresult.remote_client_query_cmdlog_res_u.outcome.timeout_at_time,
+                                             remoteresult.remote_client_query_cmdlog_res_u.outcome.fail_on_timeout,
+                                             errmsg, sizeof(errmsg)) != E_OK)
+                    {
+                        snprintf(msg, sizeof(msg) ,"%s: problem with add_cmd_log_fragment: %s\n", SUBNAME, errmsg);
+                        print_msg_to_console(msg);
+                        return_rc = E_NOTOK;
+                    }
+
+                }
+
+            }
+
+            index++;
+
+        }
+        while ((! remoteresult.remote_client_query_cmdlog_res_u.outcome.last) && (return_rc == E_OK));
+
+        if (remote_client->cl_auth != NULL)
+        {
+            auth_destroy(remote_client->cl_auth);
+        }
+
+        clnt_destroy(remote_client);
+
     }
 
-    clnt_destroy(remote_client);
+    if (return_rc == E_OK)
+    {
+        print_cmd_log_fragment(&cmd_log, no_headers, use_delimiter, delimiter_string);
+    }
 
-  }
+    deallocate_cmd_log_fragment(&cmd_log);
 
-  if (return_rc == E_OK) {
-     print_cmd_log_fragment(&cmd_log, no_headers, use_delimiter, delimiter_string);
-  }
-
-  deallocate_cmd_log_fragment(&cmd_log);
-
-  return(return_rc);
-} 
+    return(return_rc);
+}
 
 /* -------------------------------------------------------------------------------- */
 /*                                                                                  */
@@ -403,80 +432,88 @@ int remote_client_query_cmdlog(char         *remotehostname,
 /*  client.                                                                         */
 /* -------------------------------------------------------------------------------- */
 
-int remote_client_query_version(char *remotehostname, 
-                                bool_t set_zombie_reaper_debug_flag, 
-                                bool_t reset_zombie_reaper_debug_flag) {
+int remote_client_query_version(char *remotehostname,
+                                bool_t set_zombie_reaper_debug_flag,
+                                bool_t reset_zombie_reaper_debug_flag)
+{
 
 #undef  SUBNAME
 #define SUBNAME "remote_client_query_version"
 
-  remote_client_query_version_args  args;
-  remote_client_query_version_res   remoteresult;
-  enum clnt_stat                    stat;
-  char                              msg[MAX_MSG_LEN];
-  char                              errmsg[MAX_MSG_LEN];
-  int                               return_rc = E_OK;
-  CLIENT *                          remote_client;
+    remote_client_query_version_args  args;
+    remote_client_query_version_res   remoteresult;
+    enum clnt_stat                    stat;
+    char                              msg[MAX_MSG_LEN];
+    char                              errmsg[MAX_MSG_LEN];
+    int                               return_rc = E_OK;
+    CLIENT                           *remote_client;
 
-  /* Create a CLIENT data structure that reference the RPC
-     procedure DAF_PROG, version DAF_VERSION running on the
-     host specified by the 1st command line arg. */
+    /* Create a CLIENT data structure that reference the RPC
+       procedure DAF_PROG, version DAF_VERSION running on the
+       host specified by the 1st command line arg. */
 
-  remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");  
+    remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");
 
-  /* Make sure the create worked */
-  if (remote_client == (CLIENT *) NULL) {
+    /* Make sure the create worked */
+    if (remote_client == (CLIENT *) NULL)
+    {
 
-    snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
-    snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
-    print_msg_to_console(msg);
-    return_rc = E_NOTOK;
-
-  } else {   
-
-    memset(&args,         0, sizeof(args));
-    memset(&remoteresult, 0, sizeof(remoteresult));
-
-    args.agent_major_version  = daf_major_version;
-    args.agent_minor_version  = daf_minor_version;
-    args.agent_version_string = daf_version_string;
-    args.set_zombie_reaper_debug_flag   = set_zombie_reaper_debug_flag; 
-    args.reset_zombie_reaper_debug_flag = reset_zombie_reaper_debug_flag; 
-    args.msglevel             = 0; 
-
-    if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_QUERY_VERSION,
-                          (xdrproc_t) xdr_remote_client_query_version_args, (caddr_t) &args,
-                          (xdrproc_t) xdr_remote_client_query_version_res,  (caddr_t) &remoteresult,
-                          TIMEOUT)) != RPC_SUCCESS) {
-       clnt_stat_decode(stat, errmsg, sizeof(errmsg));
-       snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n", 
-                SUBNAME, (long) CLIENT_REMOTE_CLIENT_QUERY_VERSION, stat, errmsg);
-       print_msg_to_console(msg);
-       return_rc = E_NOTOK;
-
-    } else {
-
-        snprintf(msg, sizeof(msg), "Local daf version %d.%d (%s), Remote service version %d.%d (%s)\n", 
-                                   daf_major_version,
-                                   daf_minor_version,
-                                   daf_version_string,
-                                   remoteresult.remote_client_query_version_res_u.outcome.agent_major_version,
-                                   remoteresult.remote_client_query_version_res_u.outcome.agent_minor_version,
-                                   remoteresult.remote_client_query_version_res_u.outcome.agent_version_string);
+        snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
+        snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
         print_msg_to_console(msg);
+        return_rc = E_NOTOK;
+
+    }
+    else
+    {
+
+        memset(&args,         0, sizeof(args));
+        memset(&remoteresult, 0, sizeof(remoteresult));
+
+        args.agent_major_version  = daf_major_version;
+        args.agent_minor_version  = daf_minor_version;
+        args.agent_version_string = daf_version_string;
+        args.set_zombie_reaper_debug_flag   = set_zombie_reaper_debug_flag;
+        args.reset_zombie_reaper_debug_flag = reset_zombie_reaper_debug_flag;
+        args.msglevel             = 0;
+
+        if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_QUERY_VERSION,
+                              (xdrproc_t) xdr_remote_client_query_version_args, (caddr_t) &args,
+                              (xdrproc_t) xdr_remote_client_query_version_res,  (caddr_t) &remoteresult,
+                              TIMEOUT)) != RPC_SUCCESS)
+        {
+            clnt_stat_decode(stat, errmsg, sizeof(errmsg));
+            snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n",
+                     SUBNAME, (long) CLIENT_REMOTE_CLIENT_QUERY_VERSION, stat, errmsg);
+            print_msg_to_console(msg);
+            return_rc = E_NOTOK;
+
+        }
+        else
+        {
+
+            snprintf(msg, sizeof(msg), "Local daf version %d.%d (%s), Remote service version %d.%d (%s)\n",
+                     daf_major_version,
+                     daf_minor_version,
+                     daf_version_string,
+                     remoteresult.remote_client_query_version_res_u.outcome.agent_major_version,
+                     remoteresult.remote_client_query_version_res_u.outcome.agent_minor_version,
+                     remoteresult.remote_client_query_version_res_u.outcome.agent_version_string);
+            print_msg_to_console(msg);
+
+        }
+
+        if (remote_client->cl_auth != NULL)
+        {
+            auth_destroy(remote_client->cl_auth);
+        }
+
+        clnt_destroy(remote_client);
 
     }
 
-    if (remote_client->cl_auth != NULL) {
-       auth_destroy(remote_client->cl_auth);
-    }
-
-    clnt_destroy(remote_client);
-
-  }
-
-  return(return_rc);
-} 
+    return(return_rc);
+}
 
 /* -------------------------------------------------------------------------------- */
 /*                                                                                  */
@@ -506,70 +543,164 @@ int remote_client_query_version(char *remotehostname,
 /*  client.                                                                         */
 /* -------------------------------------------------------------------------------- */
 
-int remote_client_ping_agent(char *remotehostname, bool_t quiet) { 
+int remote_client_ping_agent(char *remotehostname, bool_t quiet)
+{
 
 #undef  SUBNAME
 #define SUBNAME "remote_client_ping_agent"
 
-  remote_client_query_version_args  args;
-  remote_client_query_version_res   remoteresult;
-  enum clnt_stat                    stat;
-  char                              msg[MAX_MSG_LEN];
-  char                              errmsg[MAX_MSG_LEN];
-  int                               return_rc = E_OK;
-  CLIENT *                          remote_client;
+    remote_client_query_version_args  args;
+    remote_client_query_version_res   remoteresult;
+    enum clnt_stat                    stat;
+    char                              msg[MAX_MSG_LEN];
+    char                              errmsg[MAX_MSG_LEN];
+    int                               return_rc = E_OK;
+    CLIENT                           *remote_client;
 
-  /* Create a CLIENT data structure that reference the RPC
-     procedure DAF_PROG, version DAF_VERSION running on the
-     host specified by the 1st command line arg. */
+    /* Create a CLIENT data structure that reference the RPC
+       procedure DAF_PROG, version DAF_VERSION running on the
+       host specified by the 1st command line arg. */
 
-  remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");  
+    remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");
 
-  /* Make sure the create worked */
-  if (remote_client == (CLIENT *) NULL) {
+    /* Make sure the create worked */
+    if (remote_client == (CLIENT *) NULL)
+    {
 
-    if (!quiet) {
-       snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
-       snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
-       print_msg_to_console(msg);
+        if (!quiet)
+        {
+            snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
+            snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
+            print_msg_to_console(msg);
+        }
+
+        return_rc = E_NOTOK;
+
     }
-    return_rc = E_NOTOK;
+    else
+    {
 
-  } else {   
+        memset(&args,         0, sizeof(args));
+        memset(&remoteresult, 0, sizeof(remoteresult));
 
-    memset(&args,         0, sizeof(args));
-    memset(&remoteresult, 0, sizeof(remoteresult));
+        args.agent_major_version  = daf_major_version;
+        args.agent_minor_version  = daf_minor_version;
+        args.agent_version_string = daf_version_string;
+        args.msglevel       = 0;
 
-    args.agent_major_version  = daf_major_version;
-    args.agent_minor_version  = daf_minor_version;
-    args.agent_version_string = daf_version_string;
-    args.msglevel       = 0; 
+        if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_QUERY_VERSION,
+                              (xdrproc_t) xdr_remote_client_query_version_args, (caddr_t) &args,
+                              (xdrproc_t) xdr_remote_client_query_version_res,  (caddr_t) &remoteresult,
+                              TIMEOUT)) != RPC_SUCCESS)
+        {
+            if (!quiet)
+            {
+                clnt_stat_decode(stat, errmsg, sizeof(errmsg));
+                snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n",
+                         SUBNAME, (long) CLIENT_REMOTE_CLIENT_QUERY_VERSION, stat, errmsg);
+                print_msg_to_console(msg);
+            }
 
-    if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_QUERY_VERSION,
-                          (xdrproc_t) xdr_remote_client_query_version_args, (caddr_t) &args,
-                          (xdrproc_t) xdr_remote_client_query_version_res,  (caddr_t) &remoteresult,
-                          TIMEOUT)) != RPC_SUCCESS) {
-       if (!quiet) {
-          clnt_stat_decode(stat, errmsg, sizeof(errmsg));
-          snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n", 
-                   SUBNAME, (long) CLIENT_REMOTE_CLIENT_QUERY_VERSION, stat, errmsg);
-          print_msg_to_console(msg);
-       }
-       return_rc = E_NOTOK;
+            return_rc = E_NOTOK;
 
-    } 
+        }
 
-    if (remote_client->cl_auth != NULL) {
-       auth_destroy(remote_client->cl_auth);
+        if (remote_client->cl_auth != NULL)
+        {
+            auth_destroy(remote_client->cl_auth);
+        }
+
+        clnt_destroy(remote_client);
+
     }
 
-    clnt_destroy(remote_client);
+    return(return_rc);
+}
 
-  }
+int query_slave_tag(char         *remotehostname,
+                    Iu32         tag,
+					int          *exit_code,
+					int          *exit_signal,
+					cmd_log_state  *exit_state) {
 
-  return(return_rc);
-} 
 
+
+#undef  SUBNAME
+#define SUBNAME "query_slave_tag"
+
+    remote_client_query_tag_args  args;
+    remote_client_query_tag_res   remoteresult;
+    enum clnt_stat                stat;
+    char                          state_string[MAX_MSG_LEN];
+    char                          msg[MAX_MSG_LEN];
+    char                          errmsg[MAX_MSG_LEN];
+    int                           return_rc = E_OK;
+    CLIENT                        *remote_client;
+
+    /* Create a CLIENT data structure that reference the RPC
+       procedure DAF_PROG, version DAF_VERSION running on the
+       host specified by the 1st command line arg. */
+
+    remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");
+
+    /* Make sure the create worked */
+    if (remote_client == (CLIENT *) NULL)
+    {
+
+        snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
+        snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
+        print_msg_to_console(msg);
+        return_rc = E_NOTOK;
+
+    }
+    else
+    {
+
+        memset(&args,      0, sizeof(args));
+        memset(&remoteresult, 0, sizeof(remoteresult));
+
+        args.tag      = tag;
+        args.msglevel = 0;
+
+        if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_QUERY_TAG,
+                              (xdrproc_t) xdr_remote_client_query_tag_args, (caddr_t) &args,
+                              (xdrproc_t) xdr_remote_client_query_tag_res,  (caddr_t) &remoteresult,
+                              TIMEOUT)) != RPC_SUCCESS)
+        {
+            clnt_stat_decode(stat, errmsg, sizeof(errmsg));
+            snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n",
+                     SUBNAME, (long) CLIENT_REMOTE_CLIENT_QUERY_TAG, stat, errmsg);
+            print_msg_to_console(msg);
+            return_rc = E_NOTOK;
+
+        }
+        else
+        {
+
+            if (remoteresult.remote_client_query_tag_res_u.outcome.valid)
+            {
+
+                 cmd_log_state_decode(remoteresult.remote_client_query_tag_res_u.outcome.state, state_string, sizeof(state_string));
+
+                 *exit_state  = remoteresult.remote_client_query_tag_res_u.outcome.state;
+                 *exit_code   = remoteresult.remote_client_query_tag_res_u.outcome.cmd_exit_code,
+                 *exit_signal = remoteresult.remote_client_query_tag_res_u.outcome.cmd_exit_signal;
+
+            }
+
+        }
+
+        if (remote_client->cl_auth != NULL)
+        {
+            auth_destroy(remote_client->cl_auth);
+        }
+
+        clnt_destroy(remote_client);
+
+    }
+
+    return(return_rc);
+}
 
 /* -------------------------------------------------------------------------------- */
 /*                                                                                  */
@@ -609,99 +740,117 @@ int remote_client_query_tag(char         *remotehostname,
                             Iu32         tag,
                             bool_t       no_headers,
                             bool_t       use_delimiter,
-                            char         *delimiter_string) {
+                            char         *delimiter_string)
+{
 
 #undef  SUBNAME
 #define SUBNAME "remote_client_query_tag"
 
-  remote_client_query_tag_args  args;
-  remote_client_query_tag_res   remoteresult;
-  enum clnt_stat                stat;
-  char                          state_string[MAX_MSG_LEN];
-  char                          msg[MAX_MSG_LEN];
-  char                          errmsg[MAX_MSG_LEN];
-  int                           return_rc = E_OK;
+    remote_client_query_tag_args  args;
+    remote_client_query_tag_res   remoteresult;
+    enum clnt_stat                stat;
+    char                          state_string[MAX_MSG_LEN];
+    char                          msg[MAX_MSG_LEN];
+    char                          errmsg[MAX_MSG_LEN];
+    int                           return_rc = E_OK;
 
-  char                          *fmt_title = "%4s  %12s  %4s  %4s\n";
-  char                          *fmt       = "%4d  %12s  %4d  %4d\n";
-  char                          *fmt_title_delim = "%s%s%s%s%s%s%s\n";
-  char                          *fmt_delim       = "%d%s%d%s%d%s%d\n";
-  CLIENT *                remote_client;
+    char                          *fmt_title = "%4s  %12s  %4s  %4s\n";
+    char                          *fmt       = "%4d  %12s  %4d  %4d\n";
+    char                          *fmt_title_delim = "%s%s%s%s%s%s%s\n";
+    char                          *fmt_delim       = "%d%s%d%s%d%s%d\n";
+    CLIENT                 *remote_client;
 
-  /* Create a CLIENT data structure that reference the RPC
-     procedure DAF_PROG, version DAF_VERSION running on the
-     host specified by the 1st command line arg. */
+    /* Create a CLIENT data structure that reference the RPC
+       procedure DAF_PROG, version DAF_VERSION running on the
+       host specified by the 1st command line arg. */
 
-  remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");  
+    remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");
 
-  /* Make sure the create worked */
-  if (remote_client == (CLIENT *) NULL) {
+    /* Make sure the create worked */
+    if (remote_client == (CLIENT *) NULL)
+    {
 
-    snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
-    snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
-    print_msg_to_console(msg);
-    return_rc = E_NOTOK;
+        snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
+        snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
+        print_msg_to_console(msg);
+        return_rc = E_NOTOK;
 
-  } else {
+    }
+    else
+    {
 
-    memset(&args,      0, sizeof(args));
-    memset(&remoteresult, 0, sizeof(remoteresult));
+        memset(&args,      0, sizeof(args));
+        memset(&remoteresult, 0, sizeof(remoteresult));
 
-    args.tag      = tag;
-    args.msglevel = 0;
+        args.tag      = tag;
+        args.msglevel = 0;
 
-    if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_QUERY_TAG,
-                          (xdrproc_t) xdr_remote_client_query_tag_args, (caddr_t) &args,
-                          (xdrproc_t) xdr_remote_client_query_tag_res,  (caddr_t) &remoteresult,
-                          TIMEOUT)) != RPC_SUCCESS) {
-       clnt_stat_decode(stat, errmsg, sizeof(errmsg));
-       snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n", 
-                SUBNAME, (long) CLIENT_REMOTE_CLIENT_QUERY_TAG, stat, errmsg);
-       print_msg_to_console(msg);
-       return_rc = E_NOTOK;
+        if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_QUERY_TAG,
+                              (xdrproc_t) xdr_remote_client_query_tag_args, (caddr_t) &args,
+                              (xdrproc_t) xdr_remote_client_query_tag_res,  (caddr_t) &remoteresult,
+                              TIMEOUT)) != RPC_SUCCESS)
+        {
+            clnt_stat_decode(stat, errmsg, sizeof(errmsg));
+            snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n",
+                     SUBNAME, (long) CLIENT_REMOTE_CLIENT_QUERY_TAG, stat, errmsg);
+            print_msg_to_console(msg);
+            return_rc = E_NOTOK;
 
-    } else {
+        }
+        else
+        {
 
-       if (remoteresult.remote_client_query_tag_res_u.outcome.valid) {
+            if (remoteresult.remote_client_query_tag_res_u.outcome.valid)
+            {
 
-          if (! no_headers) {
-             if (use_delimiter) {
-                 snprintf(msg, sizeof(msg), fmt_title_delim, "tag", "state", "exitcode", "exit signal");
-             } else {
-                 snprintf(msg, sizeof(msg), fmt_title, "tag", "state", "exitcode", "exit signal");
-             }
-             print_string_to_console(msg);
-          }
+                if (! no_headers)
+                {
+                    if (use_delimiter)
+                    {
+                        snprintf(msg, sizeof(msg), fmt_title_delim, "tag", "state", "exitcode", "exit signal");
+                    }
+                    else
+                    {
+                        snprintf(msg, sizeof(msg), fmt_title, "tag", "state", "exitcode", "exit signal");
+                    }
 
-          cmd_log_state_decode(remoteresult.remote_client_query_tag_res_u.outcome.state, state_string,  sizeof(state_string));
+                    print_string_to_console(msg);
+                }
 
-          if (use_delimiter) {
-             snprintf(msg, sizeof(msg), fmt_delim, tag,
-                                        state_string,
-                                        remoteresult.remote_client_query_tag_res_u.outcome.cmd_exit_code,
-                                        remoteresult.remote_client_query_tag_res_u.outcome.cmd_exit_signal);
-          } else {
-             snprintf(msg, sizeof(msg), fmt, tag,
-                                        state_string,
-                                        remoteresult.remote_client_query_tag_res_u.outcome.cmd_exit_code,
-                                        remoteresult.remote_client_query_tag_res_u.outcome.cmd_exit_signal);
-          }
-          print_string_to_console(msg);
+                cmd_log_state_decode(remoteresult.remote_client_query_tag_res_u.outcome.state, state_string,  sizeof(state_string));
 
-       } 
+                if (use_delimiter)
+                {
+                    snprintf(msg, sizeof(msg), fmt_delim, tag,
+                             state_string,
+                             remoteresult.remote_client_query_tag_res_u.outcome.cmd_exit_code,
+                             remoteresult.remote_client_query_tag_res_u.outcome.cmd_exit_signal);
+                }
+                else
+                {
+                    snprintf(msg, sizeof(msg), fmt, tag,
+                             state_string,
+                             remoteresult.remote_client_query_tag_res_u.outcome.cmd_exit_code,
+                             remoteresult.remote_client_query_tag_res_u.outcome.cmd_exit_signal);
+                }
+
+                print_string_to_console(msg);
+
+            }
+
+        }
+
+        if (remote_client->cl_auth != NULL)
+        {
+            auth_destroy(remote_client->cl_auth);
+        }
+
+        clnt_destroy(remote_client);
 
     }
 
-    if (remote_client->cl_auth != NULL) {
-       auth_destroy(remote_client->cl_auth);
-    }
-
-    clnt_destroy(remote_client);
-
-  }
-
-  return(return_rc);
-} 
+    return(return_rc);
+}
 
 /* -------------------------------------------------------------------------------- */
 /*                                                                                  */
@@ -734,81 +883,93 @@ int remote_client_query_tag(char         *remotehostname,
 /*                                                                                  */
 /* -------------------------------------------------------------------------------- */
 
-int remote_client_get_unique_ident(char         *remotehostname, 
-                                   bool_t       no_headers) {
+int remote_client_get_unique_ident(char         *remotehostname,
+                                   bool_t       no_headers)
+{
 
 #undef  SUBNAME
 #define SUBNAME "remote_get_unique_ident"
 
-  remote_client_get_unique_ident_args  args;
-  remote_client_get_unique_ident_res   remoteresult;
-  enum clnt_stat                       stat;
-  char                                 msg[MAX_MSG_LEN];
-  char                                 errmsg[MAX_MSG_LEN];
-  int                                  return_rc = E_OK;
-  CLIENT *                remote_client;
+    remote_client_get_unique_ident_args  args;
+    remote_client_get_unique_ident_res   remoteresult;
+    enum clnt_stat                       stat;
+    char                                 msg[MAX_MSG_LEN];
+    char                                 errmsg[MAX_MSG_LEN];
+    int                                  return_rc = E_OK;
+    CLIENT                 *remote_client;
 
-  /* Create a CLIENT data structure that reference the RPC
-     procedure DAF_PROG, version DAF_VERSION running on the
-     host specified by the 1st command line arg. */
+    /* Create a CLIENT data structure that reference the RPC
+       procedure DAF_PROG, version DAF_VERSION running on the
+       host specified by the 1st command line arg. */
 
-  remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");  
+    remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");
 
-  /* Make sure the create worked */
-  if (remote_client == (CLIENT *) NULL) {
+    /* Make sure the create worked */
+    if (remote_client == (CLIENT *) NULL)
+    {
 
-    snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
-    snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
-    print_msg_to_console(msg);
-    return_rc = E_NOTOK;
+        snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
+        snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
+        print_msg_to_console(msg);
+        return_rc = E_NOTOK;
 
-  } else {
+    }
+    else
+    {
 
-    memset(&args,         0, sizeof(args));
-    memset(&remoteresult, 0, sizeof(remoteresult));
+        memset(&args,         0, sizeof(args));
+        memset(&remoteresult, 0, sizeof(remoteresult));
 
-    args.msglevel = 0;
+        args.msglevel = 0;
 
-    if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_GET_UNIQUE_IDENT,
-                          (xdrproc_t) xdr_remote_client_get_unique_ident_args, (caddr_t) &args,
-                          (xdrproc_t) xdr_remote_client_get_unique_ident_res,  (caddr_t) &remoteresult,
-                          TIMEOUT)) != RPC_SUCCESS) {
-       clnt_stat_decode(stat, errmsg, sizeof(errmsg));
-       snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n", 
-                SUBNAME, (long) CLIENT_REMOTE_CLIENT_GET_UNIQUE_IDENT, stat, errmsg);
-       print_msg_to_console(msg);
-       return_rc = E_NOTOK;
+        if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_GET_UNIQUE_IDENT,
+                              (xdrproc_t) xdr_remote_client_get_unique_ident_args, (caddr_t) &args,
+                              (xdrproc_t) xdr_remote_client_get_unique_ident_res,  (caddr_t) &remoteresult,
+                              TIMEOUT)) != RPC_SUCCESS)
+        {
+            clnt_stat_decode(stat, errmsg, sizeof(errmsg));
+            snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n",
+                     SUBNAME, (long) CLIENT_REMOTE_CLIENT_GET_UNIQUE_IDENT, stat, errmsg);
+            print_msg_to_console(msg);
+            return_rc = E_NOTOK;
 
-    } else {
+        }
+        else
+        {
 
-       if (remoteresult.status == E_OK) {
+            if (remoteresult.status == E_OK)
+            {
 
-          if (! no_headers) {
-             print_string_to_console("Unique Ident\n");
-          }
+                if (! no_headers)
+                {
+                    print_string_to_console("Unique Ident\n");
+                }
 
-          print_string_to_console(remoteresult.remote_client_get_unique_ident_res_u.outcome.identstring);
-          print_string_to_console("\n");
- 
-        } else {
+                print_string_to_console(remoteresult.remote_client_get_unique_ident_res_u.outcome.identstring);
+                print_string_to_console("\n");
 
-          snprintf(msg, sizeof(msg), "problem getting unique ident from %s\n",remotehostname);
-          print_msg_to_console(msg); 
+            }
+            else
+            {
+
+                snprintf(msg, sizeof(msg), "problem getting unique ident from %s\n",remotehostname);
+                print_msg_to_console(msg);
+
+            }
 
         }
 
+        if (remote_client->cl_auth != NULL)
+        {
+            auth_destroy(remote_client->cl_auth);
+        }
+
+        clnt_destroy(remote_client);
+
     }
 
-    if (remote_client->cl_auth != NULL) {
-       auth_destroy(remote_client->cl_auth);
-    }
-
-    clnt_destroy(remote_client);
-
-  }
-
-  return(return_rc);
-} 
+    return(return_rc);
+}
 
 /* -------------------------------------------------------------------------------- */
 /*                                                                                  */
@@ -844,85 +1005,96 @@ int remote_client_get_unique_ident(char         *remotehostname,
 /*                                                                                  */
 /* -------------------------------------------------------------------------------- */
 
-int remote_client_query_ident(char         *remotehostname, 
-                              char         *identstring, 
+int remote_client_query_ident(char         *remotehostname,
+                              char         *identstring,
                               bool_t       no_headers,
                               bool_t       use_delimiter,
-                              char         *delimiter_string) {
+                              char         *delimiter_string)
+{
 
 #undef  SUBNAME
 #define SUBNAME "remote_client_query_ident"
 
-  remote_client_query_ident_args  args;
-  remote_client_query_ident_res   remoteresult;
-  enum clnt_stat                  stat;
-  char                            msg[MAX_MSG_LEN];
-  char                            errmsg[MAX_MSG_LEN];
-  int                             return_rc = E_OK;
-  CLIENT *                remote_client;
+    remote_client_query_ident_args  args;
+    remote_client_query_ident_res   remoteresult;
+    enum clnt_stat                  stat;
+    char                            msg[MAX_MSG_LEN];
+    char                            errmsg[MAX_MSG_LEN];
+    int                             return_rc = E_OK;
+    CLIENT                 *remote_client;
 
-  /* Create a CLIENT data structure that reference the RPC
-     procedure DAF_PROG, version DAF_VERSION running on the
-     host specified by the 1st command line arg. */
+    /* Create a CLIENT data structure that reference the RPC
+       procedure DAF_PROG, version DAF_VERSION running on the
+       host specified by the 1st command line arg. */
 
-  remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");  
+    remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");
 
-  /* Make sure the create worked */
-  if (remote_client == (CLIENT *) NULL) {
+    /* Make sure the create worked */
+    if (remote_client == (CLIENT *) NULL)
+    {
 
-    snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
-    snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
-    print_msg_to_console(msg);
-    return_rc = E_NOTOK;
+        snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
+        snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
+        print_msg_to_console(msg);
+        return_rc = E_NOTOK;
 
-  } else {
+    }
+    else
+    {
 
-    memset(&args,         0, sizeof(args));
-    memset(&remoteresult, 0, sizeof(remoteresult));
+        memset(&args,         0, sizeof(args));
+        memset(&remoteresult, 0, sizeof(remoteresult));
 
-    args.identstring  = identstring;
-    args.msglevel = 0;
+        args.identstring  = identstring;
+        args.msglevel = 0;
 
-    if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_QUERY_IDENT,
-                          (xdrproc_t) xdr_remote_client_query_ident_args, (caddr_t) &args,
-                          (xdrproc_t) xdr_remote_client_query_ident_res,  (caddr_t) &remoteresult,
-                          TIMEOUT)) != RPC_SUCCESS) {
-       clnt_stat_decode(stat, errmsg, sizeof(errmsg));
-       snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n", 
-                SUBNAME, (long) CLIENT_REMOTE_CLIENT_QUERY_IDENT, stat, errmsg);
-       print_msg_to_console(msg);
-       return_rc = E_NOTOK;
+        if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_QUERY_IDENT,
+                              (xdrproc_t) xdr_remote_client_query_ident_args, (caddr_t) &args,
+                              (xdrproc_t) xdr_remote_client_query_ident_res,  (caddr_t) &remoteresult,
+                              TIMEOUT)) != RPC_SUCCESS)
+        {
+            clnt_stat_decode(stat, errmsg, sizeof(errmsg));
+            snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n",
+                     SUBNAME, (long) CLIENT_REMOTE_CLIENT_QUERY_IDENT, stat, errmsg);
+            print_msg_to_console(msg);
+            return_rc = E_NOTOK;
 
-    } else {
+        }
+        else
+        {
 
-       if (remoteresult.status == E_OK) {
+            if (remoteresult.status == E_OK)
+            {
 
-           print_cmd_log_fragment(&remoteresult.remote_client_query_ident_res_u.outcome.cmd_log_fragment, no_headers, use_delimiter, delimiter_string);
- 
-           deallocate_cmd_log_fragment(&remoteresult.remote_client_query_ident_res_u.outcome.cmd_log_fragment);
+                print_cmd_log_fragment(&remoteresult.remote_client_query_ident_res_u.outcome.cmd_log_fragment, no_headers, use_delimiter, delimiter_string);
 
-        } else {
+                deallocate_cmd_log_fragment(&remoteresult.remote_client_query_ident_res_u.outcome.cmd_log_fragment);
 
-          snprintf(msg, sizeof(msg), "problem determinting commands with ident %s on %s\n", identstring, remotehostname);
-          print_msg_to_console(msg); 
+            }
+            else
+            {
 
-/*          snprintf(msg, sizeof(msg), "ident %s is not in use on %s\n", identstring, remotehostname);
-          print_msg_to_console(msg); */
+                snprintf(msg, sizeof(msg), "problem determinting commands with ident %s on %s\n", identstring, remotehostname);
+                print_msg_to_console(msg);
+
+                /*          snprintf(msg, sizeof(msg), "ident %s is not in use on %s\n", identstring, remotehostname);
+                          print_msg_to_console(msg); */
+
+            }
 
         }
 
+        if (remote_client->cl_auth != NULL)
+        {
+            auth_destroy(remote_client->cl_auth);
+        }
+
+        clnt_destroy(remote_client);
+
     }
 
-    if (remote_client->cl_auth != NULL) {
-       auth_destroy(remote_client->cl_auth);
-    }
-
-    clnt_destroy(remote_client);
-
-  }
-
-  return(return_rc);
-} 
+    return(return_rc);
+}
 
 /* -------------------------------------------------------------------------------- */
 /*                                                                                  */
@@ -967,114 +1139,135 @@ int remote_client_query_ident(char         *remotehostname,
 /*                                                                                  */
 /* -------------------------------------------------------------------------------- */
 
-int remote_client_query_cmds(char         *remotehostname, 
+int remote_client_query_cmds(char         *remotehostname,
                              bool_t       no_headers,
                              bool_t       use_delimiter,
-                             char         *delimiter_string) {
+                             char         *delimiter_string)
+{
 
 #undef  SUBNAME
 #define SUBNAME "remote_client_query_cmds"
 
-  remote_client_query_cmds_args  args;
-  remote_client_query_cmds_res   remoteresult;
-  enum clnt_stat                 stat;
-  char                           msg[MAX_MSG_LEN];
-  char                           errmsg[MAX_MSG_LEN];
-  int                            return_rc = E_OK;
+    remote_client_query_cmds_args  args;
+    remote_client_query_cmds_res   remoteresult;
+    enum clnt_stat                 stat;
+    char                           msg[MAX_MSG_LEN];
+    char                           errmsg[MAX_MSG_LEN];
+    int                            return_rc = E_OK;
 
-  char                          *fmt_title = "%12s  %12s  %12s  %18s  %18s\n";
-  char                          *fmt       = "%12d  %12d  %12d  %18d  %18d\n";
-  char                          *fmt_title_delim = "%s%s%s%s%s%s%s%s%s\n";
-  char                          *fmt_delim       = "%d%s%d%s%d%s%d%s%d\n";
-  CLIENT *                remote_client;
+    char                          *fmt_title = "%12s  %12s  %12s  %18s  %18s\n";
+    char                          *fmt       = "%12d  %12d  %12d  %18d  %18d\n";
+    char                          *fmt_title_delim = "%s%s%s%s%s%s%s%s%s\n";
+    char                          *fmt_delim       = "%d%s%d%s%d%s%d%s%d\n";
+    CLIENT                 *remote_client;
 
-  /* Create a CLIENT data structure that reference the RPC
-     procedure DAF_PROG, version DAF_VERSION running on the
-     host specified by the 1st command line arg. */
+    /* Create a CLIENT data structure that reference the RPC
+       procedure DAF_PROG, version DAF_VERSION running on the
+       host specified by the 1st command line arg. */
 
-  remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");  
+    remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");
 
-  /* Make sure the create worked */
-  if (remote_client == (CLIENT *) NULL) {
+    /* Make sure the create worked */
+    if (remote_client == (CLIENT *) NULL)
+    {
 
-    snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
-    snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
-    print_msg_to_console(msg);
-    return_rc = E_NOTOK;
+        snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
+        snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
+        print_msg_to_console(msg);
+        return_rc = E_NOTOK;
 
-  } else {
+    }
+    else
+    {
 
-    memset(&args,         0, sizeof(args));
-    memset(&remoteresult, 0, sizeof(remoteresult));
+        memset(&args,         0, sizeof(args));
+        memset(&remoteresult, 0, sizeof(remoteresult));
 
-    args.msglevel = 0;
+        args.msglevel = 0;
 
-    if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_QUERY_CMDS,
-                          (xdrproc_t) xdr_remote_client_query_cmds_args, (caddr_t) &args,
-                          (xdrproc_t) xdr_remote_client_query_cmds_res,  (caddr_t) &remoteresult,
-                          TIMEOUT)) != RPC_SUCCESS) {
-       clnt_stat_decode(stat, errmsg, sizeof(errmsg));
-       snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n", 
-                SUBNAME, (long) CLIENT_REMOTE_CLIENT_QUERY_CMDS, stat, errmsg);
-       print_msg_to_console(msg);
-       return_rc = E_NOTOK;
+        if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_QUERY_CMDS,
+                              (xdrproc_t) xdr_remote_client_query_cmds_args, (caddr_t) &args,
+                              (xdrproc_t) xdr_remote_client_query_cmds_res,  (caddr_t) &remoteresult,
+                              TIMEOUT)) != RPC_SUCCESS)
+        {
+            clnt_stat_decode(stat, errmsg, sizeof(errmsg));
+            snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n",
+                     SUBNAME, (long) CLIENT_REMOTE_CLIENT_QUERY_CMDS, stat, errmsg);
+            print_msg_to_console(msg);
+            return_rc = E_NOTOK;
 
-    } else {
+        }
+        else
+        {
 
-       if (remoteresult.status == E_OK) {     /* valid or result ?? <<<<<<<<<<< */
+            if (remoteresult.status == E_OK)       /* valid or result ?? <<<<<<<<<<< */
+            {
 
-          if (! no_headers) {
-             if (use_delimiter) {
-                 snprintf(msg, sizeof(msg), fmt_title_delim, "initialised", "running", "completed", "completed_good", "completed_bad");
-             } else {
-                 snprintf(msg, sizeof(msg), fmt_title, "initialised", "running", "completed", "completed_good", "completed_bad");
-             }
-             print_string_to_console(msg);
-          }
-          if (use_delimiter) {
-             snprintf(msg, sizeof(msg), fmt_delim, 
-                                        remoteresult.remote_client_query_cmds_res_u.outcome.num_CMD_INITIALISED_commands,
-                                        delimiter_string,
-                                        remoteresult.remote_client_query_cmds_res_u.outcome.num_CMD_RUNNING_commands,
-                                        delimiter_string,
-                                        remoteresult.remote_client_query_cmds_res_u.outcome.num_CMD_COMPLETED_commands,
-                                        delimiter_string,
-                                        remoteresult.remote_client_query_cmds_res_u.outcome.num_CMD_COMPLETED_good_status_commands,
-                                        delimiter_string,
-                                        remoteresult.remote_client_query_cmds_res_u.outcome.num_CMD_COMPLETED_bad_status_commands);
-          } else {
-             snprintf(msg, sizeof(msg), fmt,
-                                        remoteresult.remote_client_query_cmds_res_u.outcome.num_CMD_INITIALISED_commands,
-                                        remoteresult.remote_client_query_cmds_res_u.outcome.num_CMD_RUNNING_commands,
-                                        remoteresult.remote_client_query_cmds_res_u.outcome.num_CMD_COMPLETED_commands,
-                                        remoteresult.remote_client_query_cmds_res_u.outcome.num_CMD_COMPLETED_good_status_commands,
-                                        remoteresult.remote_client_query_cmds_res_u.outcome.num_CMD_COMPLETED_bad_status_commands);
-          }
-          print_string_to_console(msg);
+                if (! no_headers)
+                {
+                    if (use_delimiter)
+                    {
+                        snprintf(msg, sizeof(msg), fmt_title_delim, "initialised", "running", "completed", "completed_good", "completed_bad");
+                    }
+                    else
+                    {
+                        snprintf(msg, sizeof(msg), fmt_title, "initialised", "running", "completed", "completed_good", "completed_bad");
+                    }
+
+                    print_string_to_console(msg);
+                }
+
+                if (use_delimiter)
+                {
+                    snprintf(msg, sizeof(msg), fmt_delim,
+                             remoteresult.remote_client_query_cmds_res_u.outcome.num_CMD_INITIALISED_commands,
+                             delimiter_string,
+                             remoteresult.remote_client_query_cmds_res_u.outcome.num_CMD_RUNNING_commands,
+                             delimiter_string,
+                             remoteresult.remote_client_query_cmds_res_u.outcome.num_CMD_COMPLETED_commands,
+                             delimiter_string,
+                             remoteresult.remote_client_query_cmds_res_u.outcome.num_CMD_COMPLETED_good_status_commands,
+                             delimiter_string,
+                             remoteresult.remote_client_query_cmds_res_u.outcome.num_CMD_COMPLETED_bad_status_commands);
+                }
+                else
+                {
+                    snprintf(msg, sizeof(msg), fmt,
+                             remoteresult.remote_client_query_cmds_res_u.outcome.num_CMD_INITIALISED_commands,
+                             remoteresult.remote_client_query_cmds_res_u.outcome.num_CMD_RUNNING_commands,
+                             remoteresult.remote_client_query_cmds_res_u.outcome.num_CMD_COMPLETED_commands,
+                             remoteresult.remote_client_query_cmds_res_u.outcome.num_CMD_COMPLETED_good_status_commands,
+                             remoteresult.remote_client_query_cmds_res_u.outcome.num_CMD_COMPLETED_bad_status_commands);
+                }
+
+                print_string_to_console(msg);
 
 
-        } else {
+            }
+            else
+            {
 
-          snprintf(msg, sizeof(msg), "problem running query cmds on %s\n", remotehostname);
-          print_msg_to_console(msg); 
+                snprintf(msg, sizeof(msg), "problem running query cmds on %s\n", remotehostname);
+                print_msg_to_console(msg);
 
-/*          snprintf(msg, sizeof(msg), "ident %s is not in use on %s\n", identstring, remotehostname);
-          print_msg_to_console(msg); */
+                /*          snprintf(msg, sizeof(msg), "ident %s is not in use on %s\n", identstring, remotehostname);
+                          print_msg_to_console(msg); */
+
+            }
 
         }
 
+        if (remote_client->cl_auth != NULL)
+        {
+            auth_destroy(remote_client->cl_auth);
+        }
+
+        clnt_destroy(remote_client);
+
     }
 
-    if (remote_client->cl_auth != NULL) {
-       auth_destroy(remote_client->cl_auth);
-    }
-
-    clnt_destroy(remote_client);
-
-  }
-
-  return(return_rc);
-} 
+    return(return_rc);
+}
 
 /* -------------------------------------------------------------------------------- */
 /*                                                                                  */
@@ -1104,93 +1297,109 @@ int remote_client_query_cmds(char         *remotehostname,
 /* be reported in the "-query cmdlog" or "-query cmds" operations                   */
 /* -------------------------------------------------------------------------------- */
 
-int remote_client_clear_tag(char *remotehostname, Iu32 tag) { 
+int remote_client_clear_tag(char *remotehostname, Iu32 tag)
+{
 
 #undef  SUBNAME
 #define SUBNAME "remote_client_clear_tag"
 
-  remote_client_clear_tag_args  args;
-  remote_client_clear_tag_res   remoteresult;
-  enum clnt_stat                stat;
-  char                          msg[MAX_MSG_LEN];
-  char                          errmsg[MAX_MSG_LEN];
-  int                           return_rc = E_OK;
-  CLIENT *                remote_client;
+    remote_client_clear_tag_args  args;
+    remote_client_clear_tag_res   remoteresult;
+    enum clnt_stat                stat;
+    char                          msg[MAX_MSG_LEN];
+    char                          errmsg[MAX_MSG_LEN];
+    int                           return_rc = E_OK;
+    CLIENT                 *remote_client;
 
-  /* Create a CLIENT data structure that reference the RPC
-     procedure DAF_PROG, version DAF_VERSION running on the
-     host specified by the 1st command line arg. */
+    /* Create a CLIENT data structure that reference the RPC
+       procedure DAF_PROG, version DAF_VERSION running on the
+       host specified by the 1st command line arg. */
 
-  remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");  
+    remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");
 
-  /* Make sure the create worked */
-  if (remote_client == (CLIENT *) NULL) {
+    /* Make sure the create worked */
+    if (remote_client == (CLIENT *) NULL)
+    {
 
-    snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
-    snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
-    print_msg_to_console(msg);
-    return_rc = E_NOTOK;
+        snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
+        snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
+        print_msg_to_console(msg);
+        return_rc = E_NOTOK;
 
-  } else {
+    }
+    else
+    {
 
-    memset(&args,      0, sizeof(args));
-    memset(&remoteresult, 0, sizeof(remoteresult));
- 
-    args.tag      = tag;
-    args.msglevel = 0;
+        memset(&args,      0, sizeof(args));
+        memset(&remoteresult, 0, sizeof(remoteresult));
 
-    if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_CLEAR_TAG,
-                          (xdrproc_t) xdr_remote_client_clear_tag_args, (caddr_t) &args,
-                          (xdrproc_t) xdr_remote_client_clear_tag_res,  (caddr_t) &remoteresult,
-                          TIMEOUT)) != RPC_SUCCESS) {
-       clnt_stat_decode(stat, errmsg, sizeof(errmsg));
-       snprintf(msg, sizeof(msg), "%s: clnt_call() for proc %lu failed - status = %d (%s)\n", 
-                SUBNAME, (long) CLIENT_REMOTE_CLIENT_CLEAR_TAG, stat, errmsg);
-       print_msg_to_console(msg);
-       return_rc = E_NOTOK;
+        args.tag      = tag;
+        args.msglevel = 0;
 
-    } else {
+        if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_CLEAR_TAG,
+                              (xdrproc_t) xdr_remote_client_clear_tag_args, (caddr_t) &args,
+                              (xdrproc_t) xdr_remote_client_clear_tag_res,  (caddr_t) &remoteresult,
+                              TIMEOUT)) != RPC_SUCCESS)
+        {
+            clnt_stat_decode(stat, errmsg, sizeof(errmsg));
+            snprintf(msg, sizeof(msg), "%s: clnt_call() for proc %lu failed - status = %d (%s)\n",
+                     SUBNAME, (long) CLIENT_REMOTE_CLIENT_CLEAR_TAG, stat, errmsg);
+            print_msg_to_console(msg);
+            return_rc = E_NOTOK;
 
-       if (remoteresult.remote_client_clear_tag_res_u.outcome.valid_clear == REMOTE_CLEAR_TAG_OK) {
+        }
+        else
+        {
 
-          snprintf(msg, sizeof(msg), "Tag %d: cleared ok\n", tag);
-          print_msg_to_console(msg);
+            if (remoteresult.remote_client_clear_tag_res_u.outcome.valid_clear == REMOTE_CLEAR_TAG_OK)
+            {
 
-       } else {
+                snprintf(msg, sizeof(msg), "Tag %d: cleared ok\n", tag);
+                print_msg_to_console(msg);
 
-          return_rc = E_NOTOK;
+            }
+            else
+            {
 
-          if (remoteresult.remote_client_clear_tag_res_u.outcome.valid_clear == REMOTE_CLEAR_TAG_DOES_NOT_EXIST) {
+                return_rc = E_NOTOK;
 
-             snprintf(msg, sizeof(msg), "Tag %d was not in use on %s\n", tag, remotehostname);
-             print_msg_to_console(msg);
-     
-          } else if (remoteresult.remote_client_clear_tag_res_u.outcome.valid_clear == REMOTE_CLEAR_TAG_NOT_IN_COMPLETED_STATE) {
+                if (remoteresult.remote_client_clear_tag_res_u.outcome.valid_clear == REMOTE_CLEAR_TAG_DOES_NOT_EXIST)
+                {
 
-             snprintf(msg, sizeof(msg), "Tag %d was not in completed state on %s\n", tag, remotehostname);
-             print_msg_to_console(msg);
+                    snprintf(msg, sizeof(msg), "Tag %d was not in use on %s\n", tag, remotehostname);
+                    print_msg_to_console(msg);
 
-          } else {
+                }
+                else if (remoteresult.remote_client_clear_tag_res_u.outcome.valid_clear == REMOTE_CLEAR_TAG_NOT_IN_COMPLETED_STATE)
+                {
 
-             snprintf(msg, sizeof(msg), "Tag %d was not cleared on %s\n", tag, remotehostname);
-             print_msg_to_console(msg);
+                    snprintf(msg, sizeof(msg), "Tag %d was not in completed state on %s\n", tag, remotehostname);
+                    print_msg_to_console(msg);
 
-          }
+                }
+                else
+                {
 
-       }
+                    snprintf(msg, sizeof(msg), "Tag %d was not cleared on %s\n", tag, remotehostname);
+                    print_msg_to_console(msg);
+
+                }
+
+            }
+
+        }
+
+        if (remote_client->cl_auth != NULL)
+        {
+            auth_destroy(remote_client->cl_auth);
+        }
+
+        clnt_destroy(remote_client);
 
     }
 
-    if (remote_client->cl_auth != NULL) {
-       auth_destroy(remote_client->cl_auth);
-    }
-
-    clnt_destroy(remote_client);
-
-  }
-
-  return(return_rc);
-} 
+    return(return_rc);
+}
 
 /* -------------------------------------------------------------------------------- */
 /*                                                                                  */
@@ -1221,88 +1430,102 @@ int remote_client_clear_tag(char *remotehostname, Iu32 tag) {
 /* be reported in the "-query cmdlog" or "-query cmds" operations                   */
 /* -------------------------------------------------------------------------------- */
 
-int remote_client_clear_ident(char *remotehostname, char *identstring) { 
+int remote_client_clear_ident(char *remotehostname, char *identstring)
+{
 
 #undef  SUBNAME
 #define SUBNAME "remote_client_clear_ident"
 
-  remote_client_clear_ident_args  args;
-  remote_client_clear_ident_res   remoteresult;
-  enum clnt_stat                  stat;
-  char                            msg[MAX_MSG_LEN];
-  char                            errmsg[MAX_MSG_LEN];
-  int                             return_rc = E_OK;
-  CLIENT *                remote_client;
+    remote_client_clear_ident_args  args;
+    remote_client_clear_ident_res   remoteresult;
+    enum clnt_stat                  stat;
+    char                            msg[MAX_MSG_LEN];
+    char                            errmsg[MAX_MSG_LEN];
+    int                             return_rc = E_OK;
+    CLIENT                 *remote_client;
 
-  /* Create a CLIENT data structure that reference the RPC
-     procedure DAF_PROG, version DAF_VERSION running on the
-     host specified by the 1st command line arg. */
+    /* Create a CLIENT data structure that reference the RPC
+       procedure DAF_PROG, version DAF_VERSION running on the
+       host specified by the 1st command line arg. */
 
-  remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");  
+    remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");
 
-  /* Make sure the create worked */
-  if (remote_client == (CLIENT *) NULL) {
+    /* Make sure the create worked */
+    if (remote_client == (CLIENT *) NULL)
+    {
 
-    snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
-    snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
-    print_msg_to_console(msg);
-    return_rc = E_NOTOK;
+        snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
+        snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
+        print_msg_to_console(msg);
+        return_rc = E_NOTOK;
 
-  } else {
+    }
+    else
+    {
 
-    memset(&args,      0, sizeof(args));
-    memset(&remoteresult, 0, sizeof(remoteresult));
- 
-    args.identstring    = identstring;
-    args.msglevel = 0;
+        memset(&args,      0, sizeof(args));
+        memset(&remoteresult, 0, sizeof(remoteresult));
 
-    if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_CLEAR_IDENT,
-                          (xdrproc_t) xdr_remote_client_clear_ident_args, (caddr_t) &args,
-                          (xdrproc_t) xdr_remote_client_clear_ident_res,  (caddr_t) &remoteresult,
-                          TIMEOUT)) != RPC_SUCCESS) {
-       clnt_stat_decode(stat, errmsg, sizeof(errmsg));
-       snprintf(msg, sizeof(msg), "%s: clnt_call() for proc %lu failed - status = %d (%s)\n", 
-                SUBNAME, (long) CLIENT_REMOTE_CLIENT_CLEAR_IDENT, stat, errmsg);
-       print_msg_to_console(msg);
-       return_rc = E_NOTOK;
+        args.identstring    = identstring;
+        args.msglevel = 0;
 
-    } else {
+        if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_CLEAR_IDENT,
+                              (xdrproc_t) xdr_remote_client_clear_ident_args, (caddr_t) &args,
+                              (xdrproc_t) xdr_remote_client_clear_ident_res,  (caddr_t) &remoteresult,
+                              TIMEOUT)) != RPC_SUCCESS)
+        {
+            clnt_stat_decode(stat, errmsg, sizeof(errmsg));
+            snprintf(msg, sizeof(msg), "%s: clnt_call() for proc %lu failed - status = %d (%s)\n",
+                     SUBNAME, (long) CLIENT_REMOTE_CLIENT_CLEAR_IDENT, stat, errmsg);
+            print_msg_to_console(msg);
+            return_rc = E_NOTOK;
 
-       if (remoteresult.remote_client_clear_ident_res_u.outcome.valid_clear == REMOTE_CLEAR_IDENT_OK) {
+        }
+        else
+        {
 
-          snprintf(msg, sizeof(msg), "ident %s: cleared ok\n", identstring);
-          print_msg_to_console(msg);
+            if (remoteresult.remote_client_clear_ident_res_u.outcome.valid_clear == REMOTE_CLEAR_IDENT_OK)
+            {
 
-       } else {
+                snprintf(msg, sizeof(msg), "ident %s: cleared ok\n", identstring);
+                print_msg_to_console(msg);
 
-          return_rc = E_NOTOK;
+            }
+            else
+            {
 
-          if (remoteresult.remote_client_clear_ident_res_u.outcome.valid_clear == REMOTE_CLEAR_IDENT_NOT_IN_COMPLETED_STATE) {
+                return_rc = E_NOTOK;
 
-             snprintf(msg, sizeof(msg), "Some commands with ident %s were not in completed state on %s\n", identstring, remotehostname);
-             print_msg_to_console(msg);
+                if (remoteresult.remote_client_clear_ident_res_u.outcome.valid_clear == REMOTE_CLEAR_IDENT_NOT_IN_COMPLETED_STATE)
+                {
 
-          } else {
+                    snprintf(msg, sizeof(msg), "Some commands with ident %s were not in completed state on %s\n", identstring, remotehostname);
+                    print_msg_to_console(msg);
 
-             snprintf(msg, sizeof(msg), "ident %s was not cleared on %s\n", identstring, remotehostname);
-             print_msg_to_console(msg);
+                }
+                else
+                {
 
-          }
+                    snprintf(msg, sizeof(msg), "ident %s was not cleared on %s\n", identstring, remotehostname);
+                    print_msg_to_console(msg);
 
-       }
+                }
+
+            }
+
+        }
+
+        if (remote_client->cl_auth != NULL)
+        {
+            auth_destroy(remote_client->cl_auth);
+        }
+
+        clnt_destroy(remote_client);
 
     }
 
-    if (remote_client->cl_auth != NULL) {
-       auth_destroy(remote_client->cl_auth);
-    }
-
-    clnt_destroy(remote_client);
-
-  }
-
-  return(return_rc);
-} 
+    return(return_rc);
+}
 
 /* -------------------------------------------------------------------------------- */
 /*                                                                                  */
@@ -1330,78 +1553,89 @@ int remote_client_clear_ident(char *remotehostname, char *identstring) {
 /* be reported in the "-query cmdlog" or "-query cmds" operations                   */
 /* -------------------------------------------------------------------------------- */
 
-int remote_client_clear_alltags(char *remotehostname) { 
+int remote_client_clear_alltags(char *remotehostname)
+{
 
 #undef  SUBNAME
 #define SUBNAME "remote_client_clear_alltags"
 
-  remote_client_clear_alltags_args  args;
-  remote_client_clear_alltags_res   remoteresult;
-  enum clnt_stat                    stat;
-  char                              msg[MAX_MSG_LEN];
-  char                              errmsg[MAX_MSG_LEN];
-  int                               return_rc = E_OK;
-  CLIENT *                remote_client;
+    remote_client_clear_alltags_args  args;
+    remote_client_clear_alltags_res   remoteresult;
+    enum clnt_stat                    stat;
+    char                              msg[MAX_MSG_LEN];
+    char                              errmsg[MAX_MSG_LEN];
+    int                               return_rc = E_OK;
+    CLIENT                 *remote_client;
 
-  /* Create a CLIENT data structure that reference the RPC
-     procedure DAF_PROG, version DAF_VERSION running on the
-     host specified by the 1st command line arg. */
+    /* Create a CLIENT data structure that reference the RPC
+       procedure DAF_PROG, version DAF_VERSION running on the
+       host specified by the 1st command line arg. */
 
-  remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");  
+    remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");
 
-  /* Make sure the create worked */
-  if (remote_client == (CLIENT *) NULL) {
+    /* Make sure the create worked */
+    if (remote_client == (CLIENT *) NULL)
+    {
 
-    snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
-    snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
-    print_msg_to_console(msg);
-    return_rc = E_NOTOK;
+        snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
+        snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
+        print_msg_to_console(msg);
+        return_rc = E_NOTOK;
 
-  } else {
+    }
+    else
+    {
 
-    memset(&args,      0, sizeof(args));
-    memset(&remoteresult, 0, sizeof(remoteresult));
+        memset(&args,      0, sizeof(args));
+        memset(&remoteresult, 0, sizeof(remoteresult));
 
-    args.msglevel = 0;
- 
-    if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_CLEAR_ALLTAGS,
-                          (xdrproc_t) xdr_remote_client_clear_alltags_args, (caddr_t) &args,
-                          (xdrproc_t) xdr_remote_client_clear_alltags_res,  (caddr_t) &remoteresult,
-                          TIMEOUT)) != RPC_SUCCESS) {
-       clnt_stat_decode(stat, errmsg, sizeof(errmsg));
-       snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n", 
-                SUBNAME, (long) CLIENT_REMOTE_CLIENT_CLEAR_ALLTAGS, stat, errmsg);
-       print_msg_to_console(msg);
-       return_rc = E_NOTOK;
+        args.msglevel = 0;
 
-    } else {
+        if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_CLEAR_ALLTAGS,
+                              (xdrproc_t) xdr_remote_client_clear_alltags_args, (caddr_t) &args,
+                              (xdrproc_t) xdr_remote_client_clear_alltags_res,  (caddr_t) &remoteresult,
+                              TIMEOUT)) != RPC_SUCCESS)
+        {
+            clnt_stat_decode(stat, errmsg, sizeof(errmsg));
+            snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n",
+                     SUBNAME, (long) CLIENT_REMOTE_CLIENT_CLEAR_ALLTAGS, stat, errmsg);
+            print_msg_to_console(msg);
+            return_rc = E_NOTOK;
 
-       if (remoteresult.remote_client_clear_alltags_res_u.outcome.valid_clear == REMOTE_CLEAR_TAG_OK) {
+        }
+        else
+        {
 
-          snprintf(msg, sizeof(msg), "All tags cleared ok\n");
-          print_msg_to_console(msg);
+            if (remoteresult.remote_client_clear_alltags_res_u.outcome.valid_clear == REMOTE_CLEAR_TAG_OK)
+            {
 
-       } else {
+                snprintf(msg, sizeof(msg), "All tags cleared ok\n");
+                print_msg_to_console(msg);
 
-          return_rc = E_NOTOK;
+            }
+            else
+            {
 
-          snprintf(msg, sizeof(msg), "One more more tags were not cleared on %s\n", remotehostname);
-          print_msg_to_console(msg);
+                return_rc = E_NOTOK;
 
-       }
+                snprintf(msg, sizeof(msg), "One more more tags were not cleared on %s\n", remotehostname);
+                print_msg_to_console(msg);
+
+            }
+
+        }
+
+        if (remote_client->cl_auth != NULL)
+        {
+            auth_destroy(remote_client->cl_auth);
+        }
+
+        clnt_destroy(remote_client);
 
     }
 
-    if (remote_client->cl_auth != NULL) {
-       auth_destroy(remote_client->cl_auth);
-    }
-
-    clnt_destroy(remote_client);
-
-  }
-
-  return(return_rc);
-} 
+    return(return_rc);
+}
 
 /* -------------------------------------------------------------------------------- */
 /*                                                                                  */
@@ -1440,80 +1674,91 @@ int remote_client_clear_alltags(char *remotehostname) {
 int remote_client_query_alltags(char *remotehostname,
                                 bool_t        no_headers,
                                 bool_t        use_delimiter,
-                                char          *delimiter_string) {
+                                char          *delimiter_string)
+{
 
 #undef  SUBNAME
 #define SUBNAME "remote_client_query_alltags"
 
-  remote_client_query_alltags_args  args;
-  remote_client_query_alltags_res   remoteresult;
-  enum clnt_stat                    stat;
-  char                              msg[MAX_MSG_LEN];
-  char                              errmsg[MAX_MSG_LEN];
-  int                               return_rc = E_OK;
-  CLIENT *                remote_client;
+    remote_client_query_alltags_args  args;
+    remote_client_query_alltags_res   remoteresult;
+    enum clnt_stat                    stat;
+    char                              msg[MAX_MSG_LEN];
+    char                              errmsg[MAX_MSG_LEN];
+    int                               return_rc = E_OK;
+    CLIENT                 *remote_client;
 
-  /* Create a CLIENT data structure that reference the RPC
-     procedure DAF_PROG, version DAF_VERSION running on the
-     host specified by the 1st command line arg. */
+    /* Create a CLIENT data structure that reference the RPC
+       procedure DAF_PROG, version DAF_VERSION running on the
+       host specified by the 1st command line arg. */
 
-  remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");  
+    remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");
 
-  /* Make sure the create worked */
-  if (remote_client == (CLIENT *) NULL) {
+    /* Make sure the create worked */
+    if (remote_client == (CLIENT *) NULL)
+    {
 
-    snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
-    snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
-    print_msg_to_console(msg);
-    return_rc = E_NOTOK;
+        snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
+        snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
+        print_msg_to_console(msg);
+        return_rc = E_NOTOK;
 
-  } else {
+    }
+    else
+    {
 
-    memset(&args,         0, sizeof(args));
-    memset(&remoteresult, 0, sizeof(remoteresult));
- 
-    args.msglevel = 0;
+        memset(&args,         0, sizeof(args));
+        memset(&remoteresult, 0, sizeof(remoteresult));
 
-    if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_QUERY_ALLTAGS,
-                          (xdrproc_t) xdr_remote_client_query_alltags_args, (caddr_t) &args,
-                          (xdrproc_t) xdr_remote_client_query_alltags_res,  (caddr_t) &remoteresult,
-                          TIMEOUT)) != RPC_SUCCESS) {
-       clnt_stat_decode(stat, errmsg, sizeof(errmsg));
-       snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n", SUBNAME, (long) CLIENT_REMOTE_CLIENT_QUERY_ALLTAGS, stat, errmsg);
-       print_msg_to_console(msg);
-       return_rc = E_NOTOK;
+        args.msglevel = 0;
 
-    } else {
+        if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_QUERY_ALLTAGS,
+                              (xdrproc_t) xdr_remote_client_query_alltags_args, (caddr_t) &args,
+                              (xdrproc_t) xdr_remote_client_query_alltags_res,  (caddr_t) &remoteresult,
+                              TIMEOUT)) != RPC_SUCCESS)
+        {
+            clnt_stat_decode(stat, errmsg, sizeof(errmsg));
+            snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n", SUBNAME, (long) CLIENT_REMOTE_CLIENT_QUERY_ALLTAGS, stat, errmsg);
+            print_msg_to_console(msg);
+            return_rc = E_NOTOK;
 
-       if (remoteresult.status == E_OK) {
+        }
+        else
+        {
 
-           print_cmd_log_fragment(&remoteresult.remote_client_query_alltags_res_u.outcome.cmd_log_fragment, no_headers, use_delimiter, delimiter_string);
-           
-           deallocate_cmd_log_fragment(&remoteresult.remote_client_query_alltags_res_u.outcome.cmd_log_fragment);
+            if (remoteresult.status == E_OK)
+            {
 
-/* what if there are lots of tags and we exceed the UDP/TCP packet limit ? */
+                print_cmd_log_fragment(&remoteresult.remote_client_query_alltags_res_u.outcome.cmd_log_fragment, no_headers, use_delimiter, delimiter_string);
 
-       } else {
+                deallocate_cmd_log_fragment(&remoteresult.remote_client_query_alltags_res_u.outcome.cmd_log_fragment);
 
-          return_rc = E_NOTOK;
+                /* what if there are lots of tags and we exceed the UDP/TCP packet limit ? */
 
-          snprintf(msg, sizeof(msg), "Problem with query alltags on %s\n", remotehostname);
-          print_msg_to_console(msg);
+            }
+            else
+            {
 
-       }
+                return_rc = E_NOTOK;
+
+                snprintf(msg, sizeof(msg), "Problem with query alltags on %s\n", remotehostname);
+                print_msg_to_console(msg);
+
+            }
+
+        }
+
+        if (remote_client->cl_auth != NULL)
+        {
+            auth_destroy(remote_client->cl_auth);
+        }
+
+        clnt_destroy(remote_client);
 
     }
 
-    if (remote_client->cl_auth != NULL) {
-       auth_destroy(remote_client->cl_auth);
-    }
-
-    clnt_destroy(remote_client);
-
-  }
-
-  return(return_rc);
-} 
+    return(return_rc);
+}
 
 /* -------------------------------------------------------------------------------- */
 /*                                                                                  */
@@ -1544,92 +1789,108 @@ int remote_client_query_alltags(char *remotehostname,
 /*  that a signal9 was used to terminate it.                                        */
 /* -------------------------------------------------------------------------------- */
 
-int remote_client_cancel_tag(char *remotehostname, Iu32 tag) { 
+int remote_client_cancel_tag(char *remotehostname, Iu32 tag)
+{
 
 #undef  SUBNAME
 #define SUBNAME "remote_client_cancel_tag"
 
-  remote_client_cancel_tag_args  args;
-  remote_client_cancel_tag_res   remoteresult;
-  enum clnt_stat                 stat;
-  char                           msg[MAX_MSG_LEN];
-  char                           errmsg[MAX_MSG_LEN];
-  int                            return_rc = E_OK;
-  CLIENT *                       remote_client;
+    remote_client_cancel_tag_args  args;
+    remote_client_cancel_tag_res   remoteresult;
+    enum clnt_stat                 stat;
+    char                           msg[MAX_MSG_LEN];
+    char                           errmsg[MAX_MSG_LEN];
+    int                            return_rc = E_OK;
+    CLIENT                        *remote_client;
 
-  /* Create a CLIENT data structure that reference the RPC
-     procedure DAF_PROG, version DAF_VERSION running on the
-     host specified by the 1st command line arg. */
+    /* Create a CLIENT data structure that reference the RPC
+       procedure DAF_PROG, version DAF_VERSION running on the
+       host specified by the 1st command line arg. */
 
-  remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");  
+    remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");
 
-  /* Make sure the create worked */
-  if (remote_client == (CLIENT *) NULL) {
+    /* Make sure the create worked */
+    if (remote_client == (CLIENT *) NULL)
+    {
 
-    snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
-    snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
-    print_msg_to_console(msg);
-    return_rc = E_NOTOK;
+        snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
+        snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
+        print_msg_to_console(msg);
+        return_rc = E_NOTOK;
 
-  } else {
+    }
+    else
+    {
 
-    memset(&args,      0, sizeof(args));
-    memset(&remoteresult, 0, sizeof(remoteresult));
- 
-    args.tag      = tag;
-    args.msglevel = 0;
+        memset(&args,      0, sizeof(args));
+        memset(&remoteresult, 0, sizeof(remoteresult));
 
-    if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_CANCEL_TAG,
-                          (xdrproc_t) xdr_remote_client_cancel_tag_args, (caddr_t) &args,
-                          (xdrproc_t) xdr_remote_client_cancel_tag_res,  (caddr_t) &remoteresult,
-                          TIMEOUT)) != RPC_SUCCESS) {
-       clnt_stat_decode(stat, errmsg, sizeof(errmsg));
-       snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n", SUBNAME, (long) CLIENT_REMOTE_CLIENT_CANCEL_TAG, stat, errmsg);
-       print_msg_to_console(msg);
-       return_rc = E_NOTOK;
+        args.tag      = tag;
+        args.msglevel = 0;
 
-    } else {
+        if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_CANCEL_TAG,
+                              (xdrproc_t) xdr_remote_client_cancel_tag_args, (caddr_t) &args,
+                              (xdrproc_t) xdr_remote_client_cancel_tag_res,  (caddr_t) &remoteresult,
+                              TIMEOUT)) != RPC_SUCCESS)
+        {
+            clnt_stat_decode(stat, errmsg, sizeof(errmsg));
+            snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n", SUBNAME, (long) CLIENT_REMOTE_CLIENT_CANCEL_TAG, stat, errmsg);
+            print_msg_to_console(msg);
+            return_rc = E_NOTOK;
 
-       if (remoteresult.remote_client_cancel_tag_res_u.outcome.valid_cancel == REMOTE_CANCEL_TAG_OK) {
+        }
+        else
+        {
 
-          snprintf(msg, sizeof(msg), "Tag %d: canceled ok\n", tag);
-          print_msg_to_console(msg);
+            if (remoteresult.remote_client_cancel_tag_res_u.outcome.valid_cancel == REMOTE_CANCEL_TAG_OK)
+            {
 
-        } else {
+                snprintf(msg, sizeof(msg), "Tag %d: canceled ok\n", tag);
+                print_msg_to_console(msg);
 
-          return_rc = E_NOTOK;
+            }
+            else
+            {
 
-          if (remoteresult.remote_client_cancel_tag_res_u.outcome.valid_cancel == REMOTE_CANCEL_TAG_DOES_NOT_EXIST) {
+                return_rc = E_NOTOK;
 
-             snprintf(msg, sizeof(msg), "Tag %d was not in use on %s\n", tag, remotehostname);
-             print_msg_to_console(msg);
-     
-          } else if (remoteresult.remote_client_cancel_tag_res_u.outcome.valid_cancel == REMOTE_CANCEL_TAG_COMMAND_ALREADY_COMPLETED) {
+                if (remoteresult.remote_client_cancel_tag_res_u.outcome.valid_cancel == REMOTE_CANCEL_TAG_DOES_NOT_EXIST)
+                {
 
-             snprintf(msg, sizeof(msg), "Tag %d was already in completed state on %s\n", tag, remotehostname);
-             print_msg_to_console(msg);
+                    snprintf(msg, sizeof(msg), "Tag %d was not in use on %s\n", tag, remotehostname);
+                    print_msg_to_console(msg);
 
-          } else {
+                }
+                else if (remoteresult.remote_client_cancel_tag_res_u.outcome.valid_cancel == REMOTE_CANCEL_TAG_COMMAND_ALREADY_COMPLETED)
+                {
 
-             snprintf(msg, sizeof(msg), "Tag %d was not canceled on %s\n", tag, remotehostname);
-             print_msg_to_console(msg);
+                    snprintf(msg, sizeof(msg), "Tag %d was already in completed state on %s\n", tag, remotehostname);
+                    print_msg_to_console(msg);
 
-          }
+                }
+                else
+                {
 
-       }
+                    snprintf(msg, sizeof(msg), "Tag %d was not canceled on %s\n", tag, remotehostname);
+                    print_msg_to_console(msg);
+
+                }
+
+            }
+
+        }
+
+        if (remote_client->cl_auth != NULL)
+        {
+            auth_destroy(remote_client->cl_auth);
+        }
+
+        clnt_destroy(remote_client);
 
     }
 
-    if (remote_client->cl_auth != NULL) {
-       auth_destroy(remote_client->cl_auth);
-    }
-
-    clnt_destroy(remote_client);
-
-  }
-
-  return(return_rc);
-} 
+    return(return_rc);
+}
 
 /* -------------------------------------------------------------------------------- */
 /*                                                                                  */
@@ -1661,92 +1922,108 @@ int remote_client_cancel_tag(char *remotehostname, Iu32 tag) {
 /*  indicating that a signal9 was used to terminate it.                             */
 /* -------------------------------------------------------------------------------- */
 
-int remote_client_cancel_ident(char *remotehostname, char *identstring) { 
+int remote_client_cancel_ident(char *remotehostname, char *identstring)
+{
 
 #undef  SUBNAME
 #define SUBNAME "remote_client_cancel_ident"
 
-  remote_client_cancel_ident_args  args;
-  remote_client_cancel_ident_res   remoteresult;
-  enum clnt_stat                   stat;
-  char                             msg[MAX_MSG_LEN];
-  char                             errmsg[MAX_MSG_LEN];
-  int                              return_rc = E_OK;
-  CLIENT *                remote_client;
+    remote_client_cancel_ident_args  args;
+    remote_client_cancel_ident_res   remoteresult;
+    enum clnt_stat                   stat;
+    char                             msg[MAX_MSG_LEN];
+    char                             errmsg[MAX_MSG_LEN];
+    int                              return_rc = E_OK;
+    CLIENT                 *remote_client;
 
-  /* Create a CLIENT data structure that reference the RPC
-     procedure DAF_PROG, version DAF_VERSION running on the
-     host specified by the 1st command line arg. */
+    /* Create a CLIENT data structure that reference the RPC
+       procedure DAF_PROG, version DAF_VERSION running on the
+       host specified by the 1st command line arg. */
 
-  remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");  
+    remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");
 
-  /* Make sure the create worked */
-  if (remote_client == (CLIENT *) NULL) {
+    /* Make sure the create worked */
+    if (remote_client == (CLIENT *) NULL)
+    {
 
-    snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
-    snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
-    print_msg_to_console(msg);
-    return_rc = E_NOTOK;
+        snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
+        snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
+        print_msg_to_console(msg);
+        return_rc = E_NOTOK;
 
-  } else {
+    }
+    else
+    {
 
-    memset(&args,         0, sizeof(args));
-    memset(&remoteresult, 0, sizeof(remoteresult));
- 
-    args.identstring = identstring;
-    args.msglevel = 0;
+        memset(&args,         0, sizeof(args));
+        memset(&remoteresult, 0, sizeof(remoteresult));
 
-    if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_CANCEL_IDENT,
-                          (xdrproc_t) xdr_remote_client_cancel_ident_args, (caddr_t) &args,
-                          (xdrproc_t) xdr_remote_client_cancel_ident_res,  (caddr_t) &remoteresult,
-                          TIMEOUT)) != RPC_SUCCESS) {
-       clnt_stat_decode(stat, errmsg, sizeof(errmsg));
-       snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n", SUBNAME, (long) CLIENT_REMOTE_CLIENT_CANCEL_IDENT, stat, errmsg);
-       print_msg_to_console(msg);
-       return_rc = E_NOTOK;
+        args.identstring = identstring;
+        args.msglevel = 0;
 
-    } else {
+        if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_CANCEL_IDENT,
+                              (xdrproc_t) xdr_remote_client_cancel_ident_args, (caddr_t) &args,
+                              (xdrproc_t) xdr_remote_client_cancel_ident_res,  (caddr_t) &remoteresult,
+                              TIMEOUT)) != RPC_SUCCESS)
+        {
+            clnt_stat_decode(stat, errmsg, sizeof(errmsg));
+            snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n", SUBNAME, (long) CLIENT_REMOTE_CLIENT_CANCEL_IDENT, stat, errmsg);
+            print_msg_to_console(msg);
+            return_rc = E_NOTOK;
 
-       if (remoteresult.remote_client_cancel_ident_res_u.outcome.valid_cancel == REMOTE_CANCEL_IDENT_OK) {
+        }
+        else
+        {
 
-          snprintf(msg, sizeof(msg), "ident %s: canceled ok\n", identstring);
-          print_msg_to_console(msg);
+            if (remoteresult.remote_client_cancel_ident_res_u.outcome.valid_cancel == REMOTE_CANCEL_IDENT_OK)
+            {
 
-        } else {
+                snprintf(msg, sizeof(msg), "ident %s: canceled ok\n", identstring);
+                print_msg_to_console(msg);
 
-          return_rc = E_NOTOK;
+            }
+            else
+            {
 
-          if (remoteresult.remote_client_cancel_ident_res_u.outcome.valid_cancel == REMOTE_CANCEL_IDENT_DOES_NOT_EXIST) {
+                return_rc = E_NOTOK;
 
-             snprintf(msg, sizeof(msg), "ident %s was not in use on %s\n", identstring, remotehostname);
-             print_msg_to_console(msg);
-     
-          } else if (remoteresult.remote_client_cancel_ident_res_u.outcome.valid_cancel == REMOTE_CANCEL_IDENT_COMMAND_ALREADY_COMPLETED) {
+                if (remoteresult.remote_client_cancel_ident_res_u.outcome.valid_cancel == REMOTE_CANCEL_IDENT_DOES_NOT_EXIST)
+                {
 
-             snprintf(msg, sizeof(msg), "ident %s was already in completed state on %s\n", identstring, remotehostname);
-             print_msg_to_console(msg);
+                    snprintf(msg, sizeof(msg), "ident %s was not in use on %s\n", identstring, remotehostname);
+                    print_msg_to_console(msg);
 
-          } else {
+                }
+                else if (remoteresult.remote_client_cancel_ident_res_u.outcome.valid_cancel == REMOTE_CANCEL_IDENT_COMMAND_ALREADY_COMPLETED)
+                {
 
-             snprintf(msg, sizeof(msg), "ident %s was not canceled on %s\n", identstring, remotehostname);
-             print_msg_to_console(msg);
+                    snprintf(msg, sizeof(msg), "ident %s was already in completed state on %s\n", identstring, remotehostname);
+                    print_msg_to_console(msg);
 
-          }
+                }
+                else
+                {
 
-       }
+                    snprintf(msg, sizeof(msg), "ident %s was not canceled on %s\n", identstring, remotehostname);
+                    print_msg_to_console(msg);
+
+                }
+
+            }
+
+        }
+
+        if (remote_client->cl_auth != NULL)
+        {
+            auth_destroy(remote_client->cl_auth);
+        }
+
+        clnt_destroy(remote_client);
 
     }
 
-    if (remote_client->cl_auth != NULL) {
-       auth_destroy(remote_client->cl_auth);
-    }
-
-    clnt_destroy(remote_client);
-
-  }
-
-  return(return_rc);
-} 
+    return(return_rc);
+}
 
 /* -------------------------------------------------------------------------------- */
 /*                                                                                  */
@@ -1777,74 +2054,85 @@ int remote_client_cancel_ident(char *remotehostname, char *identstring) {
 /*                                                                                  */
 /* -------------------------------------------------------------------------------- */
 
-int remote_client_get_dirlist(char *remotehostname, char *remotepathname, dirlist *ppdl) {
+int remote_client_get_dirlist(char *remotehostname, char *remotepathname, dirlist *ppdl)
+{
 
 #undef  SUBNAME
 #define SUBNAME "remote_client_get_dirlist"
 
-  remote_client_dirlist_args     args;
-  remote_client_dirlist_res      remoteresult;
-  enum clnt_stat                 status;
-  char                           msg[MAX_MSG_LEN];
-  char                           errmsg[MAX_MSG_LEN];
-  int                            return_rc = E_OK;
-  CLIENT *                       remote_client;
+    remote_client_dirlist_args     args;
+    remote_client_dirlist_res      remoteresult;
+    enum clnt_stat                 status;
+    char                           msg[MAX_MSG_LEN];
+    char                           errmsg[MAX_MSG_LEN];
+    int                            return_rc = E_OK;
+    CLIENT                        *remote_client;
 
-  *ppdl = NULL;
-  remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");  
+    *ppdl = NULL;
+    remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");
 
-  /* Make sure the create worked */
-  if (remote_client == (CLIENT *) NULL) {
+    /* Make sure the create worked */
+    if (remote_client == (CLIENT *) NULL)
+    {
 
-    snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
-    snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
-    print_msg_to_console(msg);
-    return_rc = E_NOTOK;
+        snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
+        snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
+        print_msg_to_console(msg);
+        return_rc = E_NOTOK;
 
-  } else {
+    }
+    else
+    {
 
-       memset(&args,         0, sizeof(args));
-       memset(&remoteresult, 0, sizeof(remoteresult));
+        memset(&args,         0, sizeof(args));
+        memset(&remoteresult, 0, sizeof(remoteresult));
 
-       args.remotepathname   = remotepathname;
-       args.msglevel         = 0;
+        args.remotepathname   = remotepathname;
+        args.msglevel         = 0;
 
-       if ((status = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_DIRLIST,
-                               (xdrproc_t) xdr_remote_client_dirlist_args, (caddr_t) &args,
-                               (xdrproc_t) xdr_remote_client_dirlist_res,  (caddr_t) &remoteresult,
-                               TIMEOUT)) != RPC_SUCCESS) {
-          clnt_stat_decode(status, errmsg, sizeof(errmsg));
-          snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n", SUBNAME, (long) CLIENT_REMOTE_CLIENT_COPYFILE, status, errmsg);
-          print_msg_to_console(msg);
-          return_rc = E_NOTOK;
+        if ((status = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_DIRLIST,
+                                (xdrproc_t) xdr_remote_client_dirlist_args, (caddr_t) &args,
+                                (xdrproc_t) xdr_remote_client_dirlist_res,  (caddr_t) &remoteresult,
+                                TIMEOUT)) != RPC_SUCCESS)
+        {
+            clnt_stat_decode(status, errmsg, sizeof(errmsg));
+            snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n", SUBNAME, (long) CLIENT_REMOTE_CLIENT_COPYFILE, status, errmsg);
+            print_msg_to_console(msg);
+            return_rc = E_NOTOK;
 
-      } else {
+        }
+        else
+        {
 
-          if (remoteresult.status == E_OK) {
-   
-             *ppdl = remoteresult.remote_client_dirlist_res_u.outcome.directory;
+            if (remoteresult.status == E_OK)
+            {
 
-          } else {
-     
-             snprintf(msg, sizeof(msg), "%s: problem getting dirlist for %s from %s\n", SUBNAME, remotepathname, remotehostname);
-             print_msg_to_console(msg);
-             return_rc = E_NOTOK;
+                *ppdl = remoteresult.remote_client_dirlist_res_u.outcome.directory;
 
-          }
+            }
+            else
+            {
+
+                snprintf(msg, sizeof(msg), "%s: problem getting dirlist for %s from %s\n", SUBNAME, remotepathname, remotehostname);
+                print_msg_to_console(msg);
+                return_rc = E_NOTOK;
+
+            }
 
 
-       }
+        }
 
-    if (remote_client->cl_auth != NULL) {
-       auth_destroy(remote_client->cl_auth);
+        if (remote_client->cl_auth != NULL)
+        {
+            auth_destroy(remote_client->cl_auth);
+        }
+
+        clnt_destroy(remote_client);
+
     }
 
-    clnt_destroy(remote_client);
-
-  }
-
-  return(return_rc);
-} 
+    return(return_rc);
+}
 
 /* -------------------------------------------------------------------------------- */
 /*                                                                                  */
@@ -1873,40 +2161,45 @@ int remote_client_get_dirlist(char *remotehostname, char *remotepathname, dirlis
 /*                                                                                  */
 /* -------------------------------------------------------------------------------- */
 
-int remote_client_dirlist(char *remotehostname, char *remotepathname) {
+int remote_client_dirlist(char *remotehostname, char *remotepathname)
+{
 
 #undef  SUBNAME
 #define SUBNAME "remote_client_dirlist"
 
-  char                           msg[MAX_MSG_LEN];
-  char                           errmsg[MAX_MSG_LEN];
-  int                            return_rc = E_OK;
-  dirlist                        pdl;  
-  dirlist                        pdl_save;  
+    char                           msg[MAX_MSG_LEN];
+    char                           errmsg[MAX_MSG_LEN];
+    int                            return_rc = E_OK;
+    dirlist                        pdl;
+    dirlist                        pdl_save;
 
-  if (remote_client_get_dirlist(remotehostname, remotepathname, &pdl) != 0) {
+    if (remote_client_get_dirlist(remotehostname, remotepathname, &pdl) != 0)
+    {
 
-    snprintf(errmsg, sizeof(errmsg), "%s:  dirlist failed", SUBNAME);
-    snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
-    print_msg_to_console(msg);
-    return_rc = E_NOTOK;
+        snprintf(errmsg, sizeof(errmsg), "%s:  dirlist failed", SUBNAME);
+        snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
+        print_msg_to_console(msg);
+        return_rc = E_NOTOK;
 
-  } else {
+    }
+    else
+    {
 
-    pdl_save = pdl;
+        pdl_save = pdl;
 
-    while (pdl != NULL) {
-       snprintf(msg, sizeof(msg), "%s\n", pdl->entry);
-       print_msg_to_console(msg);
-       pdl = pdl->next;
+        while (pdl != NULL)
+        {
+            snprintf(msg, sizeof(msg), "%s\n", pdl->entry);
+            print_msg_to_console(msg);
+            pdl = pdl->next;
+        }
+
+        deallocate_dirlist(pdl_save);
+
     }
 
-    deallocate_dirlist(pdl_save);
-
-  }
-
-  return(return_rc);
-} 
+    return(return_rc);
+}
 
 /* -------------------------------------------------------------------------------- */
 /*                                                                                  */
@@ -1937,229 +2230,270 @@ int remote_client_dirlist(char *remotehostname, char *remotepathname) {
 /*                                                                                  */
 /* -------------------------------------------------------------------------------- */
 
-int remote_client_copyfile(char *remotehostname, char *localpathname, char *remotepathname, bool_t fromremote) {
+int remote_client_copyfile(char *remotehostname, char *localpathname, char *remotepathname, bool_t fromremote)
+{
 
 #undef  SUBNAME
 #define SUBNAME "remote_client_copyfile"
 
-  remote_client_copyfile_args    args;
-  remote_client_copyfile_res     remoteresult;
-  enum clnt_stat                 status;
-  char                           msg[MAX_MSG_LEN];
-  char                           errmsg[MAX_MSG_LEN];
-  int                            return_rc = E_OK;
-  Iu8                            *pbuffer = NULL;
-  bool_t                         done = FALSE;
-  FILE                           *fptr = NULL;
-  int                            numbyteswrittentofile;
-  int                            transfersize;
-  struct stat                    statbuf;
-  int                            rc;
-  long                           offset;     /* Iu64 ???? <<<<<<<<<<<<< */
-  CLIENT *                remote_client;
+    remote_client_copyfile_args    args;
+    remote_client_copyfile_res     remoteresult;
+    enum clnt_stat                 status;
+    char                           msg[MAX_MSG_LEN];
+    char                           errmsg[MAX_MSG_LEN];
+    int                            return_rc = E_OK;
+    Iu8                            *pbuffer = NULL;
+    bool_t                         done = FALSE;
+    FILE                           *fptr = NULL;
+    int                            numbyteswrittentofile;
+    int                            transfersize;
+    struct stat                    statbuf;
+    int                            rc;
+    long                           offset;     /* Iu64 ???? <<<<<<<<<<<<< */
+    CLIENT                 *remote_client;
 
 
-  transfersize = 4096; /* <<<<<<<<<<<<<<< */
-  remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");  
+    transfersize = 4096; /* <<<<<<<<<<<<<<< */
+    remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");
 
-  /* Make sure the create worked */
-  if (remote_client == (CLIENT *) NULL) {
+    /* Make sure the create worked */
+    if (remote_client == (CLIENT *) NULL)
+    {
 
-    snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
-    snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
-    print_msg_to_console(msg);
-    return_rc = E_NOTOK;
+        snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
+        snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
+        print_msg_to_console(msg);
+        return_rc = E_NOTOK;
 
-  } else {
-
-    if ((pbuffer = malloc(sizeof(Iu8) * transfersize)) == NULL) {
-       snprintf(errmsg, sizeof(errmsg), "%s: could not malloc %d bytes : ", SUBNAME, transfersize);
-       print_msg_to_console(msg);
-       return_rc = E_NOTOK;
     }
+    else
+    {
 
-    if (fromremote) {
+        if ((pbuffer = malloc(sizeof(Iu8) * transfersize)) == NULL)
+        {
+            snprintf(errmsg, sizeof(errmsg), "%s: could not malloc %d bytes : ", SUBNAME, transfersize);
+            print_msg_to_console(msg);
+            return_rc = E_NOTOK;
+        }
 
-       if ((fptr = fopen(localpathname, "wb")) == NULL ) {
+        if (fromremote)
+        {
 
-          snprintf(msg, sizeof(msg), "%s: Could not open %s\n", SUBNAME, localpathname);
-          print_msg_to_console(msg);
-          return_rc = E_NOTOK;
+            if ((fptr = fopen(localpathname, "wb")) == NULL )
+            {
 
-       }
-
-       offset = 0;
-
-       while ((! done) && (return_rc == E_OK)) {
-
-          memset(&args,         0, sizeof(args));
-          memset(&remoteresult, 0, sizeof(remoteresult));
-
-          args.remotepathname   = remotepathname;
-          args.fromremote       = TRUE;
-          args.requestedlength  = transfersize;
-          args.offset           = offset;
-          args.msglevel         = 0;
-
-          args.data.data_len = 0;
-          args.data.data_val = (char *) NULL;
-
-          remoteresult.remote_client_copyfile_res_u.outcome.data.data_len = transfersize;
-          remoteresult.remote_client_copyfile_res_u.outcome.data.data_val = (char *) pbuffer;
-
-          if ((status = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_COPYFILE,
-                                  (xdrproc_t) xdr_remote_client_copyfile_args, (caddr_t) &args,
-                                  (xdrproc_t) xdr_remote_client_copyfile_res,  (caddr_t) &remoteresult,
-                                  TIMEOUT)) != RPC_SUCCESS) {
-             clnt_stat_decode(status, errmsg, sizeof(errmsg));
-             snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n", SUBNAME, (long) CLIENT_REMOTE_CLIENT_COPYFILE, status, errmsg);
-             print_msg_to_console(msg);
-             return_rc = E_NOTOK;
-
-          } else {
-
-             if (remoteresult.status == E_OK) {
-
-                if (remoteresult.remote_client_copyfile_res_u.outcome.valid_copyfile == REMOTE_COPYFILE_OK) {
-
-                   numbyteswrittentofile = fwrite(pbuffer, sizeof(Iu8), remoteresult.remote_client_copyfile_res_u.outcome.num_bytes_in_transfer, fptr);
-                   if (numbyteswrittentofile != remoteresult.remote_client_copyfile_res_u.outcome.num_bytes_in_transfer) {
-                      snprintf(msg, sizeof(msg), "%s: only %u bytes written to %s when expecting to write %u bytes\n", 
-                                                 SUBNAME, numbyteswrittentofile, localpathname, remoteresult.remote_client_copyfile_res_u.outcome.num_bytes_in_transfer);
-                      print_msg_to_console(msg);
-                      return_rc = E_NOTOK;
-                   }
-                   if (remoteresult.remote_client_copyfile_res_u.outcome.eof) {
-                      done = TRUE;
-                   }
-
-                }  else if (remoteresult.remote_client_copyfile_res_u.outcome.valid_copyfile == REMOTE_COPYFILE_FILE_DOES_NOT_EXIST) {
-
-                   snprintf(msg, sizeof(msg), "%s: remote file %s on remote host %s does not exist\n", SUBNAME, remotepathname, remotehostname);
-                   print_msg_to_console(msg);
-                   return_rc = E_NOTOK;
-
-                }  else {
-
-                   snprintf(msg, sizeof(msg), "%s: problem copying remote file %s from %s to local file %s\n", SUBNAME, remotepathname, remotehostname, localpathname);
-                   print_msg_to_console(msg);
-                   return_rc = E_NOTOK;
-
-                }
-
-             } else {
-     
-                snprintf(msg, sizeof(msg), "%s: problem copying remote file %s from %s to local file %s\n", SUBNAME, remotepathname, remotehostname, localpathname);
+                snprintf(msg, sizeof(msg), "%s: Could not open %s\n", SUBNAME, localpathname);
                 print_msg_to_console(msg);
                 return_rc = E_NOTOK;
 
-             }
+            }
 
-          }
+            offset = 0;
 
-          offset = offset + transfersize;
+            while ((! done) && (return_rc == E_OK))
+            {
 
-       }
+                memset(&args,         0, sizeof(args));
+                memset(&remoteresult, 0, sizeof(remoteresult));
 
-    } else {
+                args.remotepathname   = remotepathname;
+                args.fromremote       = TRUE;
+                args.requestedlength  = transfersize;
+                args.offset           = offset;
+                args.msglevel         = 0;
 
-       if ((rc = stat(localpathname, &statbuf)) != 0) {
-          snprintf(msg, sizeof(msg), "%s: local file %s does not exist\n", SUBNAME, localpathname);
-          print_msg_to_console(msg);
-          return_rc = E_NOTOK;
-       }
+                args.data.data_len = 0;
+                args.data.data_val = (char *) NULL;
 
-       if ((fptr = fopen(localpathname, "r")) == NULL ) {
+                remoteresult.remote_client_copyfile_res_u.outcome.data.data_len = transfersize;
+                remoteresult.remote_client_copyfile_res_u.outcome.data.data_val = (char *) pbuffer;
 
-          snprintf(msg, sizeof(msg), "%s: Could not open local file %s\n", SUBNAME, localpathname);
-          print_msg_to_console(msg);
-          return_rc = E_NOTOK;
+                if ((status = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_COPYFILE,
+                                        (xdrproc_t) xdr_remote_client_copyfile_args, (caddr_t) &args,
+                                        (xdrproc_t) xdr_remote_client_copyfile_res,  (caddr_t) &remoteresult,
+                                        TIMEOUT)) != RPC_SUCCESS)
+                {
+                    clnt_stat_decode(status, errmsg, sizeof(errmsg));
+                    snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n", SUBNAME, (long) CLIENT_REMOTE_CLIENT_COPYFILE, status, errmsg);
+                    print_msg_to_console(msg);
+                    return_rc = E_NOTOK;
 
-       }
+                }
+                else
+                {
 
-       offset = 0;
+                    if (remoteresult.status == E_OK)
+                    {
 
-       while ((! done) && (return_rc == E_OK)) {
+                        if (remoteresult.remote_client_copyfile_res_u.outcome.valid_copyfile == REMOTE_COPYFILE_OK)
+                        {
 
-          memset(&args,         0, sizeof(args));
-          memset(&remoteresult, 0, sizeof(remoteresult));
+                            numbyteswrittentofile = fwrite(pbuffer, sizeof(Iu8), remoteresult.remote_client_copyfile_res_u.outcome.num_bytes_in_transfer, fptr);
 
-          args.remotepathname   = remotepathname;
-          args.fromremote       = FALSE;
-          args.requestedlength  = transfersize;
-          args.eof              = FALSE;
+                            if (numbyteswrittentofile != remoteresult.remote_client_copyfile_res_u.outcome.num_bytes_in_transfer)
+                            {
+                                snprintf(msg, sizeof(msg), "%s: only %u bytes written to %s when expecting to write %u bytes\n",
+                                         SUBNAME, numbyteswrittentofile, localpathname, remoteresult.remote_client_copyfile_res_u.outcome.num_bytes_in_transfer);
+                                print_msg_to_console(msg);
+                                return_rc = E_NOTOK;
+                            }
 
-          fseek(fptr, offset, SEEK_SET);          /* <<<< check return code */
-          args.requestedlength = fread(pbuffer, sizeof(Iu8), transfersize, fptr);
+                            if (remoteresult.remote_client_copyfile_res_u.outcome.eof)
+                            {
+                                done = TRUE;
+                            }
 
-          args.data.data_len = args.requestedlength;
-          args.data.data_val = (char *) pbuffer;
+                        }
+                        else if (remoteresult.remote_client_copyfile_res_u.outcome.valid_copyfile == REMOTE_COPYFILE_FILE_DOES_NOT_EXIST)
+                        {
 
-          if (feof(fptr)) {
-             args.eof = TRUE;
-             done = TRUE;
-          }
+                            snprintf(msg, sizeof(msg), "%s: remote file %s on remote host %s does not exist\n", SUBNAME, remotepathname, remotehostname);
+                            print_msg_to_console(msg);
+                            return_rc = E_NOTOK;
 
-          remoteresult.remote_client_copyfile_res_u.outcome.data.data_len = 0;
-          remoteresult.remote_client_copyfile_res_u.outcome.data.data_val = (char *) NULL;
+                        }
+                        else
+                        {
 
-          if ((status = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_COPYFILE,
-                                  (xdrproc_t) xdr_remote_client_copyfile_args, (caddr_t) &args,
-                                  (xdrproc_t) xdr_remote_client_copyfile_res,  (caddr_t) &remoteresult,
-                                  TIMEOUT)) != RPC_SUCCESS) {
-             clnt_stat_decode(status, errmsg, sizeof(errmsg));
-             snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n", SUBNAME, (long) CLIENT_REMOTE_CLIENT_COPYFILE, status, errmsg);
-             print_msg_to_console(msg);
-             return_rc = E_NOTOK;
+                            snprintf(msg, sizeof(msg), "%s: problem copying remote file %s from %s to local file %s\n", SUBNAME, remotepathname, remotehostname, localpathname);
+                            print_msg_to_console(msg);
+                            return_rc = E_NOTOK;
 
-          } else {
+                        }
 
-             if (remoteresult.status == E_OK) {
+                    }
+                    else
+                    {
 
-                if (remoteresult.remote_client_copyfile_res_u.outcome.valid_copyfile == REMOTE_COPYFILE_OK) {
+                        snprintf(msg, sizeof(msg), "%s: problem copying remote file %s from %s to local file %s\n", SUBNAME, remotepathname, remotehostname, localpathname);
+                        print_msg_to_console(msg);
+                        return_rc = E_NOTOK;
 
-                }  else {
-
-                   snprintf(msg, sizeof(msg), "%s: valid_copyfile = %d, problem copying local file %s to remote file %s on %s\n", 
-                                              SUBNAME, remoteresult.remote_client_copyfile_res_u.outcome.valid_copyfile, localpathname, remotepathname, remotehostname);
-                   print_msg_to_console(msg);
-                   return_rc = E_NOTOK;
+                    }
 
                 }
 
-             } else {
-     
-                snprintf(msg, sizeof(msg), "%s: remoteresult.status != 0, problem copying local file %s to remote file %s on %s\n", SUBNAME, localpathname, remotepathname, remotehostname);
+                offset = offset + transfersize;
+
+            }
+
+        }
+        else
+        {
+
+            if ((rc = stat(localpathname, &statbuf)) != 0)
+            {
+                snprintf(msg, sizeof(msg), "%s: local file %s does not exist\n", SUBNAME, localpathname);
+                print_msg_to_console(msg);
+                return_rc = E_NOTOK;
+            }
+
+            if ((fptr = fopen(localpathname, "r")) == NULL )
+            {
+
+                snprintf(msg, sizeof(msg), "%s: Could not open local file %s\n", SUBNAME, localpathname);
                 print_msg_to_console(msg);
                 return_rc = E_NOTOK;
 
-             }
+            }
 
-          }
+            offset = 0;
 
-          offset = offset + args.requestedlength;
-       }
+            while ((! done) && (return_rc == E_OK))
+            {
+
+                memset(&args,         0, sizeof(args));
+                memset(&remoteresult, 0, sizeof(remoteresult));
+
+                args.remotepathname   = remotepathname;
+                args.fromremote       = FALSE;
+                args.requestedlength  = transfersize;
+                args.eof              = FALSE;
+
+                fseek(fptr, offset, SEEK_SET);          /* <<<< check return code */
+                args.requestedlength = fread(pbuffer, sizeof(Iu8), transfersize, fptr);
+
+                args.data.data_len = args.requestedlength;
+                args.data.data_val = (char *) pbuffer;
+
+                if (feof(fptr))
+                {
+                    args.eof = TRUE;
+                    done = TRUE;
+                }
+
+                remoteresult.remote_client_copyfile_res_u.outcome.data.data_len = 0;
+                remoteresult.remote_client_copyfile_res_u.outcome.data.data_val = (char *) NULL;
+
+                if ((status = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_COPYFILE,
+                                        (xdrproc_t) xdr_remote_client_copyfile_args, (caddr_t) &args,
+                                        (xdrproc_t) xdr_remote_client_copyfile_res,  (caddr_t) &remoteresult,
+                                        TIMEOUT)) != RPC_SUCCESS)
+                {
+                    clnt_stat_decode(status, errmsg, sizeof(errmsg));
+                    snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n", SUBNAME, (long) CLIENT_REMOTE_CLIENT_COPYFILE, status, errmsg);
+                    print_msg_to_console(msg);
+                    return_rc = E_NOTOK;
+
+                }
+                else
+                {
+
+                    if (remoteresult.status == E_OK)
+                    {
+
+                        if (remoteresult.remote_client_copyfile_res_u.outcome.valid_copyfile == REMOTE_COPYFILE_OK)
+                        {
+
+                        }
+                        else
+                        {
+
+                            snprintf(msg, sizeof(msg), "%s: valid_copyfile = %d, problem copying local file %s to remote file %s on %s\n",
+                                     SUBNAME, remoteresult.remote_client_copyfile_res_u.outcome.valid_copyfile, localpathname, remotepathname, remotehostname);
+                            print_msg_to_console(msg);
+                            return_rc = E_NOTOK;
+
+                        }
+
+                    }
+                    else
+                    {
+
+                        snprintf(msg, sizeof(msg), "%s: remoteresult.status != 0, problem copying local file %s to remote file %s on %s\n", SUBNAME, localpathname, remotepathname, remotehostname);
+                        print_msg_to_console(msg);
+                        return_rc = E_NOTOK;
+
+                    }
+
+                }
+
+                offset = offset + args.requestedlength;
+            }
+
+        }
+
+        if (fptr != NULL)
+        {
+            fclose(fptr);
+        }
+
+        if (pbuffer != NULL)
+        {
+            free(pbuffer);
+        }
+
+        if (remote_client->cl_auth != NULL)
+        {
+            auth_destroy(remote_client->cl_auth);
+        }
+
+        clnt_destroy(remote_client);
 
     }
 
-    if (fptr != NULL) {
-       fclose(fptr);
-    }
-
-    if (pbuffer != NULL) {
-       free(pbuffer);
-    }
-
-    if (remote_client->cl_auth != NULL) {
-       auth_destroy(remote_client->cl_auth);
-    }
-
-    clnt_destroy(remote_client);
-
-  }
-
-  return(return_rc);
-} 
+    return(return_rc);
+}
 
 /* -------------------------------------------------------------------------------- */
 /*                                                                                  */
@@ -2187,70 +2521,79 @@ int remote_client_copyfile(char *remotehostname, char *localpathname, char *remo
 /*                                                                                  */
 /* -------------------------------------------------------------------------------- */
 
-int remote_client_deletefile(char *remotehostname, char *remotepathname) {
+int remote_client_deletefile(char *remotehostname, char *remotepathname)
+{
 
 #undef  SUBNAME
 #define SUBNAME "remote_client_deletefile"
 
-  remote_client_deletefile_args    args;
-  remote_client_deletefile_res     remoteresult;
-  enum clnt_stat                   status;
-  char                             msg[MAX_MSG_LEN];
-  char                             errmsg[MAX_MSG_LEN];
-  int                              return_rc = E_OK;
-  CLIENT *                         remote_client;
+    remote_client_deletefile_args    args;
+    remote_client_deletefile_res     remoteresult;
+    enum clnt_stat                   status;
+    char                             msg[MAX_MSG_LEN];
+    char                             errmsg[MAX_MSG_LEN];
+    int                              return_rc = E_OK;
+    CLIENT                          *remote_client;
 
 
-  remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");  
+    remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");
 
-  /* Make sure the create worked */
-  if (remote_client == (CLIENT *) NULL) {
+    /* Make sure the create worked */
+    if (remote_client == (CLIENT *) NULL)
+    {
 
-    snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
-    snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
-    print_msg_to_console(msg);
-    return_rc = E_NOTOK;
+        snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
+        snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
+        print_msg_to_console(msg);
+        return_rc = E_NOTOK;
 
-  } else {
+    }
+    else
+    {
 
-    memset(&args,         0, sizeof(args));
-    memset(&remoteresult, 0, sizeof(remoteresult));
+        memset(&args,         0, sizeof(args));
+        memset(&remoteresult, 0, sizeof(remoteresult));
 
-    args.remotepathname   = remotepathname;
-    args.msglevel         = 0;
+        args.remotepathname   = remotepathname;
+        args.msglevel         = 0;
 
-    if ((status = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_DELETEFILE,
-                            (xdrproc_t) xdr_remote_client_deletefile_args, (caddr_t) &args,
-                            (xdrproc_t) xdr_remote_client_deletefile_res,  (caddr_t) &remoteresult,
-                            TIMEOUT)) != RPC_SUCCESS) {
-       clnt_stat_decode(status, errmsg, sizeof(errmsg));
-       snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n", SUBNAME, (long) CLIENT_REMOTE_CLIENT_DELETEFILE, status, errmsg);
-       print_msg_to_console(msg);
-       return_rc = E_NOTOK;
+        if ((status = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_DELETEFILE,
+                                (xdrproc_t) xdr_remote_client_deletefile_args, (caddr_t) &args,
+                                (xdrproc_t) xdr_remote_client_deletefile_res,  (caddr_t) &remoteresult,
+                                TIMEOUT)) != RPC_SUCCESS)
+        {
+            clnt_stat_decode(status, errmsg, sizeof(errmsg));
+            snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n", SUBNAME, (long) CLIENT_REMOTE_CLIENT_DELETEFILE, status, errmsg);
+            print_msg_to_console(msg);
+            return_rc = E_NOTOK;
 
-    } else {
+        }
+        else
+        {
 
-       if (remoteresult.status != E_OK) {
+            if (remoteresult.status != E_OK)
+            {
 
-          snprintf(msg, sizeof(msg), "%s: problem deleting remote file %s on %s\n", SUBNAME, remotepathname, remotehostname);
-          print_msg_to_console(msg);
-          return_rc = E_NOTOK;
+                snprintf(msg, sizeof(msg), "%s: problem deleting remote file %s on %s\n", SUBNAME, remotepathname, remotehostname);
+                print_msg_to_console(msg);
+                return_rc = E_NOTOK;
 
-       }
+            }
+
+        }
+
+        if (remote_client->cl_auth != NULL)
+        {
+            auth_destroy(remote_client->cl_auth);
+        }
+
+        clnt_destroy(remote_client);
 
     }
 
-    if (remote_client->cl_auth != NULL) {
-       auth_destroy(remote_client->cl_auth);
-    }
+    return(return_rc);
 
-    clnt_destroy(remote_client);
-
-  }
-
-  return(return_rc);
-
-} 
+}
 
 
 /* -------------------------------------------------------------------------------- */
@@ -2280,83 +2623,92 @@ int remote_client_deletefile(char *remotehostname, char *remotepathname) {
 /*                                                                                  */
 /* -------------------------------------------------------------------------------- */
 
-int remote_client_update_workqueue_status(char   *remotehostname, 
-                                          int    workqueueID, 
-                                          bool_t update_tag,
-                                          int    tag,
-                                          bool_t update_state,
-                                          char   *state,
-                                          bool_t update_pass,
-                                          int    pass, 
-                                          bool_t update_end) {
+int remote_client_update_workqueue_status(char   *remotehostname,
+        int    workqueueID,
+        bool_t update_tag,
+        int    tag,
+        bool_t update_state,
+        char   *state,
+        bool_t update_pass,
+        int    pass,
+        bool_t update_end)
+{
 
 #undef  SUBNAME
 #define SUBNAME "remote_client_update_workqueue_status"
 
-  remote_client_update_workqueue_status_args    args;
-  remote_client_update_workqueue_status_res     remoteresult;
-  enum clnt_stat                                status;
-  char                             msg[MAX_MSG_LEN];
-  char                             errmsg[MAX_MSG_LEN];
-  int                              return_rc = E_OK;
-  CLIENT *                         remote_client;
+    remote_client_update_workqueue_status_args    args;
+    remote_client_update_workqueue_status_res     remoteresult;
+    enum clnt_stat                                status;
+    char                             msg[MAX_MSG_LEN];
+    char                             errmsg[MAX_MSG_LEN];
+    int                              return_rc = E_OK;
+    CLIENT                          *remote_client;
 
-  remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");  
+    remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");
 
-  /* Make sure the create worked */
-  if (remote_client == (CLIENT *) NULL) {
+    /* Make sure the create worked */
+    if (remote_client == (CLIENT *) NULL)
+    {
 
-    snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
-    snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
-    print_msg_to_console(msg);
-    return_rc = E_NOTOK;
+        snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
+        snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
+        print_msg_to_console(msg);
+        return_rc = E_NOTOK;
 
-  } else {
+    }
+    else
+    {
 
-    memset(&args,         0, sizeof(args));
-    memset(&remoteresult, 0, sizeof(remoteresult));
+        memset(&args,         0, sizeof(args));
+        memset(&remoteresult, 0, sizeof(remoteresult));
 
-    args.workqueueID      = workqueueID;
-    args.update_tag       = update_tag;
-    args.tag              = tag;
-    args.update_state     = update_state;
-    args.state            = state;
-    args.update_pass      = update_pass;
-    args.pass             = pass;
-    args.update_end       = update_end;
-    args.msglevel         = 0;
+        args.workqueueID      = workqueueID;
+        args.update_tag       = update_tag;
+        args.tag              = tag;
+        args.update_state     = update_state;
+        args.state            = state;
+        args.update_pass      = update_pass;
+        args.pass             = pass;
+        args.update_end       = update_end;
+        args.msglevel         = 0;
 
-    if ((status = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_UPDATE_WORKQUEUE_STATUS,
-                            (xdrproc_t) xdr_remote_client_update_workqueue_status_args, (caddr_t) &args,
-                            (xdrproc_t) xdr_remote_client_update_workqueue_status_res,  (caddr_t) &remoteresult,
-                            TIMEOUT)) != RPC_SUCCESS) {
-       clnt_stat_decode(status, errmsg, sizeof(errmsg));
-       snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n", SUBNAME, 
-                (long) CLIENT_REMOTE_CLIENT_UPDATE_WORKQUEUE_STATUS, status, errmsg);
-       print_msg_to_console(msg);
-       return_rc = E_NOTOK;
+        if ((status = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_UPDATE_WORKQUEUE_STATUS,
+                                (xdrproc_t) xdr_remote_client_update_workqueue_status_args, (caddr_t) &args,
+                                (xdrproc_t) xdr_remote_client_update_workqueue_status_res,  (caddr_t) &remoteresult,
+                                TIMEOUT)) != RPC_SUCCESS)
+        {
+            clnt_stat_decode(status, errmsg, sizeof(errmsg));
+            snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n", SUBNAME,
+                     (long) CLIENT_REMOTE_CLIENT_UPDATE_WORKQUEUE_STATUS, status, errmsg);
+            print_msg_to_console(msg);
+            return_rc = E_NOTOK;
 
-    } else {
+        }
+        else
+        {
 
-       if (remoteresult.status != E_OK) {
+            if (remoteresult.status != E_OK)
+            {
 
-          snprintf(msg, sizeof(msg), "%s: problem updating workqueue record %u on %s\n", SUBNAME, workqueueID, remotehostname);
-          print_msg_to_console(msg);
-          return_rc = E_NOTOK;
+                snprintf(msg, sizeof(msg), "%s: problem updating workqueue record %u on %s\n", SUBNAME, workqueueID, remotehostname);
+                print_msg_to_console(msg);
+                return_rc = E_NOTOK;
 
-       }
+            }
+
+        }
+
+        if (remote_client->cl_auth != NULL)
+        {
+            auth_destroy(remote_client->cl_auth);
+        }
+
+        clnt_destroy(remote_client);
 
     }
 
-    if (remote_client->cl_auth != NULL) {
-       auth_destroy(remote_client->cl_auth);
-    }
+    return(return_rc);
 
-    clnt_destroy(remote_client);
-
-  }
-
-  return(return_rc);
-
-} 
+}
 

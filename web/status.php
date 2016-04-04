@@ -296,7 +296,7 @@ if ($current_project == "none") {
       
       if ($debugflag) {
          if ($gp['action'] != 'getjson') {                            /* need a better way of handling debug flag <<<< */
-            echo "<pre>xxxx userdetailsok = $userdetailsok $msg1</pre>\n";
+            echo "<pre>userdetailsok = $userdetailsok $msg1</pre>\n";
          }
        }
 

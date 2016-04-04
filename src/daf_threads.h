@@ -22,58 +22,63 @@ enum { NOT_USED,
        PROC_LOCK_MUTEX, LOCK,
        PROC_UNLOCK_MUTEX, UNLOCK,
        BUFFER_TIMESTAMP, BUFFER_CREATE
-    };
+     };
 
 
 
-typedef struct thread_trace_element {
-  Iu32 timestamp;
-  Iu32 tracepoint ;
-  Iu32 type ;
-  Iu32 p1 ;
-  Iu32 p2 ;
-  Iu32 p3 ;
-  Iu32 rc ;
+typedef struct thread_trace_element
+{
+    Iu32 timestamp;
+    Iu32 tracepoint ;
+    Iu32 type ;
+    Iu32 p1 ;
+    Iu32 p2 ;
+    Iu32 p3 ;
+    Iu32 rc ;
 } thread_trace_element_t;
 
-typedef union u_thread_trace_element {
-  thread_trace_element_t thread_trace_element;
+typedef union u_thread_trace_element
+{
+    thread_trace_element_t thread_trace_element;
 } u_thread_trace_element_t;
 
-typedef struct thread_return_code {
-  int value;
+typedef struct thread_return_code
+{
+    int value;
 } thread_return_code_t;
 
 typedef struct thread_workitem
 {
-  char    signature[sizeof(THREAD_WORK_ITEM_SIGNATURE)];
-  BOOL    active;
-  BOOL    terminated;
-  HTHREAD thread;                            // the thread handle, as created in the
-                                             // create_thread() routine
-  int threadnum;                             // a tag, identifying this thread - each new
-                                             // thread that is created should have a different
-                                             // threadnum, but threadnum values can be re-used
-                                             // after a thread has exited - this value must be set
-                                             // by the user when calling the initialise_thread_workitem() 
-                                             // routine before calling the create_thread() routine
-  thread_return_code_t  thread_exit_code;    // the exit code for the thread, value field = E_OK means success
-                                             // anything else indicates the thread did not
-                                             // complete successfully in some way - this value
-                                             // is filled in by the exit_thread() routine
-  u_thread_trace_element_t *ptrace_table;    // points to trace table
-  Iu32                   trace_table_index;  // index of next free entry in table
-  Iu32                   num_trace_entries;  // max number of entries in the trace table
+    char    signature[sizeof(THREAD_WORK_ITEM_SIGNATURE)];
+    BOOL    active;
+    BOOL    terminated;
+    HTHREAD thread;                            // the thread handle, as created in the
+    // create_thread() routine
+    int threadnum;                             // a tag, identifying this thread - each new
+    // thread that is created should have a different
+    // threadnum, but threadnum values can be re-used
+    // after a thread has exited - this value must be set
+    // by the user when calling the initialise_thread_workitem()
+    // routine before calling the create_thread() routine
+    thread_return_code_t  thread_exit_code;    // the exit code for the thread, value field = E_OK means success
+    // anything else indicates the thread did not
+    // complete successfully in some way - this value
+    // is filled in by the exit_thread() routine
+    u_thread_trace_element_t *ptrace_table;    // points to trace table
+    Iu32                   trace_table_index;  // index of next free entry in table
+    Iu32                   num_trace_entries;  // max number of entries in the trace table
 
 } thread_workitem_t;
 
 
-typedef struct response_monitor_wrk {
-  thread_workitem_t *pthread_workitem;
-  void              *pparm;
+typedef struct response_monitor_wrk
+{
+    thread_workitem_t *pthread_workitem;
+    void              *pparm;
 } response_monitor_wrk_t;
 
-typedef struct background_cmd_wrk {
+typedef struct background_cmd_wrk
+{
     char cmd[MAX_SYSTEM_CMD_LEN];
     BOOL quiet;
     thread_workitem_t *pthread_workitem;
@@ -84,14 +89,14 @@ void print_threads_version(void);
 int init_timers(void);
 Iu32 get_timestamp( void );
 #if defined AIX || defined LINUX || defined LINUX_PPC64 || defined SOLARIS || defined HPUX
-  float time_diff(time_control_t  *start, time_control_t  *end);
-  float time_compare(time_control_t *ptimer1, time_control_t *ptimer2);
-  void  time_sub_secs(time_control_t *ptimer1, float seconds, time_control_t *ptimer2);
-  int dskx_thread_block_async_signals(sigset_t *saved_set);
+float time_diff(time_control_t  *start, time_control_t  *end);
+float time_compare(time_control_t *ptimer1, time_control_t *ptimer2);
+void  time_sub_secs(time_control_t *ptimer1, float seconds, time_control_t *ptimer2);
+int dskx_thread_block_async_signals(sigset_t *saved_set);
 #elif defined WIN32 || defined NETWARE
-  float time_diff(time_control_t *start, time_control_t *stop);
-  float time_compare(time_control_t *ptimer1, time_control_t *ptimer2);
-  float time_sub_secs(time_control_t *ptimer1, float seconds, time_control_t *ptimer2);
+float time_diff(time_control_t *start, time_control_t *stop);
+float time_compare(time_control_t *ptimer1, time_control_t *ptimer2);
+float time_sub_secs(time_control_t *ptimer1, float seconds, time_control_t *ptimer2);
 #endif
 
 
@@ -132,7 +137,7 @@ Iu32 get_timestamp( void );
 
 PID get_process_pid();
 
-int debug1(const char * pdebug_flag);
+int debug1(const char *pdebug_flag);
 
 /* Just a simple define for now to document the call-sites.
  * This needs to be a platform specific function/macro to

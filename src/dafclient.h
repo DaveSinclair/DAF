@@ -19,8 +19,8 @@
 int remote_client_cntrl(char *remotehostname, bool_t clear_shared_memory_flag);
 int remote_client_cmd(char *remotehostname, int run_in_shell, char *cmdstring, char *identstring,
                       bool_t run_in_background, bool_t workqueueID_flag, Iu32 workqueueID, Iu32 actionresultID,
-                      char *sql_servername, char *sql_username, 
-                      char *sql_password, char *sql_databasename, Iu16 sql_port);
+                      char *sql_servername, char *sql_username,
+                      char *sql_password, char *sql_databasename, Iu16 sql_port, char *sql_socketname);
 int remote_client_query_cmdlog(char *remotehostname, bool_t no_headers, bool_t use_delimiter, char *delimter_string);
 int remote_client_query_auditlog(char *remotehostname, bool_t no_headers, bool_t use_delimiter, char *delimiter_string);
 
@@ -45,7 +45,11 @@ int remote_client_get_dirlist(char *remotehostname, char *remotepathname, dirlis
 int remote_client_deletefile(char *remotehostname, char *remotepathname);
 int remote_client_update_workqueue_status(char *remotehostname, int workqueueID, bool_t update_tag, int tag, bool_t update_state, char *state, bool_t update_pass, int pass, bool_t update_end);
 
-
+int query_slave_tag(char         *remotehostname,
+                    Iu32         tag,
+					int          *exit_code,
+					int          *exit_signal,
+					cmd_log_state          *exit_state);
 
 
 #endif

@@ -13,20 +13,22 @@
 
 void set_sql_debug_flag(bool_t sql_debug_flag);
 
-int perform_query(char *caller, 
-                  MYSQL *sql_connection, 
+int perform_query(char *caller,
+                  MYSQL *sql_connection,
                   char *query);
 
 MYSQL *do_connect(char *caller,
-                   char *host_name, 
-                   char *user_name, 
-                   char *password, 
-                   char *db_name,
-                   unsigned int port_num, 
-                   char *socket_name, 
-                   unsigned int flags);
+                  char *host_name,
+                  char *user_name,
+                  char *password,
+                  char *db_name,
+                  unsigned int port_num,
+                  char *socket_name,
+                  unsigned int flags,
+				  char *errmsg,
+				  int max_msg_len);
 void do_disconnect(char *caller,
-                        MYSQL *conn);
+                   MYSQL *conn);
 
 void print_query (MYSQL *conn, char *query);
 void print_result_set (MYSQL_RES *res_set);
@@ -55,7 +57,7 @@ int perform_drop(char *caller,
                  char  *errmsg,
                  int   max_msg_len);
 
-MYSQL_RES *check_for_res_set(char *caller, 
+MYSQL_RES *check_for_res_set(char *caller,
                              MYSQL *sql_connection,
                              char *query);
 #endif

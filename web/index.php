@@ -844,8 +844,8 @@ function deal_with_current_project_phase_cookies(&$current_project, &$current_ph
    // check if setcurrentprojectphase view has been submitted, if it has there will be cookies to set
    if (isset($_POST['setcurrentprojectphase'])) {
 
-      $current_phase = $_POST['phase'];
       $current_project = lookupfield('project', 'Name', 'ID', $_POST['projectID']);
+      $current_phase   = lookupfield('phase',   'Name', 'ID', $_POST['phase']);
 
       $project_names = get_names_of_objects("project", NULL);
 

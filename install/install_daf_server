@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # -------------------------------------------------------------------------------------------------------------------- # 
-
+#                                                                                                                      #
 # install_daf_server                                                                                                   #
 #                                                                                                                      #
 # This file is part of the daf test automation programme.                                                              #
@@ -16,8 +16,53 @@ err_report() {
 
 trap 'err_report $LINENO; exit 1' ERR
 
-MysqlPort=8902
+# --------------------------------------------------------------------------------------------#
+# usage()
+#
+# print usage info
+# --------------------------------------------------------------------------------------------#
+function usage {
+  echo 
+  echo "install_daf_server [-d]"
+  echo
+  echo "   -d           an optional paramater that indicates the default DAF ports are to be"
+  echo "                used for the LAMPP Apache and MySQL applications.  These are 8901 and 8902."
+  echo "                If -d is not specified, then the script will prompt the user to enter the"
+  echo "                desired ports from the keyboard, or simply accept the defaults"
+  echo
+  echo "Performs an initial install of the DAF server code, including the LAMPP stack and DAF server daemon"
+  echo
+}
+
+# --------------------------------------------------------------------------------------------#
+#
+# parse command line options
+#
+# we only allow as -d as a command line option - this will set the LAMPP Apache and SQL
+# ports to the DAF defaults
+#
+# --------------------------------------------------------------------------------------------#
+
+while getopts "dh" OPT
+do
+    case $OPT in
+    d)
+    USE_DEFAULT_PORTS=1
+      ;;
+    h)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "Unknown option $OPT - exiting"
+      usage
+      exit 1
+      ;;
+    esac
+done
+
 ApachePort=8901
+MysqlPort=8902
 PASSWORD=passw0rd
 
 LOGFILE=/tmp/dafinstall.log
@@ -83,18 +128,24 @@ then
    echo "This is a $LINUXRELEASE distribution" | tee -a $LOGFILE
    cat /etc/issue 2>/dev/null | tee -a $LOGFILE
 else
-   echo "Cannot determine what type of Linux distribution is running on this server - do you want to continue (Ubuntu will be assumed)?" | tee -a $LOGFILE
-   read  answer
-   case $answer in
-	yes|Yes|y)
+   if [[ ! -z "$USE_DEFAULT_PORTS" ]]
+   then
+     echo "Cannot determine what type of Linux distribution is running on this server (Ubuntu will be assumed) - do you want to continue (y/n)?" | tee -a $LOGFILE
+     read  answer
+     case $answer in
+    	yes|Yes|y)
                 echo "Assuming Ubuntu..."  | tee -a $LOGFILE
                 LINUXRELEASE=Ubuntu
 		;;
-	*)
+	    *)
                 echo "Not continuing..."  | tee -a $LOGFILE
                 exit
 		;;
-   esac    
+      esac
+   else
+     echo "Cannot determine what type of Linux distribution is running on this server (Ubuntu will be assumed)"
+     LINUXRELEASE=Ubuntu
+   fi    
 fi
 
 
@@ -120,38 +171,43 @@ fi
 thisdir=`pwd`
 mkdir -p /opt/daf
 
-echo "Do you wish to use the default port of $MysqlPort for the DAF SQL database (Y/n)?"
-read  answer
-case $answer in
-	yes|Yes|y)
-                echo "Using port $MysqlPort for the DAF SQL database"  | tee -a $LOGFILE
-		;;
-	no|n)
-                echo "Enter the port number to be used for the DAF SQL database:"
-                read  MyslqPort
-                echo "Using port $MysqlPort for the DAF SQL database"  | tee -a $LOGFILE
-		;;
-	*)
-                echo "Using port $MysqlPort for the DAF SQL database"  | tee -a $LOGFILE
-		;;
-esac
-
-echo "Do you wish to use the default port of $ApachePort for the DAF Web Server (Y/n)?"
-read  answer
-case $answer in
-	yes|Yes|y)
-                echo "Using port $ApachePort for the DAF Web Server"  | tee -a $LOGFILE
-		;;
-	no|n)
-                echo "Enter the port number to be used for the DAF Web Server:"
-                read  ApachePort
-                echo "Using port $MysqlPort for the DAF SQL database"  | tee -a $LOGFILE
-		;;
-		
-	*)
-                echo "Using port $ApachePort for the DAF Web Server"  | tee -a $LOGFILE
-		;;
-esac
+if [[ ! -z "$USE_DEFAULT_PORTS" ]]
+then
+  echo "The default ports will be used in this install"
+else
+	echo "Do you wish to use the default port of $MysqlPort for the DAF SQL database (Y/n)?"
+	read  answer
+	case $answer in
+		yes|Yes|y)
+	                echo "Using port $MysqlPort for the DAF SQL database"  | tee -a $LOGFILE
+			;;
+		no|n)
+	                echo "Enter the port number to be used for the DAF SQL database:"
+	                read  MyslqPort
+	                echo "Using port $MysqlPort for the DAF SQL database"  | tee -a $LOGFILE
+			;;
+		*)
+	                echo "Using port $MysqlPort for the DAF SQL database"  | tee -a $LOGFILE
+			;;
+	esac
+	
+	echo "Do you wish to use the default port of $ApachePort for the DAF Web Server (Y/n)?"
+	read  answer
+	case $answer in
+		yes|Yes|y)
+	                echo "Using port $ApachePort for the DAF Web Server"  | tee -a $LOGFILE
+			;;
+		no|n)
+	                echo "Enter the port number to be used for the DAF Web Server:"
+	                read  ApachePort
+	                echo "Using port $MysqlPort for the DAF SQL database"  | tee -a $LOGFILE
+			;;
+			
+		*)
+	                echo "Using port $ApachePort for the DAF Web Server"  | tee -a $LOGFILE
+			;;
+	esac
+fi
 
 # ----------------------------------------------------------
 # Install XAMPP
@@ -163,6 +219,10 @@ echo
 echo "Installing Xampp" | tee -a $LOGFILE
 cd xampp
 ./$XAMPINSTALLER --mode unattended
+
+echo "Stopping Xampp" | tee -a $LOGFILE
+/opt/lampp/lampp stopapache | tee -a $LOGFILE
+/opt/lampp/lampp stopmysql | tee -a $LOGFILE
 
 cd $thisdir
 
@@ -180,7 +240,7 @@ tar -xzf daf_web.tar.gz -C $DAFWEB 2>&1 | tee -a $LOGFILE
 # ----------------------------------------------------------
 
 echo "Modify mysql to use port $MysqlPort"  2>&1 | tee -a $LOGFILE
-sed "s%3306%$MysqlPort%" -i $XAMPDIR/etc/my.cnf  2>&1 | tee -a $LOGFILE
+sed "s%3306%$MysqlPort%g" -i $XAMPPDIR/etc/my.cnf  2>&1 | tee -a $LOGFILE
 sed "s%if testport 3306%if testport $MysqlPort%" -i $XAMPPDIR/lampp 2>&1 | tee -a $LOGFILE
 
 echo "Modify Apache to use port $ApachePort"  2>&1 | tee -a $LOGFILE
@@ -203,7 +263,7 @@ then
   :
 else
   echo "$XAMPPDIR/lampp/bin/php -v not running without error - cannot proceed - please check installation pre-requisites"  2>&1 | tee -a $LOGFILE
-  exit   
+  exit 1 
 fi
 
 # ----------------------------------------------------------
@@ -211,12 +271,16 @@ fi
 #-----------------------------------------------------------
 
 echo "Starting Xampp"  2>&1 | tee -a $LOGFILE
-$XAMPPDIR/lampp startapache startmsql  2>&1 | tee -a $LOGFILE
-if [[ $? -ne 0 ]]
-then
-  echo "Problem starting Xampp - cannot proceed - refer to $LOGFILE for failure details" 2>&1 | tee -a $LOGFILE
-  exit 1;
-fi
+$XAMPPDIR/lampp startapache 2>&1 | tee -a $LOGFILE
+$XAMPPDIR/lampp startmysql  2>&1 | tee -a $LOGFILE
+
+# ----------------------------------------------------------
+# Unpack the C source code and SQL initialisation scripts  
+# ----------------------------------------------------------
+
+echo "------- Unpack C source code and SQL initilisation scripts ---" | tee -a $LOGFILE
+mkdir -p $thisdir/server
+tar -xzf daf_server.tar.gz -C $thisdir/server
 
 # ----------------------------------------------------------
 # Create users and DAF tables the MySql database
@@ -224,15 +288,39 @@ fi
 
 echo "------- creating DAF_admin user ----------"  2>&1 | tee -a $LOGFILE
 $XAMPPDIR/bin/mysql <$thisdir/server/create_daf_admin  2>&1 | tee -a $LOGFILE
+if [[ $? -ne 0 ]]
+then
+  exit 1
+fi
 
 echo "------- creating DAF database user ----------"
 $XAMPPDIR/bin/mysql <$thisdir/server/create_daf_database 2>&1 | tee -a $LOGFILE
+if [[ $? -ne 0 ]]
+then
+  exit 1
+fi
 
 echo "------- creating DAF tables  ----------"
 $XAMPPDIR/bin/mysql <$thisdir/server/create_daf_tables 2>&1 | tee -a $LOGFILE
+if [[ $? -ne 0 ]]
+then
+  exit 1
+fi
+
+echo "------- creating DAF table predefined contents  ----------"
+$XAMPPDIR/bin/mysql <$thisdir/server/create_daf_table_contents 2>&1 | tee -a $LOGFILE
+if [[ $? -ne 0 ]]
+then
+  exit 1
+fi
+
 
 echo "------- creating DAF master test user  ----------"
 $XAMPPDIR/bin/mysql <$thisdir/server/create_master_test_user 2>&1 | tee -a $LOGFILE
+if [[ $? -ne 0 ]]
+then
+  exit 1
+fi
 
 mkdir $XAMPPDIR/htdocs/daf/backup 2>&1 | tee -a $LOGFILE
 chown nobody $XAMPPDIR/htdocs/daf/ 2>&1 | tee -a $LOGFILE
@@ -242,20 +330,16 @@ chown nobody $XAMPPDIR/htdocs/daf/ 2>&1 | tee -a $LOGFILE
 # ----------------------------------------------------------
 
 echo "------- compiling and installing DAF server daemon  ----------" | tee -a $LOGFILE
-mkdir -p $thisdir/server
-tar -xzf daf_server.tar.gz -C $thisdir/server
 cd server
 
 # Modify afconstants.h so that it contains the correct host name and password
 cat afconstants.h | grep -v SQLSERVERNAME | grep -v DEFAULT_SQLPASSWORD >afconstants.h.temp
-echo "#define DEFAULT_SQLSERVERNAME \"$HOSTNAME\"" >afconstants.h
+#echo "#define DEFAULT_SQLSERVERNAME \"$HOSTNAME\"" >afconstants.h
+echo "#define DEFAULT_SQLSERVERNAME \"localhost\"" >afconstants.h
 echo "#define DEFAULT_SQLPASSWORD \"passw0rd\"" >>afconstants.h
 cat afconstants.h.temp >>afconstants.h
+rm afconstants.h.temp
 
-make -f Makefile clean all
-cd $thisdir
-
-echo "------- installing DAF executable ----------" | tee -a $LOGFILE
 # since daf uses the SQL libraries and we want to use the particular libraries in the LAMPP distribution
 # we need to update the library path
 if test -z $LD_LIBRARY_PATH
@@ -265,6 +349,15 @@ else
         export LD_LIBRARY_PATH=$XAMPPDIR/lib:$LD_LIBRARY_PATH
 fi
 echo "LD_LIBRARY_PATH was set to $LD_LIBRARY_PATH" | tee -a $LOGFILE
+
+make -f Makefile clean all
+if [[ $? -ne 0 ]]
+then
+  exit 1
+fi
+cd $thisdir
+
+echo "------- installing DAF executable ----------" | tee -a $LOGFILE
 
 cd $thisdir/server
 ./daf -service delete stop install start 2>&1 | tee -a $LOGFILE
@@ -279,25 +372,48 @@ fi
 # ----------------------------------------------------------
 
 cp ./daf_licence /opt/daf 2>&1 | tee -a $LOGFILE
-chmod 777 /opt/daf 2>&1 | tee -a $LOGFILE                 # <<<<<<<<<<<< to make the licence file writeable  ?????
+# make the licence file writeable
+chmod 777 /opt/daf 2>&1 | tee -a $LOGFILE         
 
 # ----------------------------------------------------------
 # Copy the uninstall script to /opt
 # ----------------------------------------------------------
 
 echo "------- copying uninstall script to /opt ---" | tee -a $LOGFILE
-cp $thisdir/server/uninstall_daf_server /opt 2>&1 | tee -a $LOGFILE
+cp -f $thisdir/server/uninstall_daf_server /opt 2>&1 | tee -a $LOGFILE
 cd $thisdir
+
+# TEMP TEMP allow all hosts with user root to access mysql
+echo "INSERT INTO user (Host, User, Password, Select_priv, Insert_priv, Update_priv, Delete_priv, Create_priv, Drop_priv, Reload_priv, Shutdown_priv, \
+                          Process_priv, File_priv, Grant_priv, References_priv, Index_priv, Alter_priv, Show_db_priv, Super_priv, Create_tmp_table_priv, \
+                          Lock_tables_priv, Execute_priv, Repl_slave_priv, Repl_client_priv, Create_view_priv, Show_view_priv, Create_routine_priv, \
+                          Alter_routine_priv, Create_user_priv, Event_priv, Trigger_priv, Create_tablespace_priv, ssl_type, max_questions, max_updates, \
+                          max_connections, max_user_connections, plugin, authentication_string, password_expired, is_role, default_role, max_statement_time) \
+                          VALUES ('%', 'root', '*74B1C21ACE0C2D6B0678A5E503D2A60E8F9651A3', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', \
+                          'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', '', 0, 0, 0, 0, '', '', 'Y', 'Y', '', '0.000000');" | /opt/lampp/bin/mysql -uroot mysql 2>&1 | tee -a $LOGFILE
+if [[ $? -ne 0 ]]
+then
+  exit 1
+fi
 
 # ----------------------------------------------------------
 # Fix up the MySql root password
 # ----------------------------------------------------------
 
-echo "------- setting up MySQL - setting root $PASSWORD ---" | tee -a $LOGFILE
+echo "------- setting up MySQL - setting root password to $PASSWORD ---" | tee -a $LOGFILE
 echo "Setting new MySQL root password to $PASSWORD" 2>&1 | tee -a $LOGFILE
 echo "update user set Password=password('$PASSWORD') where User = 'root';" | $XAMPPDIR/bin/mysql -uroot mysql  2>&1 | tee -a $LOGFILE
 $XAMPPDIR/bin/mysqladmin reload  2>&1 | tee -a $LOGFILE
-sed "s%\$cfg\['Servers'\]\[\$i\]\['password'\] = '';%\$cfg\['Servers'\]\[\$i\]\['password'\] = '$PASSWORD';%" -i $XAMPPDIR/phpmyadmin/config.inc.php 2>&1 | tee -a $LOGFILE
+if [[ $? -ne 0 ]]
+then
+  exit 1
+fi
+
+# ----------------------------------------------------------
+# Fix up the phpmadmin passwords
+# ----------------------------------------------------------
+sed "s%\$cfg\['Servers'\]\[\$i\]\['password'\] = '';%\$cfg\['Servers'\]\[\$i\]\['password'\] = '$PASSWORD';%" \
+    -i $XAMPPDIR/phpmyadmin/config.inc.php 2>&1 | tee -a $LOGFILE
 
 # ----------------------------------------------------------
 # Ensure the DAF server starts up when the server is booted
@@ -328,17 +444,27 @@ echo "The DAF server has now been successfully installed" | tee -a $LOGFILE
 echo 
 echo "Now connect a web browser to    http://${FULLHOSTNAME}:${ApachePort}/daf    to complete the installation"  2>&1 | tee -a $LOGFILE
 echo "Login with the 'daf administrator' userid, password '$PASSWORD'" | tee -a $LOGFILE
-echo "Use the following licence:" | tee -a $LOGFILE
-$thisdir/server/daf_generate_licence | tee -a $LOGFILE
+#echo "Use the following licence:" | tee -a $LOGFILE
+$thisdir/server/daf_generate_licence >> $LOGFILE
+# install the licence so that the user does not have to remember to do so manually
+/opt/daf/daf_licence -write_licence /opt/daf/daf_licence_file -licence "`cat /tmp/dafinstall.log | grep "Licence is" | cut -f3-12 -d' '`"
 echo | tee -a $LOGFILE
 echo "Note: phpmyadmin is available at:   http://${FULLHOSTNAME}:${ApachePort}/phpmyadmin/" | tee -a $LOGFILE
 echo "Note: mysql is available at port ${MysqlPort}, root user, password $PASSWORD" | tee -a $LOGFILE
 echo "Note: the xampp dashboard is available at: http://${FULLHOSTNAME}:${ApachePort}/dashboard/" | tee -a $LOGFILE
+echo "Note: the Apache log is at: /opt/lampp/logs/error_log" | tee -a $LOGFILE
 echo
 echo "Note: run     /opt/lampp/lampp stopapache stopmysql      to stop Apache and MySql" | tee -a $LOGFILE
 echo "Note: run     /opt/lampp/lampp startapache startmysql    to start Apache and MySql" | tee -a $LOGFILE
 echo "Note: run     /opt/lampp/lampp reloadapache reloadmysql  to restart Apache and MySql" | tee -a $LOGFILE
 echo
 echo "Note: to deinstall the DAF server, run     /opt/uninstall_daf_server" | tee -a $LOGFILE
+echo 
+echo
+echo "REMINDER: you will have to patch in the threaded MYSQL library into LAMPP by hand"
+echo "  cp /usr/lib64/mysql/libmysqlclient_r.so.16 /opt/lampp/lib"
+echo "  cd /opt/lampp/lib"
+echo "  ln -sf libmysqlclient_r.so.16.0.0 libmysqlclient_r.so"
+
 echo
 

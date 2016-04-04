@@ -1,42 +1,92 @@
 There are two components to a DAF installation:
 
-  1.  The master server
-  2.  The test agent
+  1.  The DAF master server . This is installed on your master server and installs into /opt/lampp and /opt/daf and /opt only.
+  2.  The DAF test agent.  This must be installed on each test host and also installs into /opt/daf and /opt only.
+  
+  The agent should not be run on the master server.
   
 Making and installing the server package
 ========================================
 
 Prerequistes:
 
-a.  Turn off the firewall on your server:
+a.  Turn off the firewall on your server (or modify the firewall rules to allow outgoing connections on ports 8901 and 8902):
 
     service iptables stop
     chkconfig iptables off
     
+    Turning off the firewall completely is only recommended if your server and test hosts are both behind a company firewall.
+    
 b.  A gcc compiler and make support.
-c.  Various libraries, including (I think) mysqlclient-dev, zlib
+
+c.  Various libraries, including (I think) mysqlclient-dev, zlib (For ubuntu I needed this: sudo apt-get install libmysqlclient-dev, For RedHat 64 bit I needed this:
+    yum install mysql-devel.x86_64).  If an install fails because of missing rpm, and you want to restart it, do a
+    rm -rf /opt/lampp /opt/daf
+    before re-running the install_daf_server script.
+    You may also need to kill any httpd or mysql processes that have been started by the LAMPP install before rerunning
+    the install_daf_server script.
+    
 d.  Confirm that the portmap service is running, eg
+
     rpcinfo -p
  
-1.  Run the 
- 
-    make_daf_server_packages
+1.  This first step must be done inside the DAF source tree root, ie from the directory that mak_daf_server_package resides in.  This might
+    be in your Eclipse workspace, so 
     
-    to create a daf_server.tgz installation file.    This must be done inside the DAF source tree root, ie from the directory that mak_daf_server_package resides in. 
+    cd ..../<eclise_workspace_name>/DAF 
+    make_daf_packages
     
-2.  Copy the daf_server.tgz to a temporary directory, eg /tmp/daf,  on your chosen server (this must be a Linux box, preferably 64 bit Redhat).  Then on the
+    to create a daf.tar.gz installation file.  This will also created a daf_agent.tar.gz file for use when installing the agent).    
+    
+2.  Copy the daf_tar.tgz file to a temporary directory, eg /tmp/daf, on your chosen server (this must be a Linux box, preferably 64 bit Redhat).  Then on the
     server, as root,
     
     cd /tmp/daf      
-    tar -xzf daf_server.tgz
-    ./install_daf_server
+    tar -xzf daf.tar.gz
+    sudo ./install_daf_server
+    
+    If the OS is not recognised then it will ask if you want to continue. The response is 'y' if you do.
+    
+
+Note: If you just want to reinstall the C and PHP code, create the packages as in 1 above, but then copy the daf_server_no_LAMPP_tar.gz 
+to a temporary directory, eg /tmp/daf, on your chosen server (this must be a Linux box, preferably 64 bit Redhat).  Then on the
+server, as root,
+    
+    cd /tmp/daf      
+    tar -xzf daf_server_no_LAMPP_tar.gz
+    ./reinstall_daf_server
+
+This will update the C and PHP code, but will not delete any data in the existing MySQL tables, nor will it change the LAMPP stack.
+
+Where is stuff installed?
+=========================
+
+The DAF server package only installs files in /opt/lampp and /opt/daf, plus a deinstallation script in /opt.
+All other files on the server are unchanged.
+The XAMPP Apache webserver error log is in /opt/lampp/logs/error_log 
+
+Uninstalling the test server package
+============================================
+
+Run the 
+
+   /opt/uninstall_daf_server 
+   
+script.
+
+If you have to do this manually
+
+1. Find the httpd and mysql processes that belong to LAMPP and kill them. Then run:
+
+    sudo rm -rf /opt/lampp
+    sudo rm -rf /opt/daf
     
 Making and installing the test agent package
 ============================================
 
 Prerequistes:
 
-a.  Turn off the firewall on your test slave, eg:
+a.  Make sure your firewall allows incoming socket connections - one drastic way to do this is to turn off the firewall , eg:
 
     service iptables stop
     chkconfig iptables off
@@ -45,17 +95,35 @@ b.  A gcc compiler and make support.
 c.  Confirm that the portmap service is running, eg
     rpcinfo -p
  
-1.  Run the 
- 
-    make_daf_agent_package
+1.  This first step must be done inside the DAF source tree root, ie from the directory that mak_daf_server_package resides in.  This might
+    be in your Eclipse workspace, so 
     
-    to create a daf_agent.tgz installation file.    This must be done inside the DAF source tree root, ie from the directory that mak_daf_agent_package resides in. 
+    cd ..../<eclise_workspace_name>/DAF 
+    make_daf_packages
     
-2.  Copy the daf_agent.tgz to a temporary directory, eg /tmp/daf,  on your chosen test slave (this can be any OS that you can do an appropriate C compile on).  
+    to create a daf_agent.tar.gz installation file.  This will also created a daf.tar.gz file for use when installing the service). 
+    
+2.  Copy the daf_agent.tgz file to a temporary directory, eg /tmp/daf, on your chosen test slave (this can be any OS that you can do an appropriate C compile on).  
     Then on the test slave, as root,
     
     cd /tmp/daf      
     tar -xzf daf_agent.tgz
     ./install_daf_agent
  
- 3.  Now go to your DAF server and make an entry for this particular test slave host in the Hosts table and confirm that is reported as being online.   
+ 3.  Now go to your DAF server and make an entry for this particular test slave host in the Hosts table and confirm that is reported as being online. 
+     If the server does not see the agent, then, on the server, run
+     
+     /opt/daf/daf -remote <slavename> -query version
+     
+     eg:
+     
+     daf -remote fernand -query version
+     
+     which would report, if successful:
+     
+     Local daf version 1.1 (daf: (compiled on Mar 26 2016 at 16:45:38)), Remote service version 1.1 (daf: (compiled on Mar 30 2016 at 09:21:04))
+     Exit code for daf is 0
+     
+     
+     
+       

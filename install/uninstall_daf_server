@@ -19,6 +19,50 @@ trap 'err_report $LINENO; exit 1' ERR
 XAMPPDIR=/opt/lampp
 DAFWEB=/opt/lampp/htdocs/daf
 
+# --------------------------------------------------------------------------------------------#
+# usage()
+#
+# print usage info
+# --------------------------------------------------------------------------------------------#
+function usage {
+  echo 
+  echo "uninstall_daf_server [-f]"
+  echo
+  echo "   -f           force the install, ie skip any keyboard confirmations - use in unattended mode"
+  echo
+  echo "Performs a deinstall of the DAF server code, including the LAMPP stack and DAF server daemon"
+  echo
+}
+
+
+# --------------------------------------------------------------------------------------------#
+#
+# parse command line options
+#
+# we only allow as -f as a command line option - this will skip any confirmation prompts
+# so the script can run in an unattended mode
+#
+# --------------------------------------------------------------------------------------------#
+
+while getopts "fh" OPT
+do
+    case $OPT in
+    f)
+    FORCE=1
+      ;;
+    h)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "Unknown option $OPT - exiting"
+      usage
+      exit 1
+      ;;
+    esac
+done
+
+
 # ----------------------------------------------------------
 # we need root to run this script
 # ----------------------------------------------------------
@@ -74,18 +118,24 @@ then
    echo "This is a $LINUXRELEASE distribution" | tee -a $LOGFILE
    cat /etc/issue 2>/dev/null | tee -a $LOGFILE
 else
-   echo "Cannot determine what type of Linux distribution is running on this server - do you want to continue (Ubuntu will be assumed)?" | tee -a $LOGFILE
-   read  answer
-   case $answer in
-	yes|Yes|y)
+   if [[! -z "$FORCE" ]]
+   then
+     echo "Cannot determine what type of Linux distribution is running on this server - assuming Ubuntu"
+     LINUXRELEASE=Ubuntu
+   else       
+     echo "Cannot determine what type of Linux distribution is running on this server - do you want to continue (Ubuntu will be assumed)?" | tee -a $LOGFILE
+     read  answer
+     case $answer in  
+	   yes|Yes|y)
                 echo "Assuming Ubuntu..."  | tee -a $LOGFILE
                 LINUXRELEASE=Ubuntu
 		;;
-	*)
+	 *)
                 echo "Not continuing..."  | tee -a $LOGFILE
                 exit
 		;;
-   esac    
+     esac
+   fi    
 fi
 
 
@@ -112,9 +162,11 @@ echo "backup of each project/phase result database and also of the main DAF serv
 echo "These backups must be copied to a safe place before deleting the DAF server as the backup process places the"
 echo "backup files in the /opt/lampp/htdocs/daf/backup directory on this machine, and this directory is deleted when"
 echo "the DAF installation is uninstalled"
-echo "Do you wish to proceed and uninstall the DAF server (y/N)?"
-read  answer
-case $answer in
+if [[ -z "$FORCE" ]]
+then
+  echo "Do you wish to proceed and uninstall the DAF server (y/N)?"
+  read  answer
+  case $answer in
         yes|Yes|y)
                 echo "DAF will be uninstalled...."
                 sleep 10;
@@ -123,18 +175,15 @@ case $answer in
                 echo "DAF will not be uninstalled"
                 exit;
                 ;;
-esac
-
+  esac
+fi
 
 echo "Stopping Xampp"
-/opt/lampp/lampp stop
+/opt/lampp/lampp stopapache
+/opt/lampp/lampp stopmysql
 
 echo "------- uninstalling daf executable ----------"
 /opt/daf/daf -service stop delete
-
-echo "------- deleting installed files and databases ----------"
-rm -rf /opt/lampp
-rm -rf /opt/daf
 
 echo "------- removing boot up start of lampp ----------"
 # undo the ln -s /opt/lampp/lampp /etc/init.d/lampp link
@@ -151,6 +200,10 @@ else
    chkconfig --del lampp
 fi
 
+echo "------- deleting installed files and databases ----------"
+rm -rf /opt/lampp
+rm -rf /opt/daf
+
 echo
-echo "The DAF agent has successfully been uninstalled"
+echo "The DAF server has successfully been uninstalled"
 echo

@@ -31,29 +31,36 @@
 /*                                                                                                        */
 /*--------------------------------------------------------------------------------------------------------*/
 
-int display_licence(char *licence_pathname) {
+int display_licence(char *licence_pathname)
+{
 
-   int rc = E_OK;   
-   char line[256];
-   FILE  *fptr = NULL;
-   char msg[MAX_MSG_LEN];
-   
-   if ((fptr = fopen(licence_pathname, "rb")) == NULL ) {
+    int rc = E_OK;
+    char line[256];
+    FILE  *fptr = NULL;
+    char msg[MAX_MSG_LEN];
 
-      snprintf(msg, sizeof(msg), "%s: Could not open %s\n", "display_licence", licence_pathname);
-      rc = E_NOTOK;
+    if ((fptr = fopen(licence_pathname, "rb")) == NULL )
+    {
 
-   } else {
+        snprintf(msg, sizeof(msg), "%s: Could not open %s\n", "display_licence", licence_pathname);
+        rc = E_NOTOK;
 
-      while(fgets(line, sizeof(line)-1, fptr) != NULL) {
-         print_msg_to_console(line);
-      }
-   }
+    }
+    else
+    {
 
-   if (fptr != NULL) {
-      fclose(fptr);  
-   }
-   return (rc);
+        while(fgets(line, sizeof(line)-1, fptr) != NULL)
+        {
+            print_msg_to_console(line);
+        }
+    }
+
+    if (fptr != NULL)
+    {
+        fclose(fptr);
+    }
+
+    return (rc);
 
 }
 
@@ -71,89 +78,108 @@ int display_licence(char *licence_pathname) {
 /*                                                                                                        */
 /*--------------------------------------------------------------------------------------------------------*/
 
-int read_licence(char *licence_pathname, licence_t* licence, bool_t *valid, bool_t *current, char *errmsg, int max_msg_len) {
+int read_licence(char *licence_pathname, licence_t *licence, bool_t *valid, bool_t *current, char *errmsg, int max_msg_len)
+{
 
-   Iu8 licence_bytes[20];  /* hardcoded <<<< */
-   FILE  *fptr = NULL;
-   int   num_fields_read;   
-   Iu16  checksum;
-   int   i;
-   int   temp;
+    Iu8 licence_bytes[20];  /* hardcoded <<<< */
+    FILE  *fptr = NULL;
+    int   num_fields_read;
+    Iu16  checksum;
+    int   i;
+    int   temp;
 
-   int rc = E_OK;
-   strncpy(errmsg, "", max_msg_len);
-   *current = TRUE;
-   *valid = TRUE;
-   memset(licence, 0, sizeof(licence));
+    int rc = E_OK;
+    strncpy(errmsg, "", max_msg_len);
+    *current = TRUE;
+    *valid = TRUE;
+    memset(licence, 0, sizeof(*licence));
 
-   if ((fptr = fopen(licence_pathname, "rb")) == NULL ) {
+    if ((fptr = fopen(licence_pathname, "rb")) == NULL )
+    {
 
-      snprintf(errmsg, max_msg_len, "%s: Could not open %s\n", "validate_licence", licence_pathname);
-      *valid = FALSE;
-      *current = FALSE; 
-      rc = E_NOTOK;
+        snprintf(errmsg, max_msg_len, "%s: Could not open %s\n", "validate_licence", licence_pathname);
+        *valid = FALSE;
+        *current = FALSE;
+        rc = E_NOTOK;
 
-   } else {
+    }
+    else
+    {
 
-      i = 0;
-      num_fields_read = 0;
-      while (i < 20) {
-         num_fields_read = num_fields_read + fscanf(fptr, "%x", &temp);
-         *(Iu16 *) &(licence_bytes[i]) = temp;
-         temp = licence_bytes[i];     /* Swap endianness */
-         licence_bytes[i] = licence_bytes[i+1];
-         licence_bytes[i+1] = temp;
-         i = i+2;
-      }
+        i = 0;
+        num_fields_read = 0;
 
-      if (num_fields_read == 10) {
+        while (i < 20)
+        {
+            num_fields_read = num_fields_read + fscanf(fptr, "%x", &temp);
+            *(Iu16 *) &(licence_bytes[i]) = temp;
+            temp = licence_bytes[i];     /* Swap endianness */
+            licence_bytes[i] = licence_bytes[i+1];
+            licence_bytes[i+1] = temp;
+            i = i+2;
+        }
 
-         licence->Type     = *(Iu16*) (&(licence_bytes[0]));
-         licence->Serial   = *(Iu32*) (&(licence_bytes[2]));
-         licence->Origin   = *(Iu32*) (&(licence_bytes[6]));
-         licence->Duration = *(Iu32*) (&(licence_bytes[10]));
-         licence->Actions  = *(Iu16*) (&(licence_bytes[14]));
-         licence->Spare    = *(Iu16*) (&(licence_bytes[16]));
-         licence->Checksum = *(Iu16*) (&(licence_bytes[18]));
+        if (num_fields_read == 10)
+        {
 
-         if (licence->Type != 10) {
+            licence->Type     = *(Iu16 *) (&(licence_bytes[0]));
+            licence->Serial   = *(Iu32 *) (&(licence_bytes[2]));
+            licence->Origin   = *(Iu32 *) (&(licence_bytes[6]));
+            licence->Duration = *(Iu32 *) (&(licence_bytes[10]));
+            licence->Actions  = *(Iu16 *) (&(licence_bytes[14]));
+            licence->Spare    = *(Iu16 *) (&(licence_bytes[16]));
+            licence->Checksum = *(Iu16 *) (&(licence_bytes[18]));
+
+            if (licence->Type != 10)
+            {
+                *valid = FALSE;
+                *current = FALSE;
+            }
+
+            if (licence->Serial < 567)
+            {
+                *valid = FALSE;
+                *current = FALSE;
+            }
+
+            checksum = 0;
+
+            for (i=0; i<sizeof(licence_bytes); i=i+2)
+            {
+                checksum = checksum ^ *((Iu16 *) &(licence_bytes[i]));
+            }
+
+            if (checksum != 0)
+            {
+                *valid = FALSE;
+                *current = FALSE;
+            }
+
+            if (valid)
+            {
+                if (licence->Duration == 0)
+                {
+                    *current = TRUE;
+                }
+                else
+                {
+                    if ((licence->Origin + licence->Duration * 24 * 60 * 60) > time(0))
+                    {
+                        *current = TRUE;
+                    }
+                }
+            }
+
+        }
+        else
+        {
             *valid = FALSE;
-            *current = FALSE; 
-         }
+            *current = FALSE;
+        }
 
-         if (licence->Serial < 567) {
-            *valid = FALSE;
-            *current = FALSE; 
-         }
+    }
 
-         checksum = 0;
-         for (i=0; i<sizeof(licence_bytes); i=i+2) {
-            checksum = checksum ^ *((Iu16 *) &(licence_bytes[i]));
-         }
-
-         if (checksum != 0) {
-            *valid = FALSE; 
-            *current = FALSE; 
-         }  
-
-         if (valid) {
-            if (licence->Duration == 0) {
-               *current = TRUE;
-            } else {
-               if ((licence->Origin + licence->Duration * 24 * 60 * 60) > time(0)) {
-                  *current = TRUE;
-               }
-            }  
-         }
-
-      } else {
-         *valid = FALSE; 
-         *current = FALSE; 
-      }
-
-   }
-
-   return rc;
+    return rc;
 
 }
 
@@ -202,57 +228,74 @@ int read_licence(char *licence_pathname, licence_t* licence, bool_t *valid, bool
 /*   Iu16  Checksum;         16 bit XOR over the other fields so that the total XOR is 0                  */
 /*--------------------------------------------------------------------------------------------------------*/
 
-int validate_licence(char *licence_pathname) {
+int validate_licence(char *licence_pathname)
+{
 
-   licence_t licence; 
-   char  msg[MAX_MSG_LEN];
-   int   valid = TRUE;
-   int   current = TRUE;
+    licence_t licence;
+    char  msg[MAX_MSG_LEN];
+    int   valid = TRUE;
+    int   current = TRUE;
 
-   int rc = E_OK;
+    int rc = E_OK;
 
-   sprintf(msg, "Licence file %s contains:\n", licence_pathname);
-   print_msg_to_console(msg);
-   rc = display_licence(licence_pathname);
+    sprintf(msg, "Licence file %s contains:\n", licence_pathname);
+    print_msg_to_console(msg);
+    rc = display_licence(licence_pathname);
 
-   if (rc == 0) {
+    if (rc == 0)
+    {
 
-      rc = read_licence(licence_pathname, &licence, &valid, &current, msg, sizeof(msg));
+        rc = read_licence(licence_pathname, &licence, &valid, &current, msg, sizeof(msg));
 
-      if (rc != E_OK) {
+        if (rc != E_OK)
+        {
 
-         print_msg_to_console(msg);
-         valid = FALSE;
+            print_msg_to_console(msg);
+            valid = FALSE;
 
-      } else {
+        }
+        else
+        {
 
-         sprintf(msg, "type      %d\n", licence.Type); print_msg_to_console(msg);
-         sprintf(msg, "serial    %d\n", licence.Serial); print_msg_to_console(msg);
-         sprintf(msg, "origin    %d\n", licence.Origin); print_msg_to_console(msg);
-         sprintf(msg, "spare     %d\n", licence.Duration); print_msg_to_console(msg);
-         sprintf(msg, "steps     %d\n", licence.Actions); print_msg_to_console(msg);
-         sprintf(msg, "spare     %d\n", licence.Spare); print_msg_to_console(msg);
-         sprintf(msg, "checksum  %x\n", licence.Checksum); print_msg_to_console(msg);
+            sprintf(msg, "type      %d\n", licence.Type);
+            print_msg_to_console(msg);
+            sprintf(msg, "serial    %d\n", licence.Serial);
+            print_msg_to_console(msg);
+            sprintf(msg, "origin    %d\n", licence.Origin);
+            print_msg_to_console(msg);
+            sprintf(msg, "spare     %d\n", licence.Duration);
+            print_msg_to_console(msg);
+            sprintf(msg, "steps     %d\n", licence.Actions);
+            print_msg_to_console(msg);
+            sprintf(msg, "spare     %d\n", licence.Spare);
+            print_msg_to_console(msg);
+            sprintf(msg, "checksum  %x\n", licence.Checksum);
+            print_msg_to_console(msg);
 
-      }
-   } else {
-     valid = FALSE;
-   }
+        }
+    }
+    else
+    {
+        valid = FALSE;
+    }
 
-   if (! valid) {
+    if (! valid)
+    {
 
-      print_msg_to_console("Licence:INVALID:00000000:0:0:0:0\n");
-      rc = E_NOTOK;
+        print_msg_to_console("Licence:INVALID:00000000:0:0:0:0\n");
+        rc = E_NOTOK;
 
-   } else {
+    }
+    else
+    {
 
-      /* Licence:VALID:00001001:60:1324042820:0:100                                                             */
-      sprintf(msg, "Licence:VALID:%08d:%d:%d:%d:%d\n", licence.Serial, licence.Duration, licence.Origin, licence.Type, licence.Actions);
-      print_msg_to_console(msg);
-      rc = E_OK;
-   }
+        /* Licence:VALID:00001001:60:1324042820:0:100                                                             */
+        sprintf(msg, "Licence:VALID:%08d:%d:%d:%d:%d\n", licence.Serial, licence.Duration, licence.Origin, licence.Type, licence.Actions);
+        print_msg_to_console(msg);
+        rc = E_OK;
+    }
 
-   return rc;
+    return rc;
 
 }
 
@@ -271,17 +314,21 @@ int validate_licence(char *licence_pathname) {
 /*                                                                                                        */
 /*--------------------------------------------------------------------------------------------------------*/
 
-int get_licence_max_actions(char *licence_pathname, char *errmsg, int max_msg_len) {
+int get_licence_max_actions(char *licence_pathname, char *errmsg, int max_msg_len)
+{
 
-   licence_t licence;
-   int       valid = TRUE;
-   int       current = TRUE;
+    licence_t licence;
+    int       valid = TRUE;
+    int       current = TRUE;
 
-   if (read_licence(licence_pathname, &licence, &valid, &current, errmsg, max_msg_len) != E_OK) {
-      return 0;
-   } else {
-      return licence.Actions;
-   }
+    if (read_licence(licence_pathname, &licence, &valid, &current, errmsg, max_msg_len) != E_OK)
+    {
+        return 0;
+    }
+    else
+    {
+        return licence.Actions;
+    }
 }
 
 /*--------------------------------------------------------------------------------------------------------*/
@@ -298,53 +345,63 @@ int get_licence_max_actions(char *licence_pathname, char *errmsg, int max_msg_le
 /*                                                                                                        */
 /*--------------------------------------------------------------------------------------------------------*/
 
-int write_licence(char *licence_pathname, char *licence_string) {
+int write_licence(char *licence_pathname, char *licence_string)
+{
 
-   int   rc = E_OK;
-   FILE  *fptr = NULL;
-   char  msg[MAX_MSG_LEN];
+    int   rc = E_OK;
+    FILE  *fptr = NULL;
+    char  msg[MAX_MSG_LEN];
 
-   if (strlen(licence_pathname) == 0) {
-      
-      snprintf(msg, sizeof(msg), "%s: licence pathname is of zero length\n", "write_licence");
-      print_msg_to_console(msg);
-      rc = E_NOTOK;
+    if (strlen(licence_pathname) == 0)
+    {
 
-   } else if (strlen(licence_string) == 0) {
-      
-      snprintf(msg, sizeof(msg), "%s: licence string is of zero length\n", "write_licence");
-      print_msg_to_console(msg);
-      rc = E_NOTOK;
+        snprintf(msg, sizeof(msg), "%s: licence pathname is of zero length\n", "write_licence");
+        print_msg_to_console(msg);
+        rc = E_NOTOK;
 
-   } else {
+    }
+    else if (strlen(licence_string) == 0)
+    {
 
-      if ((fptr = fopen(licence_pathname, "wb")) == NULL ) {
+        snprintf(msg, sizeof(msg), "%s: licence string is of zero length\n", "write_licence");
+        print_msg_to_console(msg);
+        rc = E_NOTOK;
 
-         snprintf(msg, sizeof(msg), "%s: Could not open %s\n", "write_licence", licence_pathname);
-         print_msg_to_console(msg);
-         rc = E_NOTOK;
+    }
+    else
+    {
 
-      } else {
+        if ((fptr = fopen(licence_pathname, "wb")) == NULL )
+        {
 
-         /* num_bytes_written = fwrite(licence, sizeof(Iu8), strlen(licence), fptr);
-
-         if (num_bytes_written != strlen(licence)) {
-            snprintf(msg, sizeof(msg), "%s: Could not write requested number of bytes (%d) to %s - only %d written\n",
-                     "write_licence", (int) strlen(licence), licence_pathname, num_bytes_written);
+            snprintf(msg, sizeof(msg), "%s: Could not open %s\n", "write_licence", licence_pathname);
             print_msg_to_console(msg);
             rc = E_NOTOK;
-         } */
 
-         fprintf(fptr, "%s\n", licence_string);
+        }
+        else
+        {
 
-      }
+            /* num_bytes_written = fwrite(licence, sizeof(Iu8), strlen(licence), fptr);
 
-      if (fptr != NULL) {
-         fclose(fptr);
-      }
-   }
+            if (num_bytes_written != strlen(licence)) {
+               snprintf(msg, sizeof(msg), "%s: Could not write requested number of bytes (%d) to %s - only %d written\n",
+                        "write_licence", (int) strlen(licence), licence_pathname, num_bytes_written);
+               print_msg_to_console(msg);
+               rc = E_NOTOK;
+            } */
 
-   return rc;
+            fprintf(fptr, "%s\n", licence_string);
+
+        }
+
+        if (fptr != NULL)
+        {
+            fclose(fptr);
+        }
+    }
+
+    return rc;
 
 }
 

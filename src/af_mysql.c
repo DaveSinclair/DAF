@@ -6,8 +6,8 @@
 /* ------------------------------------------------------------------------------------------------- */
 
 #include <stdio.h>
-#include <stdlib.h> 
-#include <string.h> 
+#include <stdlib.h>
+#include <string.h>
 #include <mysql.h>
 #include "af_mysql.h"
 #include "daf_util.h"
@@ -20,9 +20,10 @@ int mysqldebug = 0;
 
 void print_result_set(MYSQL_RES *res_set);
 
-void set_sql_debug_flag(bool_t sql_debug_flag) {
+void set_sql_debug_flag(bool_t sql_debug_flag)
+{
 
-   mysqldebug = sql_debug_flag;
+    mysqldebug = sql_debug_flag;
 
 }
 
@@ -43,28 +44,31 @@ void set_sql_debug_flag(bool_t sql_debug_flag) {
 /*                                                                                                   */
 /* ------------------------------------------------------------------------------------------------- */
 
-int perform_query(char *caller, MYSQL *sql_connection, char *query) {
+int perform_query(char *caller, MYSQL *sql_connection, char *query)
+{
 
 #undef  SUBNAME
 #define SUBNAME "perform_query"
 
-   int  rc;
-   char msg[1024];
+    int  rc;
+    char msg[1024];
 
-   rc = mysql_query(sql_connection, query);
+    rc = mysql_query(sql_connection, query);
 
-   if (mysqldebug) {
-      snprintf(msg, sizeof(msg), "%s: %s\n", SUBNAME, query);
-      print_msg_to_console(msg);
-   }
+    if (mysqldebug)
+    {
+        snprintf(msg, sizeof(msg), "%s: %s\n", SUBNAME, query);
+        print_msg_to_console(msg);
+    }
 
-   if (rc != 0) {
-      snprintf(msg, sizeof(msg), "%s: MYSQL error %d (%s) reported for query: %s\n", 
-               caller, mysql_errno(sql_connection), mysql_error(sql_connection), query);
-      print_msg_to_console(msg);
-   }
+    if (rc != 0)
+    {
+        snprintf(msg, sizeof(msg), "%s: MYSQL error %d (%s) reported for query: %s\n",
+                 caller, mysql_errno(sql_connection), mysql_error(sql_connection), query);
+        print_msg_to_console(msg);
+    }
 
-   return rc;
+    return rc;
 
 }
 
@@ -90,40 +94,49 @@ int perform_query(char *caller, MYSQL *sql_connection, char *query) {
 /*             If an error occurs an error message is printed to STDERR                              */
 /* ------------------------------------------------------------------------------------------------- */
 
-void print_query (MYSQL *conn, 
-                  char *query) {
- 
+void print_query (MYSQL *conn,
+                  char *query)
+{
+
 #undef  SUBNAME
 #define SUBNAME "print_query"
 
-  MYSQL_RES    *res_set;
-  char         msg[MAX_MSG_LEN];
+    MYSQL_RES    *res_set;
+    char         msg[MAX_MSG_LEN];
 
-  if (perform_query(SUBNAME, conn, query) != 0) { /* the query failed */
-    return;
-  }
-
-  /* the query succeeded; determine whether or not it returns data */
-
-  res_set = mysql_store_result (conn);
-  if (res_set == NULL) {  /* no result set was returned */
-    /* does the lack of a result set mean that an error  occurred or that no result set was returned? */
-    if (mysql_field_count(conn) > 0) {
-      /* a result set was expected, but mysql_store_result() did not return one; this means an error occurred */
-      snprintf(msg, sizeof(msg), "%s: result set is unexpectedly empty for query: %s, errno=%d (%s)\n", 
-               SUBNAME, query, mysql_errno(conn), mysql_error(conn));
-      print_msg_to_console(msg);
-    } else {
-      /* no result set was returned; query returned no data (it was not a SELECT, SHOW, DESCRIBE, or EXPLAIN), */
-      /* so just report number of rows affected by query */
-      snprintf(msg, sizeof(msg), "%s: query: %s: %lu rows affected\n", SUBNAME, query, (unsigned long) mysql_affected_rows (conn));
-      print_msg_to_console(msg);
+    if (perform_query(SUBNAME, conn, query) != 0)   /* the query failed */
+    {
+        return;
     }
-  } else {  /* a result set was returned */
-    /* process rows, then free the result set */
-    print_result_set(res_set);
-    mysql_free_result(res_set);
-  }
+
+    /* the query succeeded; determine whether or not it returns data */
+
+    res_set = mysql_store_result (conn);
+
+    if (res_set == NULL)    /* no result set was returned */
+    {
+        /* does the lack of a result set mean that an error  occurred or that no result set was returned? */
+        if (mysql_field_count(conn) > 0)
+        {
+            /* a result set was expected, but mysql_store_result() did not return one; this means an error occurred */
+            snprintf(msg, sizeof(msg), "%s: result set is unexpectedly empty for query: %s, errno=%d (%s)\n",
+                     SUBNAME, query, mysql_errno(conn), mysql_error(conn));
+            print_msg_to_console(msg);
+        }
+        else
+        {
+            /* no result set was returned; query returned no data (it was not a SELECT, SHOW, DESCRIBE, or EXPLAIN), */
+            /* so just report number of rows affected by query */
+            snprintf(msg, sizeof(msg), "%s: query: %s: %lu rows affected\n", SUBNAME, query, (unsigned long) mysql_affected_rows (conn));
+            print_msg_to_console(msg);
+        }
+    }
+    else      /* a result set was returned */
+    {
+        /* process rows, then free the result set */
+        print_result_set(res_set);
+        mysql_free_result(res_set);
+    }
 }
 
 /* ------------------------------------------------------------------------------------------------- */
@@ -142,20 +155,28 @@ void print_query (MYSQL *conn,
 /* Prints the dashes needed by print_result_set() as used by the standard box output format          */
 /* ------------------------------------------------------------------------------------------------- */
 
-void print_dashes (MYSQL_RES *res_set) {
+void print_dashes (MYSQL_RES *res_set)
+{
 
-  MYSQL_FIELD   *field;
-  unsigned int  i, j;
+    MYSQL_FIELD   *field;
+    unsigned int  i, j;
 
-  mysql_field_seek (res_set, 0);
-  fputc ('+', stdout);
-  for (i = 0; i < mysql_num_fields (res_set); i++) {
-    field = mysql_fetch_field (res_set);
-    for (j = 0; j < field->max_length + 2; j++)
-      fputc ('-', stdout);
+    mysql_field_seek (res_set, 0);
     fputc ('+', stdout);
-  }
-  fputc ('\n', stdout);
+
+    for (i = 0; i < mysql_num_fields (res_set); i++)
+    {
+        field = mysql_fetch_field (res_set);
+
+        for (j = 0; j < field->max_length + 2; j++)
+        {
+            fputc ('-', stdout);
+        }
+
+        fputc ('+', stdout);
+    }
+
+    fputc ('\n', stdout);
 }
 
 /* ------------------------------------------------------------------------------------------------- */
@@ -177,57 +198,79 @@ void print_dashes (MYSQL_RES *res_set) {
 /*     | last_name  |  first_name   |    town     |                                                  */
 /*     +------------+---------------+-------------+                                                  */
 /*     | Smith      | John          | London      |                                                  */
-/*     | Brown      | William       | Bristol     |                                                  */ 
-/*     +------------+---------------+-------------+                                                  */ 
+/*     | Brown      | William       | Bristol     |                                                  */
+/*     +------------+---------------+-------------+                                                  */
 /* ------------------------------------------------------------------------------------------------- */
 
-void print_result_set (MYSQL_RES *res_set) {
+void print_result_set (MYSQL_RES *res_set)
+{
 
-  MYSQL_FIELD   *field;
-  MYSQL_ROW     row;
-  unsigned int  i, col_len;
+    MYSQL_FIELD   *field;
+    MYSQL_ROW     row;
+    unsigned int  i, col_len;
 
-  /* determine column display widths */
-  mysql_field_seek (res_set, 0);
-  for (i = 0; i < mysql_num_fields (res_set); i++) {
-    field = mysql_fetch_field (res_set);
-    col_len = strlen (field->name);
-    if (col_len < field->max_length) {
-      col_len = field->max_length;
-	}
-    if (col_len < 4 && !IS_NOT_NULL (field->flags)) {
-      col_len = 4;  /* 4 = length of the word "NULL" */
-    }
-    field->max_length = col_len;  /* reset column info */
-  }
-
-  print_dashes (res_set);
-  fputc ('|', stdout);
-  mysql_field_seek (res_set, 0);
-  for (i = 0; i < mysql_num_fields (res_set); i++) {
-    field = mysql_fetch_field (res_set);
-    printf (" %-*s |", (int) field->max_length, field->name);
-  }
-  fputc ('\n', stdout);
-  print_dashes (res_set);
-
-  while ((row = mysql_fetch_row (res_set)) != NULL) {
+    /* determine column display widths */
     mysql_field_seek (res_set, 0);
-    fputc ('|', stdout);
-    for (i = 0; i < mysql_num_fields (res_set); i++) {
-      field = mysql_fetch_field (res_set);
-      if (row[i] == NULL) {
-        printf (" %-*s |", (int) field->max_length, "NULL");
-      } else if (IS_NUM (field->type)) {
-        printf (" %*s |", (int) field->max_length, row[i]);
-      } else {
-        printf (" %-*s |", (int) field->max_length, row[i]);
-      }
+
+    for (i = 0; i < mysql_num_fields (res_set); i++)
+    {
+        field = mysql_fetch_field (res_set);
+        col_len = strlen (field->name);
+
+        if (col_len < field->max_length)
+        {
+            col_len = field->max_length;
+        }
+
+        if (col_len < 4 && !IS_NOT_NULL (field->flags))
+        {
+            col_len = 4;  /* 4 = length of the word "NULL" */
+        }
+
+        field->max_length = col_len;  /* reset column info */
     }
+
+    print_dashes (res_set);
+    fputc ('|', stdout);
+    mysql_field_seek (res_set, 0);
+
+    for (i = 0; i < mysql_num_fields (res_set); i++)
+    {
+        field = mysql_fetch_field (res_set);
+        printf (" %-*s |", (int) field->max_length, field->name);
+    }
+
     fputc ('\n', stdout);
-  }
-  print_dashes (res_set);
-  printf ("%lu rows returned\n", (unsigned long) mysql_num_rows (res_set));
+    print_dashes (res_set);
+
+    while ((row = mysql_fetch_row (res_set)) != NULL)
+    {
+        mysql_field_seek (res_set, 0);
+        fputc ('|', stdout);
+
+        for (i = 0; i < mysql_num_fields (res_set); i++)
+        {
+            field = mysql_fetch_field (res_set);
+
+            if (row[i] == NULL)
+            {
+                printf (" %-*s |", (int) field->max_length, "NULL");
+            }
+            else if (IS_NUM (field->type))
+            {
+                printf (" %*s |", (int) field->max_length, row[i]);
+            }
+            else
+            {
+                printf (" %-*s |", (int) field->max_length, row[i]);
+            }
+        }
+
+        fputc ('\n', stdout);
+    }
+
+    print_dashes (res_set);
+    printf ("%lu rows returned\n", (unsigned long) mysql_num_rows (res_set));
 }
 
 /* ------------------------------------------------------------------------------------------------- */
@@ -239,16 +282,20 @@ void print_result_set (MYSQL_RES *res_set) {
 /*             host_name                                                                             */
 /*                                                                                                   */
 /*             user_name                                                                             */
-/*                                                                                                   */ 
+/*                                                                                                   */
 /*             password                                                                              */
-/*                                                                                                   */ 
-/*             db_name                                                                               */ 
+/*                                                                                                   */
+/*             db_name                                                                               */
 /*                                                                                                   */
 /*             port_num                                                                              */
-/*                                                                                                   */ 
+/*                                                                                                   */
 /*             socket_name                                                                           */
-/*                                                                                                   */ 
-/*             flags e                                                                               */ 
+/*                                                                                                   */
+/*             flags e                                                                               */
+/*                                                                                                   */
+/*             errmsg                                                                                */
+/*                                                                                                   */
+/*             max_errmsg_len                                                                           */
 /*                                                                                                   */
 /* Outputs:    none                                                                                  */
 /*                                                                                                   */
@@ -260,32 +307,37 @@ void print_result_set (MYSQL_RES *res_set) {
 /* ------------------------------------------------------------------------------------------------- */
 
 MYSQL *do_connect (char *caller,
-                   char *host_name, 
-                   char *user_name, 
-                   char *password, 
+                   char *host_name,
+                   char *user_name,
+                   char *password,
                    char *db_name,
-                   unsigned int port_num, 
-                   char *socket_name, 
-                   unsigned int flags) {
+                   unsigned int port_num,
+                   char *socket_name,
+                   unsigned int flags,
+				   char *errmsg,
+				   int max_errmsg_len)
+{
 
 #undef  SUBNAME
 #define SUBNAME "do_connect"
 
-  MYSQL  *conn; /* pointer to connection handler */
-  char   msg[MAX_MSG_LEN];
+    MYSQL  *conn; /* pointer to connection handler */
 
-  if ((conn = mysql_init(NULL)) == NULL) {
-    snprintf(msg, sizeof(msg), "%s: mysql_init() failed (probably out of memory)\n", caller);
-    print_msg_to_console(msg);
-    return (NULL);
-  }
 
-  if (mysql_real_connect(conn, host_name, user_name, password,
-                         db_name, port_num, socket_name, flags) == NULL)  {
-    snprintf(msg, sizeof(msg), "%s: mysql_real_connect() failed", caller);
-    return (NULL);
-  }
-  return (conn);     /* connection is established */
+    if ((conn = mysql_init(NULL)) == NULL)
+    {
+        snprintf(errmsg, max_errmsg_len, "%s: mysql_init() failed (probably out of memory)\n", caller);
+        return (NULL);
+    }
+
+    if (!mysql_real_connect(conn, host_name, user_name, password,
+                            db_name, port_num, socket_name, flags))
+    {
+        snprintf(errmsg, max_errmsg_len, "%s: mysql_real_connect() failed: %s", caller, mysql_error(conn));
+        return (NULL);
+    }
+
+    return (conn);     /* connection is established */
 }
 
 /* ------------------------------------------------------------------------------------------------- */
@@ -298,7 +350,7 @@ MYSQL *do_connect (char *caller,
 /*                          do_connect()                                                             */
 /*                                                                                                   */
 /* Outputs:    none                                                                                  */
-/*                                                                                                   */ 
+/*                                                                                                   */
 /* Returns:    void                                                                                  */
 /*                                                                                                   */
 /* Function:                                                                                         */
@@ -307,12 +359,14 @@ MYSQL *do_connect (char *caller,
 /*                                                                                                   */
 /* ------------------------------------------------------------------------------------------------- */
 
-void do_disconnect (char *caller, 
-                    MYSQL *conn) {
+void do_disconnect (char *caller,
+                    MYSQL *conn)
+{
 
-  if (conn != NULL) {
-     mysql_close(conn);
-  }
+    if (conn != NULL)
+    {
+        mysql_close(conn);
+    }
 
 }
 
@@ -327,7 +381,7 @@ void do_disconnect (char *caller,
 /*             src       the source string                                                           */
 /*                                                                                                   */
 /* Outputs:    none                                                                                  */
-/*                                                                                                   */ 
+/*                                                                                                   */
 /* Returns:    void                                                                                  */
 /*                                                                                                   */
 /* Function:                                                                                         */
@@ -342,29 +396,32 @@ void do_disconnect (char *caller,
 /* equal to n then the dest string has been truncated.                                               */
 /* ------------------------------------------------------------------------------------------------- */
 
-int safecat1(char *dest, int n, char *src) {
-  
-   char *p, *q;
-   int i = strlen(dest);
-   int j = strlen(src);
-   int l;
+int safecat1(char *dest, int n, char *src)
+{
 
-   p = dest + i;
-   q = src;
-   l = i + j;
+    char *p, *q;
+    int i = strlen(dest);
+    int j = strlen(src);
+    int l;
 
-   while ((i < n-1) && (j > 0)) {
-   
-      *p = *q;
-      p++;
-      q++;
-      i++;
-      j--;
+    p = dest + i;
+    q = src;
+    l = i + j;
 
-   }
-   *p = 0;
+    while ((i < n-1) && (j > 0))
+    {
 
-   return l;
+        *p = *q;
+        p++;
+        q++;
+        i++;
+        j--;
+
+    }
+
+    *p = 0;
+
+    return l;
 
 }
 
@@ -393,9 +450,9 @@ int safecat1(char *dest, int n, char *src) {
 /*             max_msg_len the max length (including the terminating 0) allowed in the errmsg        */
 /*                                                                                                   */
 /* Outputs:    errmsg      an error message indicating what went wrong if rc=1                       */
-/*                                                                                                   */ 
+/*                                                                                                   */
 /* Returns:    rc          0 if the UPDATE was successful, 1 if not (when the errmsg string will     */
-/*                         contain a descriptive message indicating what went wrong)                 */ 
+/*                         contain a descriptive message indicating what went wrong)                 */
 /*                                                                                                   */
 /* Function:                                                                                         */
 /*                                                                                                   */
@@ -403,7 +460,7 @@ int safecat1(char *dest, int n, char *src) {
 /*                                                                                                   */
 /* number and message.                                                                               */
 /*                                                                                                   */
-/*    rc = perform_update("sub1", conn,                                                              */ 
+/*    rc = perform_update("sub1", conn,                                                              */
 /*                        "AddressBook",                                                             */
 /*                        {"FirstName", "Address", NULL},                                            */
 /*                        {"Jim",       "12 Acacia Avenune, Wimbledon", NULL},                       */
@@ -420,94 +477,132 @@ int safecat1(char *dest, int n, char *src) {
 /*                                                                                                   */
 /* ------------------------------------------------------------------------------------------------- */
 
-int perform_update(char  *caller, 
-                   MYSQL *conn, 
+int perform_update(char  *caller,
+                   MYSQL *conn,
                    char  *table,
                    char  *fields[],
-                   char  *values[], 
+                   char  *values[],
                    char  *where,
                    char  *errmsg,
-                   int   max_msg_len ) {
+                   int   max_msg_len )
+{
 
 #undef  SUBNAME
 #define SUBNAME "perform_update"
 
-  MYSQL_RES    *res_set;
-  int i = 0, rc = 0;
-  char  query[1024];
-  int   mq = sizeof(query);
-  int  toolong = 0;
-  
-  snprintf(query, sizeof(query), "UPDATE %s SET ", table);
+    MYSQL_RES    *res_set;
+    int i = 0, rc = 0;
+    char  query[1024];
+    int   mq = sizeof(query);
+    int  toolong = 0;
+    errmsg[0] = 0;
 
-  while ((fields[i] != NULL && values[i] != NULL) && (!toolong)) {
+    snprintf(query, sizeof(query), "UPDATE %s SET ", table);
 
-     if (i != 0) {
-        safecat1(query, sizeof(query), ",");
-     }
-     if (safecat1(query, sizeof(query), fields[i]) < mq) {
-        if (strcmp(values[i], "XXXX_CURRENT_TIME_XXXX") == 0) {
-           if (safecat1(query, sizeof(query), "=NOW()") < mq) {
-           } else {
-              toolong = 1;
-           }
-        } else {
-           if (safecat1(query, sizeof(query), "='") < mq) {
-              if (safecat1(query, sizeof(query), values[i]) < mq) {
-                 if (safecat1(query, sizeof(query), "'") < mq) {
-                 } else {
-                    toolong = 1;
-                 }
-              } else {
-                 toolong = 1;
-              }
-           } else {
-              toolong = 1;
-           }
+    while ((fields[i] != NULL && values[i] != NULL) && (!toolong))
+    {
+
+        if (i != 0)
+        {
+            safecat1(query, sizeof(query), ",");
         }
-     } else {
-        toolong = 1;
-     }
-     i++;
-  }
 
-  if (safecat1(query, sizeof(query), " WHERE ") < mq) {
-     if (safecat1(query, sizeof(query), where) < mq) {
-     } else {
-        toolong = 1;
-     }
-  } else {
-     toolong = 1;
-  }
-   
-  if (toolong) {
-     snprintf(errmsg, max_msg_len, "%s: query string length exceeded maximm allowed length (%d) for query: >>%s<<\n", 
-              caller, (int) sizeof(query), query);
-     return 1;
-  }
+        if (safecat1(query, sizeof(query), fields[i]) < mq)
+        {
+            if (strcmp(values[i], "XXXX_CURRENT_TIME_XXXX") == 0)
+            {
+                if (safecat1(query, sizeof(query), "=NOW()") < mq)
+                {
+                }
+                else
+                {
+                    toolong = 1;
+                }
+            }
+            else
+            {
+                if (safecat1(query, sizeof(query), "='") < mq)
+                {
+                    if (safecat1(query, sizeof(query), values[i]) < mq)
+                    {
+                        if (safecat1(query, sizeof(query), "'") < mq)
+                        {
+                        }
+                        else
+                        {
+                            toolong = 1;
+                        }
+                    }
+                    else
+                    {
+                        toolong = 1;
+                    }
+                }
+                else
+                {
+                    toolong = 1;
+                }
+            }
+        }
+        else
+        {
+            toolong = 1;
+        }
 
-
-  if (perform_query(caller, conn, query) != 0) {
-     return 1;
-  }
-
-  res_set = mysql_store_result(conn);
-
-  if (res_set == NULL) {  /* no result set was returned */
-    /* does the lack of a result set mean that an error  occurred or that no result set was returned? */
-    if (mysql_field_count(conn) > 0) {
-      /* a result set was expected, but mysql_store_result() did not return one; this means an error occurred */
-     snprintf(errmsg, max_msg_len, "%s: no result set returned for query: %s\n", caller, query);
-     return 1;
-    } else {
-      /* no result set was returned; query returned no data (it was not an UPDATE so this was expected, no action needed) */
+        i++;
     }
-  } else {  /* a result set was returned */
-    /* free the result set */
-    mysql_free_result(res_set);
-  }
 
-  return rc;
+    if (safecat1(query, sizeof(query), " WHERE ") < mq)
+    {
+        if (safecat1(query, sizeof(query), where) < mq)
+        {
+        }
+        else
+        {
+            toolong = 1;
+        }
+    }
+    else
+    {
+        toolong = 1;
+    }
+
+    if (toolong)
+    {
+        snprintf(errmsg, max_msg_len, "%s: query string length exceeded maximm allowed length (%d) for query: >>%s<<\n",
+                 caller, (int) sizeof(query), query);
+        return 1;
+    }
+
+
+    if (perform_query(caller, conn, query) != 0)
+    {
+        return 1;
+    }
+
+    res_set = mysql_store_result(conn);
+
+    if (res_set == NULL)    /* no result set was returned */
+    {
+        /* does the lack of a result set mean that an error  occurred or that no result set was returned? */
+        if (mysql_field_count(conn) > 0)
+        {
+            /* a result set was expected, but mysql_store_result() did not return one; this means an error occurred */
+            snprintf(errmsg, max_msg_len, "%s: no result set returned for query: %s\n", caller, query);
+            return 1;
+        }
+        else
+        {
+            /* no result set was returned; query returned no data (it was not an UPDATE so this was expected, no action needed) */
+        }
+    }
+    else      /* a result set was returned */
+    {
+        /* free the result set */
+        mysql_free_result(res_set);
+    }
+
+    return rc;
 
 }
 
@@ -533,16 +628,16 @@ int perform_update(char  *caller,
 /*             max_msg_len the max length (including the terminating 0) allowed in the errmsg        */
 /*                                                                                                   */
 /* Outputs:    errmsg      an error message indicating what went wrong if rc=1                       */
-/*                                                                                                   */ 
+/*                                                                                                   */
 /* Returns:    rc          0 if the INSERT was successful, 1 if not (when the errmsg string will     */
-/*                         contain a descriptive message indicating what went wrong)                 */ 
+/*                         contain a descriptive message indicating what went wrong)                 */
 /*                                                                                                   */
 /* Function:                                                                                         */
 /*                                                                                                   */
-/* Inserts a new row in a given table.  If not all the field/values are specified then the default   */                                                          
+/* Inserts a new row in a given table.  If not all the field/values are specified then the default   */
 /* values for these fields will be used.                                                             */
 /*                                                                                                   */
-/*    rc = perform_insert(conn,                                                                      */ 
+/*    rc = perform_insert(conn,                                                                      */
 /*                        "AddressBook",                                                             */
 /*                        {"FirstName", "LastName", "Address", NULL},                                */
 /*                        {"Jim",       "Smith",    "12 Acacia Avenune, Wimbledon", NULL},           */
@@ -558,114 +653,158 @@ int perform_update(char  *caller,
 /*                                                                                                   */
 /* ------------------------------------------------------------------------------------------------- */
 
-int perform_insert(char  *caller, 
-                   MYSQL *conn, 
+int perform_insert(char  *caller,
+                   MYSQL *conn,
                    char  *table,
                    char  *fields[],
-                   char  *values[], 
+                   char  *values[],
                    char  *errmsg,
-                   int   max_msg_len ) {
+                   int   max_msg_len )
+{
 
 #undef  SUBNAME
 #define SUBNAME "perform_insert"
 
-  MYSQL_RES *res_set;
-  int i = 0, ll, rc = 0;
+    MYSQL_RES *res_set;
+    int i = 0, ll, rc = 0;
 
-  char  query[1024];
-  int   mq = sizeof(query);
-  
-  safecpy(errmsg, "", max_msg_len);
+    char  query[1024];
+    int   mq = sizeof(query);
 
-  snprintf(query, sizeof(query), "INSERT %s (", table);
+    safecpy(errmsg, "", max_msg_len);
 
-  while (fields[i] != NULL) {
-     if (i != 0) {
-        safecat1(query, sizeof(query), ",");
-     }
-     if ((ll = safecat1(query, sizeof(query), fields[i])) < mq) { 
-     } else {
-        snprintf(errmsg, max_msg_len, "%s: query string length (%d) exceeded maximm allowed length (%d) for query: %s\n", 
+    snprintf(query, sizeof(query), "INSERT %s (", table);
+
+    while (fields[i] != NULL)
+    {
+        if (i != 0)
+        {
+            safecat1(query, sizeof(query), ",");
+        }
+
+        if ((ll = safecat1(query, sizeof(query), fields[i])) < mq)
+        {
+        }
+        else
+        {
+            snprintf(errmsg, max_msg_len, "%s: query string length (%d) exceeded maximm allowed length (%d) for query: %s\n",
+                     caller, ll, (int) sizeof(query), query);
+            return 1;
+        }
+
+        i++;
+    }
+
+    if ((ll = safecat1(query, sizeof(query), ") VALUES('")) < mq)
+    {
+    }
+    else
+    {
+        snprintf(errmsg, max_msg_len, "%s: query string length (%d) exceeded maximm allowed length (%d) for query: %s\n",
+                 caller, ll, (int) sizeof(query), query);
+        return 1;
+    }
+
+    i = 0;
+
+    while (values[i] != NULL)
+    {
+
+        if (i != 0)
+        {
+            if (strcmp(values[i], "XXXX_CURRENT_TIME_XXXX") == 0)
+            {
+                safecat1(query, sizeof(query), ",");
+            }
+            else
+            {
+                safecat1(query, sizeof(query), ",'");
+            }
+        }
+
+        if (strcmp(values[i], "XXXX_CURRENT_TIME_XXXX") == 0)
+        {
+            if ((ll = safecat1(query, sizeof(query), "NOW()")) < mq)
+            {
+            }
+            else
+            {
+                snprintf(errmsg, max_msg_len, "%s: query string length (%d) exceeded maximm allowed length (%d) for query: %s\n",
                          caller, ll, (int) sizeof(query), query);
-        return 1;
-     }
-     i++;
-  }
-  if ((ll = safecat1(query, sizeof(query), ") VALUES('")) < mq) {
-  } else {
-        snprintf(errmsg, max_msg_len, "%s: query string length (%d) exceeded maximm allowed length (%d) for query: %s\n", 
+                return 1;
+            }
+        }
+        else
+        {
+            if ((ll = safecat1(query, sizeof(query), values[i])) < mq)
+            {
+            }
+            else
+            {
+                snprintf(errmsg, max_msg_len, "%s: query string length (%d) exceeded maximm allowed length (%d) for query: %s\n",
                          caller, ll, (int) sizeof(query), query);
+                return 1;
+            }
+        }
+
+        if (strcmp(values[i], "XXXX_CURRENT_TIME_XXXX") != 0)
+        {
+            if ((ll = safecat1(query, sizeof(query), "'")) < mq)
+            {
+            }
+            else
+            {
+                snprintf(errmsg, max_msg_len, "%s: query string length (%d) exceeded maximm allowed length (%d) for query: %s\n",
+                         caller, ll, (int) sizeof(query), query);
+                return 1;
+            }
+        }
+
+        i++;
+    }
+
+    if ((ll = safecat1(query, sizeof(query), ")")) < mq)
+    {
+    }
+    else
+    {
+        snprintf(errmsg, max_msg_len, "%s: query string length (%d) exceeded maximm allowed length (%d) for query: %s\n",
+                 caller, ll, (int) sizeof(query), query);
         return 1;
-  }
- 
-  i = 0;
-  while (values[i] != NULL) {
+    }
 
-     if (i != 0) {
-        if (strcmp(values[i], "XXXX_CURRENT_TIME_XXXX") == 0) {
-           safecat1(query, sizeof(query), ",");
-        } else {
-           safecat1(query, sizeof(query), ",'");
-        }
-     }
-     if (strcmp(values[i], "XXXX_CURRENT_TIME_XXXX") == 0) {
-        if ((ll = safecat1(query, sizeof(query), "NOW()")) < mq) {
-        } else {
-           snprintf(errmsg, max_msg_len, "%s: query string length (%d) exceeded maximm allowed length (%d) for query: %s\n", 
-                            caller, ll, (int) sizeof(query), query);
-           return 1;
-        } 
-     } else {
-        if ((ll = safecat1(query, sizeof(query), values[i])) < mq) {
-        } else {
-           snprintf(errmsg, max_msg_len, "%s: query string length (%d) exceeded maximm allowed length (%d) for query: %s\n", 
-                            caller, ll, (int) sizeof(query), query);
-           return 1;
-        }
-     }
-     if (strcmp(values[i], "XXXX_CURRENT_TIME_XXXX") != 0) {
-        if ((ll = safecat1(query, sizeof(query), "'")) < mq) {
-        } else {
-           snprintf(errmsg, max_msg_len, "%s: query string length (%d) exceeded maximm allowed length (%d) for query: %s\n", 
-                            caller, ll, (int) sizeof(query), query);
-           return 1;
-        }
-     }
-     i++;
-  }
-
-  if ((ll = safecat1(query, sizeof(query), ")")) < mq) {
-  } else {
-     snprintf(errmsg, max_msg_len, "%s: query string length (%d) exceeded maximm allowed length (%d) for query: %s\n", 
-                      caller, ll, (int) sizeof(query), query);
-     return 1;
-  }
-
-  if (perform_query(caller, conn, query) != 0) {
-     snprintf(errmsg, max_msg_len, "%s: query (%s) failed, mysql_errno = %d (%s)\n", 
-                      caller, query, mysql_errno(conn), mysql_error(conn));
-     return 1;
-  }
-
-  /* the query succeeded; determine whether or not it returns data */
-
-  res_set = mysql_store_result(conn);
-
-  if (res_set == NULL) {  /* no result set was returned */
-     /* does the lack of a result set mean that an error  occurred or that no result set was returned? */
-     if (mysql_field_count(conn) > 0) {
-        /* a result set was expected, but mysql_store_result() did not return one; this means an error occurred */
-        snprintf(errmsg, max_msg_len, "%s: no result set returned for query: %s\n", caller, query);
+    if (perform_query(caller, conn, query) != 0)
+    {
+        snprintf(errmsg, max_msg_len, "%s: query (%s) failed, mysql_errno = %d (%s)\n",
+                 caller, query, mysql_errno(conn), mysql_error(conn));
         return 1;
-     } else {
-        /* no result set was returned; query returned no data (it was an INSERT so this was expected - no action needed) */
-     }
-  } else {  /* a result set was returned */
-     /* free the result set */
-     mysql_free_result(res_set);
-  }
+    }
 
-  return rc;
+    /* the query succeeded; determine whether or not it returns data */
+
+    res_set = mysql_store_result(conn);
+
+    if (res_set == NULL)    /* no result set was returned */
+    {
+        /* does the lack of a result set mean that an error  occurred or that no result set was returned? */
+        if (mysql_field_count(conn) > 0)
+        {
+            /* a result set was expected, but mysql_store_result() did not return one; this means an error occurred */
+            snprintf(errmsg, max_msg_len, "%s: no result set returned for query: %s\n", caller, query);
+            return 1;
+        }
+        else
+        {
+            /* no result set was returned; query returned no data (it was an INSERT so this was expected - no action needed) */
+        }
+    }
+    else      /* a result set was returned */
+    {
+        /* free the result set */
+        mysql_free_result(res_set);
+    }
+
+    return rc;
 
 }
 
@@ -694,51 +833,62 @@ int perform_insert(char  *caller,
 /* ------------------------------------------------------------------------------------------------- */
 
 int perform_drop(char *caller,
-                 MYSQL *conn, 
+                 MYSQL *conn,
                  char  *table,
-                 char  *where, 
+                 char  *where,
                  char  *errmsg,
-                 int   max_msg_len ) {
+                 int   max_msg_len )
+{
 
 #undef  SUBNAME
 #define SUBNAME "perform_drop"
 
-  MYSQL_RES *res_set;
-  int ll, rc = 0;
-  char  query[1024];
-  int   mq = sizeof(query);
+    MYSQL_RES *res_set;
+    int ll, rc = 0;
+    char  query[1024];
+    int   mq = sizeof(query);
 
-  safecpy(errmsg, "", max_msg_len);
-  snprintf(query, sizeof(query), "DROP %s WHERE ", table);
+    safecpy(errmsg, "", max_msg_len);
+    snprintf(query, sizeof(query), "DROP %s WHERE ", table);
 
-  if ((ll = safecat1(query, sizeof(query), where)) < mq) {
-  } else {
-     snprintf(errmsg, max_msg_len, "%s: query string length (%d) exceeded maximm allowed length (%d) for query: %s\n", 
-                      caller, ll, (int) sizeof(query), query);
-     return 1;
-  }
- 
-  if (perform_query (caller, conn, query) != 0) {
-     return 1;
-  }
-
-  res_set = mysql_store_result(conn);
-
-  if (res_set == NULL) {  /* no result set was returned */
-     /* does the lack of a result set mean that an error  occurred or that no result set was returned? */
-     if (mysql_field_count(conn) > 0) {
-        /* a result set was expected, but mysql_store_result() did not return one; this means an error occurred */
-        snprintf(errmsg, max_msg_len, "%s: no result set returned for query: %s\n", caller, query);
+    if ((ll = safecat1(query, sizeof(query), where)) < mq)
+    {
+    }
+    else
+    {
+        snprintf(errmsg, max_msg_len, "%s: query string length (%d) exceeded maximm allowed length (%d) for query: %s\n",
+                 caller, ll, (int) sizeof(query), query);
         return 1;
-     } else {
-        /* no result set was returned; query returned no data (it was a DROP so this is expected - no action needed) */
-     }
-  } else {  /* a result set was returned */
-     /* free the result set */
-     mysql_free_result(res_set);
-  }
+    }
 
-  return rc;
+    if (perform_query (caller, conn, query) != 0)
+    {
+        return 1;
+    }
+
+    res_set = mysql_store_result(conn);
+
+    if (res_set == NULL)    /* no result set was returned */
+    {
+        /* does the lack of a result set mean that an error  occurred or that no result set was returned? */
+        if (mysql_field_count(conn) > 0)
+        {
+            /* a result set was expected, but mysql_store_result() did not return one; this means an error occurred */
+            snprintf(errmsg, max_msg_len, "%s: no result set returned for query: %s\n", caller, query);
+            return 1;
+        }
+        else
+        {
+            /* no result set was returned; query returned no data (it was a DROP so this is expected - no action needed) */
+        }
+    }
+    else      /* a result set was returned */
+    {
+        /* free the result set */
+        mysql_free_result(res_set);
+    }
+
+    return rc;
 
 }
 
@@ -764,31 +914,36 @@ int perform_drop(char *caller,
 /* Warning - you must free the res_set that is returned after you have finished with it <<<<<        */
 /* ------------------------------------------------------------------------------------------------- */
 
-MYSQL_RES *check_for_res_set(char *caller, MYSQL *sql_connection, char *query) {
+MYSQL_RES *check_for_res_set(char *caller, MYSQL *sql_connection, char *query)
+{
 
-   MYSQL_RES  *res_set;
-   char msg[MAX_MSG_LEN];
+    MYSQL_RES  *res_set;
+    char msg[MAX_MSG_LEN];
 
-   if ((res_set = mysql_store_result(sql_connection)) == NULL) {
+    if ((res_set = mysql_store_result(sql_connection)) == NULL)
+    {
 
-      /* no result set was returned - that is an error as we are expecting one we think, even if it is empty */
+        /* no result set was returned - that is an error as we are expecting one we think, even if it is empty */
 
-      if (mysql_field_count(sql_connection) == 0) {
+        if (mysql_field_count(sql_connection) == 0)
+        {
 
-         /*  ah, we were not expecting query to return data really, eg it was a select, so all is okay after all */
+            /*  ah, we were not expecting query to return data really, eg it was a select, so all is okay after all */
 
-      } else {
+        }
+        else
+        {
 
-         /* mysql_store_result() should definitely have returned data - so there is an error condition */
+            /* mysql_store_result() should definitely have returned data - so there is an error condition */
 
-         snprintf(msg, sizeof(msg), "%s: Error - no result returned for query: %s: mysql errno = %d (%s)\n", 
-                                    caller, query, mysql_errno(sql_connection), mysql_error(sql_connection));
-         print_msg_to_console(msg);
+            snprintf(msg, sizeof(msg), "%s: Error - no result returned for query: %s: mysql errno = %d (%s)\n",
+                     caller, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+            print_msg_to_console(msg);
 
-      }
-   }
+        }
+    }
 
-   return res_set;
+    return res_set;
 
 }
 

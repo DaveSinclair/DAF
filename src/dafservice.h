@@ -30,8 +30,8 @@ int add_cmd_log_entry(cmd_log_object_t *cmd_log_object,
                       Iu32  state,
                       Iu32  status,
                       Iu32  start_time,
-                      Iu32  end_time, 
-                      Iu32  timeout_at_time, 
+                      Iu32  end_time,
+                      Iu32  timeout_at_time,
                       bool_t  fail_on_timeout,
                       char  *errmsg,
                       int   max_msg_len);
@@ -45,7 +45,7 @@ int add_cmd_log_fragment(cmd_log *cmd_log,
                          Iu32  status,
                          Iu32  start_time,
                          Iu32  end_time,
-                         Iu32  timeout_at_time, 
+                         Iu32  timeout_at_time,
                          bool_t  fail_on_timeout,
                          char  *errmsg,
                          int   max_msg_len);
@@ -57,7 +57,7 @@ void deallocate_cmd_log(cmd_log_object_t  *cmd_log_object);
 void deallocate_cmd_log_fragment(cmd_log *cmd_log);
 
 int update_cmd_log_entry(cmd_log_object_t *cmd_log_object,
-                         char *agent_log_pathname, 
+                         char *agent_log_pathname,
                          Iu32 tag,
                          Iu32 state,
                          Iu32 status,

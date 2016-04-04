@@ -510,7 +510,7 @@ function show_scenarios() {
        echo "</td>\n";
        echo "<td class=td_smd>";
        cellbutton(null, "scenario_modify_$j", "modify", "index.php?action=modify&object=scenario&ID=$ID");
-       echo "<td>";
+       echo "</td>";
        echo "<td class=td_smd>";
        // cellbutton('td', "scenario_delete_$j", "delete", "index.php?action=show&operation=delete&object=scenario&ID=$ID");
        button_with_confirm("scenario_delete_$j", "delete", "delete", "index.php?action=show&operation=delete&object=scenario&ID=$ID", 
@@ -597,7 +597,7 @@ _END;
    echo "<input type=\"hidden\" name=\"operation\" value=\"create\"/>\n";
    cellbutton(null, "scenario_cancel", "Cancel", "index.php?object=scenario&action=show", null);
 
-   echo "</div>\\n"; 
+   echo "</div>\n"; 
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -1719,7 +1719,7 @@ function run_scenario($gp, $project, $phase) {
 
    $fields = array();
    $values = array();
-   
+
    /* -----------------------------------------------------------------------------------------*/
    /* create the scenarioresult for this run                                                   */
    /* -----------------------------------------------------------------------------------------*/ 
@@ -2253,7 +2253,7 @@ function show_environment($environmentID) {
       echo "</td>\n";
       echo "<td class=td_smd>";
       // cellbutton(null, "environment_delete_$i", "delete", "index.php?action=show&operation=deleteenvironmentvalue&object=environment&ID=$environmentvalueID");
-      button_with_confirm("environment_delete_$j", "delete", "delete", "index.php?action=show&operation=deleteenvironmentvalue&object=environment&ID=$environmentvalueID", 
+      button_with_confirm("environment_delete_$i", "delete", "delete", "index.php?action=show&operation=deleteenvironmentvalue&object=environment&ID=$environmentvalueID", 
                               "index.php?action=show&object=environment");
       echo "</td>\n";
       
@@ -2301,8 +2301,8 @@ function modify_environment($ID) {
    $num_rows   = mysql_num_rows($environment);   // should only be one row
    $num_fields = mysql_num_fields($environment);
    
-   echo <<<_END
    echo '<div dojoType="dijit.form.Form" id="modify_action" jsId="modify_action" encType="multipart/form-data" action="index.php" method="post">';
+   echo <<<_END
       <script type="dojo/method" event="onSubmit">
         if (! this.validate()) {
             alert('Form cannot be submitted as it contains one or more invalid fields');
@@ -2441,7 +2441,8 @@ function modify_environmentvalue($ID) {
    $row = mysql_fetch_row($environmentvalue);
 
    $name     = $row[0];
-   $value    = $row[1];  
+   $value    = $row[1]; 
+   $originalname = $name;
 
    echo <<<_END
    echo '<div dojoType="dijit.form.Form" id="modify_environmentvalue" jsId="modify_environmentvalue" encType="multipart/form-data" action="index.php" method="post">';
@@ -2740,7 +2741,7 @@ _END;
    echo '<table class="tab1">';
    echo "<caption class=\"cap1\"><div>Create a new Host Selector Value</div></caption>\n";
    
-   echo '<tr><th>Name</th>';
+   echo '<tr><th>Value</th>';
    echo '<td><input type="text" name="value" size = "' . DAF_ENVIRONMENTVALUE_LEN . '" maxlength="' . DAF_ENVIRONMENTVALUE_LEN . '" ' . 
         'dojoType="dijit.form.ValidationTextBox" style="width: ' . DAF_ENVIRONMENTVALUE_LEN . 'em;" regExp=".{1,' . DAF_ENVIRONMENTVALUE_LEN . '}" required="true" trim="true" promptMessage="Enter a Host Selector Value" ' . 
         'invalidMessage="Invalid Description (must be 1 to ' . DAF_ENVIRONMENTVALUE_LEN . ' characters)"/>';

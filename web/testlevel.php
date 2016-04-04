@@ -387,7 +387,7 @@ function show_detailed_testlevel($ID) {
       echo '<tr>';
        echo "<td class=td_smd>";
       //cellbutton('td', "testlevelmember_delete_$i", "delete", "index.php?action=show&object=testlevel&operation=deletetestlevelmember&ID=$ID&testlevelmemberid=$testlevelmemberID");
-      button_with_confirm("testlevelmember_delete_$j", "delete", "delete", "index.php?action=show&object=testlevel&operation=deletetestlevelmember&ID=$ID&testlevelmemberid=$testlevelmemberID", 
+      button_with_confirm("testlevelmember_delete_$i", "delete", "delete", "index.php?action=show&object=testlevel&operation=deletetestlevelmember&ID=$ID&testlevelmemberid=$testlevelmemberID", 
                           "index.php?action=show&object=testlevel&ID=$ID");
       echo '</td>';
 
@@ -473,13 +473,17 @@ _END;
          echo '<td>' . $row[$i] . '</td>';
       } else if ($fieldname == "Name") {
          $originalname = $row[$i];
+         echo '<th>Name</th>';
          echo '<td><input type="text" name="name" value="' . $row[$i] . '" size=' . DAF_TESTLEVEL_LEN . '" maxlength="' . DAF_TESTLEVEL_LEN . '" ' .
               'dojoType="dijit.form.ValidationTextBox" style="width: ' . DAF_TESTLEVEL_LEN . 'em;" regExp="[A-Za-z0-9_]{1,' . DAF_TESTLEVEL_LEN . '}" required="true" trim="true" promptMessage="Enter a Test Level name" ' . 
               'invalidMessage="Invalid Test Level name (must be 1 to ' . DAF_TESTLEVEL_LEN . ' alphanumeric characters)"/>';
+         echo '</td>';
       } else if ($fieldname == "Description") {
-         echo '<input type="text" name="description" value="' . $row[$i] . '" size=' . DAF_TESTLEVEL_DESCRIPTION_LEN . '" maxlength="' . DAF_TESTLEVEL_DESCRIPTION_LEN . '" ' .
+         echo '<th>Description</th>';
+         echo '<td><input type="text" name="description" value="' . $row[$i] . '" size=' . DAF_TESTLEVEL_DESCRIPTION_LEN . '" maxlength="' . DAF_TESTLEVEL_DESCRIPTION_LEN . '" ' .
               'dojoType="dijit.form.ValidationTextBox" style="width:100%" regExp=".{1,' . DAF_TESTLEVEL_DESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Test Level description" ' . 
               'invalidMessage="Invalid Test Level description (must be 1 to ' . DAF_TESTLEVEL_DESCRIPTION_LEN . ' characters)"/>';
+         echo '</td>';
       }
       echo '</tr>';
       echo "\n";

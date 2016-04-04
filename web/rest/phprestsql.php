@@ -442,9 +442,7 @@ class RestfulSQL {
                         $where .= $pri.' = \''.$this->uid[$key].'\' AND ';
                     }
                     $where = substr($where, 0, -5);
-                    #print("\nWHERE $where\n"); #DEBUG
-                    #die(); #DEBUG
-
+ 
                     # imho calling insertRow is not robust because 
                     # relies on mysql failing silently on INSERT, then check 
                     # if number of affected rows == 0 to know wheter to 

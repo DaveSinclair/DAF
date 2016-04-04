@@ -17,38 +17,38 @@
 #include <pthread.h>
 #include "daf_protocol.h"
 
-  typedef unsigned long       TID;
-  typedef int                 HANDLE;
-  typedef pthread_cond_t      COND;
-  typedef pthread_mutex_t     MUTEX;
-  typedef int                 DWORD;
-  typedef pthread_t           HTHREAD;
-  typedef int                 socket_t;
-  typedef struct itimerval    time_control_t;
-  typedef pid_t               PID;
+typedef unsigned long       TID;
+typedef int                 HANDLE;
+typedef pthread_cond_t      COND;
+typedef pthread_mutex_t     MUTEX;
+typedef int                 DWORD;
+typedef pthread_t           HTHREAD;
+typedef int                 socket_t;
+typedef struct itimerval    time_control_t;
+typedef pid_t               PID;
 
-   #define E_FAIL 1
+#define E_FAIL 1
 
 #elif defined WIN32
 
-  typedef HANDLE              MUTEX;
-  typedef HANDLE              COND;
-  typedef unsigned long       TID;
-  typedef HANDLE              HTHREAD;
-  typedef __int64             Iu64;
-  typedef int                 PID;
-  typedef SOCKET              socket_t;
-  typedef LARGE_INTEGER       time_control_t;
+typedef HANDLE              MUTEX;
+typedef HANDLE              COND;
+typedef unsigned long       TID;
+typedef HANDLE              HTHREAD;
+typedef __int64             Iu64;
+typedef int                 PID;
+typedef SOCKET              socket_t;
+typedef LARGE_INTEGER       time_control_t;
 
-  #define strtoull            _strtoi64
-  #define STATFS              statfs
+#define strtoull            _strtoi64
+#define STATFS              statfs
 
 #endif
 
 /* define format specs for use when printing 64 bit integers */
 
 #define IU64_FSPEC         "%llu"
-#define IU64_12FSPEC       "%12llu" 
+#define IU64_12FSPEC       "%12llu"
 
 #define THREADIDSPEC  "%lu"
 #define PROCESSID_FSPEC "%d"
@@ -73,7 +73,8 @@ void my_free(void *p, char *caller);
 
 #if defined WIN32
 int convert_error_num_to_text(int errorno, char *pMsg, int maxlen);
-int format_error_num_into_error_message(int errorno, char *pMsg, int maxlen) {
+int format_error_num_into_error_message(int errorno, char *pMsg, int maxlen)
+{
 #endif
 
 #endif

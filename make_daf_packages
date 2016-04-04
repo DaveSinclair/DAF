@@ -7,26 +7,38 @@
 # This file is part of DAF - the Distributed Automation Framework                                                      #
 #                                                                                                                      #
 # Purpose:   create a daf.tar.gz file that can be transferred to a DAF server and installed there                      #
+#            create a daf_server_no_LAMPP.tar.gz file that can be transferred to a DAF server and installed there -    #
+#               this contains only the C and PHP code                                                                  #
 #            create a daf_agent.tar.gz file that can be transferred to a DAF slave and installed there                 #
 # -------------------------------------------------------------------------------------------------------------------- #
 
-trap "echo 'Failed due to error'; exit 1" ERR
+err_report() {
+    echo "Error on line $1"
+}
 
-rm -f daf_agent.tar.gz daf_server.tar.gz daf_web.tar.gz daf.tar.gz
+trap 'err_report $LINENO; exit 1' ERR
+
+rm -f daf_agent.tar.gz daf_server.tar.gz daf_server_no_LAMPP.tar.gz daf_web.tar.gz daf.tar.gz
 thisdir=`pwd`
 
 echo    
 echo "Creating the daf_web.tar.gz package"
-echo  
-   
-# create web package
+echo 
+
+# ---------------------------------------------------   
+# create web package - daf_web.tar.gz
+# --------------------------------------------------- 
 cd web
 tar -czf $thisdir/daf_web.tar.gz *.php rest js css dojo
+
+# ---------------------------------------------------   
+# create agent package - daf_agent.tar.gz
+# --------------------------------------------------- 
 
 echo     
 echo "Creating the daf_agent.tar.gz package"
 echo  
-   
+  
 cd ../install
 tar -cf $thisdir/daf_agent.tar \
    install_daf_agent \
@@ -36,6 +48,10 @@ tar -rf $thisdir/daf_agent.tar *
 cd $thisdir
 gzip daf_agent.tar
  
+# ---------------------------------------------------   
+# create server package - daf_server.tar.gz
+# ---------------------------------------------------
+ 
 echo    
 echo "Creating the daf_server.tar.gz package"
 echo  
@@ -43,18 +59,45 @@ echo
 cd install
 tar -cf $thisdir/daf_server.tar \
    install_daf_server \
+   reinstall_daf_server \
    uninstall_daf_server
 cd ../scripts
 tar -rf $thisdir/daf_server.tar \
    create_daf_admin \
    create_daf_database \
    create_daf_tables \
+   create_daf_table_contents \
    create_master_test_user
 cd ../src
 tar -rf $thisdir/daf_server.tar *
 cd $thisdir
 gzip daf_server.tar
+
+# ---------------------------------------------------   
+# create server install package without LAMPP - daf_server_no_LAMPP.tar.gz
+# ---------------------------------------------------
+
+echo  
+echo "Creating the daf_server_no_LAMPP.tar.gz package"
+echo  
+   
+# create overall package
+cd install
+tar -cf $thisdir/daf_server_no_LAMPP.tar \
+   install_daf_agent \
+   reinstall_daf_server 
+cd $thisdir
+
+tar -rf daf_server_no_LAMPP.tar \
+   daf_web.tar.gz \
+   daf_agent.tar.gz \
+   daf_server.tar.gz
+gzip daf_server_no_LAMPP.tar
  
+# ---------------------------------------------------   
+# create one size fits all package - daf.tar.gz
+# ---------------------------------------------------
+
 echo  
 echo "Creating the daf.tar.gz package"
 echo  
@@ -63,7 +106,8 @@ echo
 cd install
 tar -cf $thisdir/daf.tar \
    install_daf_server \
-   install_daf_agent
+   install_daf_agent \
+   reinstall_daf_server 
 cd $thisdir
 
 tar -rf daf.tar \
@@ -74,7 +118,7 @@ tar -rf daf.tar \
    xampp/xampp-linux-x64-5.6.19-0-installer.run
 gzip daf.tar
    
-rm -f daf_agent.tar.gz daf_server.tar.gz daf_web.tar.gz
+rm -f daf_server.tar.gz daf_web.tar.gz
 
 trap - ERR
 

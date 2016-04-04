@@ -160,7 +160,6 @@ function teststand($gp) {
 
    if ($gp['action'] === "create") {
    
-            add_error_message("action >>" . $gp['action'] . "<< operation >> " . $gp['operation'] . "<<");
        create_teststand();
     
    } else if ($gp['action'] === "modify") {

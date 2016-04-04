@@ -1837,7 +1837,7 @@ function outcomeaction($gp) {
       
          if ((count_rows("daf.outcomeaction", "Name = '" . $gp['name'] . "'") > 0) && ($gp['name'] != $gp['originalname'])) {
           
-            add_error_message("DAFE0023: Cannot modify project name to " . $gp['name'] . " because a project of that name already exists");
+            add_error_message("DAFE0023: Cannot modify outcomeaction name to " . $gp['name'] . " because a outcomeaction of that name already exists");
          
          } else {
 
@@ -1956,7 +1956,7 @@ _END;
    echo "<option value=\"Tester\">tester</option>\n";
    echo "<option value=\"Maillist\">mail list</option>\n";
    echo "</select></td></tr>\n";
-   echo "<tr><th>Maillist</th><td><select name=\"maillistID\" />\n";
+   echo "<tr><th>Mail list</th><td><select name=\"maillistID\" />\n";
    selectorID("maillist", "Name");
    echo "</select></td></tr>\n";
    echo "</table>\n";
@@ -2223,9 +2223,9 @@ _END;
    $notificationonpassindex = $fieldindex['Notificationonpass'];
    $notificationonfailindex = $fieldindex['Notificationonfail'];
    $maillistIDindex         = $fieldindex['MaillistID'];
-   $originalname            = $row[$fieldindex['Name']];
    
    $row = mysql_fetch_row($result);
+   $originalname            = $row[$fieldindex['Name']];
  
    for ($i = 0; $i < $num_fields; $i++) {
       echo '<tr>';
@@ -2536,9 +2536,10 @@ _END;
    echo "</td></tr>\n";
    echo "</table>\n";
 
-   cellbutton(null, "maillist_create", "show", null, "submit");
+   cellbutton(null, "maillist_create", "Create", null, "submit");
    echo "<input type=\"hidden\" name=\"action\" value=\"create\"/>\n";
    echo "<input type=\"hidden\" name=\"object\" value=\"maillist\"/>\n";
+   echo "<input type=\"hidden\" name=\"operation\" value=\"create\"/>\n";
    cellbutton(null, "maillist_cancel", "Cancel", "index.php?object=maillist&action=show", null);
    
    echo "</div>\n";
@@ -2857,6 +2858,7 @@ _END;
    cellbutton(null, "maillistmember_create", "Create Mail List Member", null, "submit");
    echo "<input type=\"hidden\" name=\"action\" value=\"show\"/>\n";
    echo "<input type=\"hidden\" name=\"object\" value=\"maillist\"/>\n";
+   echo "<input type=\"hidden\" name=\"maillistID\" value=\"$maillistID\"/>\n";
    echo "<input type=\"hidden\" name=\"operation\" value=\"createmaillistmember\"/>\n";
    cellbutton(null, "maillistmember_cancel", "Cancel", "index.php?object=maillist&action=show", null);
 
@@ -3163,7 +3165,7 @@ function scenariosetmember($gp) {
 function create_scenarioset() {
 
    echo '<table class="tab1">';
-   echo "<caption class=\"cap1\"><div>Create a new Mail List Member</div></caption>\n";
+   echo "<caption class=\"cap1\"><div>Create a new Scenario Set</div></caption>\n";
 
    echo "<tr><th>Name</th><td><input type=\"text\" name=\"name\" /></td></tr>\n";
    echo "<tr><th>Description</th><td><input type=\"text\" name=\"description\" /></td></tr>\n";
@@ -3723,13 +3725,14 @@ function backup_database($database_name, $pathname, &$completion_message) {
    global $db_username, $db_password;
    $rc = 0;
 
-   $backupcmd1 = "/opt/lampp/bin/mysqldump -u $db_username -pxxxx $database_name >$pathname 2>&1";
    $backupcmd  = "/opt/lampp/bin/mysqldump -u $db_username -p$db_password $database_name >$pathname 2>&1";
    exec($backupcmd, $output, $rc);
+   # sanitise password
+   $backupcmd  = "/opt/lampp/bin/mysqldump -u $db_username -p$XXXX $database_name >$pathname 2>&1";
    add_auditlog_entry($_SESSION['user_email'], (isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : ""), str_replace("'", "\\'", $backupcmd1), $rc) ;
 
    if ($rc != 0) {
-     $completion_message = "Error code $rc from mysqldump: $backupcmd1\n" . implode("\n", $output) . "\n";
+     $completion_message = "Error code $rc from mysqldump: $backupcmd\n" . implode("\n", $output) . "\n";
    } else {
      $completion_message = "Backup of $database_name in $pathname completed successfully\n";
      $rc = 1;
@@ -3958,12 +3961,13 @@ function restore_backup($gp) {
       $destination_results_database = $matches[1];
    
       $restorecmd = "/opt/lampp/bin/mysql -u $db_username -p$db_password $destination_results_database <$backup_pathname 2>&1";
-      $restorecmd1 = "/opt/lampp/bin/mysql -u $db_username -pXXXX $destination_results_database &lt;$backup_pathname 2&gt;&1";
       exec($restorecmd, $output, $rc);
-      add_auditlog_entry($_SESSION['user_email'], (isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : ""), str_replace("'", "\\'", $restorecmd1), $rc) ;
+      # sanitise password
+      $restorecmd = "/opt/lampp/bin/mysql -u $db_username -pXXXX $destination_results_database <$backup_pathname 2>&1";
+      add_auditlog_entry($_SESSION['user_email'], (isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : ""), str_replace("'", "\\'", $restorecmd), $rc) ;
    
       if ($rc != 0) {
-        $completion_message = "Error code $rc from: $restorecmd1\n" . implode("\n", $output) . "\n";
+        $completion_message = "Error code $rc from: $restorecmd\n" . implode("\n", $output) . "\n";
       } else {
         $completion_message = "Restore of $backup_pathname to database $destination_results_database completed successfully\n";
         $rc = 1;

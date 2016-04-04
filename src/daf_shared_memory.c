@@ -52,7 +52,7 @@
 /*                                                                                                                      */
 /* active               is 0 or 1 to indicate if that process is still actively running                                 */
 /* pid                  is the process id associated with this instance of daf                                         */
-/* status               is 0 and not currently used                                                                     */ 
+/* status               is 0 and not currently used                                                                     */
 /* start                is the start time of that daf run                                                              */
 /* stop                 is the stop time of that daf run                                                               */
 /* commandline          is the command line used to invoke that daf run                                                */
@@ -100,21 +100,33 @@ void *p_shm    = NULL;
 /*                                                                        */
 /* ---------------------------------------------------------------------- */
 
-void active_state(int active, char *active_string, int max_msg_length) {
+void active_state(int active, char *active_string, int max_msg_length)
+{
 
-   if (active == DAF_PROCESS_FREE) {
-      safecpy(active_string, "Free", max_msg_length);
-   } else if (active == DAF_PROCESS_ACTIVE) {
-      safecpy(active_string, "Running", max_msg_length);
-   } else if (active == DAF_PROCESS_COMPLETED) {
-      safecpy(active_string, "Complete", max_msg_length);
-   } else if (active == DAF_PROCESS_STALE) {
-      safecpy(active_string, "Stale   ", max_msg_length);
-   } else if (active == DAF_PROCESS_NEVER_RUN) {
-      safecpy(active_string, "Neverrun", max_msg_length);
-   } else {
-      safecpy(active_string, "Unknown", max_msg_length);
-   }
+    if (active == DAF_PROCESS_FREE)
+    {
+        safecpy(active_string, "Free", max_msg_length);
+    }
+    else if (active == DAF_PROCESS_ACTIVE)
+    {
+        safecpy(active_string, "Running", max_msg_length);
+    }
+    else if (active == DAF_PROCESS_COMPLETED)
+    {
+        safecpy(active_string, "Complete", max_msg_length);
+    }
+    else if (active == DAF_PROCESS_STALE)
+    {
+        safecpy(active_string, "Stale   ", max_msg_length);
+    }
+    else if (active == DAF_PROCESS_NEVER_RUN)
+    {
+        safecpy(active_string, "Neverrun", max_msg_length);
+    }
+    else
+    {
+        safecpy(active_string, "Unknown", max_msg_length);
+    }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -133,32 +145,35 @@ void active_state(int active, char *active_string, int max_msg_length) {
 /*                                                                        */
 /* ---------------------------------------------------------------------- */
 
-bool_t get_shared_segment_process_pointer( shm_daf_t **p, char *errmsg, int max_msg_length) {
+bool_t get_shared_segment_process_pointer( shm_daf_t **p, char *errmsg, int max_msg_length)
+{
 
 #undef  SUBNAME
 #define SUBNAME "get_shared_segment_process_pointer"
 
-  char msg[MAX_MSG_LEN];
+    char msg[MAX_MSG_LEN];
 
-  if ((*p = query_shared_segment_process_pointer()) == NULL) {
-     sprintf(msg, "%s: query_shared_segement_process_pointer() returned p = NULL - continuing", SUBNAME);
-     safecpy(errmsg, msg, max_msg_length);
-     return(FALSE);
-   }
+    if ((*p = query_shared_segment_process_pointer()) == NULL)
+    {
+        sprintf(msg, "%s: query_shared_segement_process_pointer() returned p = NULL - continuing", SUBNAME);
+        safecpy(errmsg, msg, max_msg_length);
+        return(FALSE);
+    }
 
-   // -------------------------------------------------------------
-   /* Check that the shared memory version number matches the    */
-   /* the version in use by this program                         */
-   // -------------------------------------------------------------
+    // -------------------------------------------------------------
+    /* Check that the shared memory version number matches the    */
+    /* the version in use by this program                         */
+    // -------------------------------------------------------------
 
-   if ((*p)->shm_version != DAF_SHM_VERSION) {
-     sprintf(msg, "remove_process_to_shared_segment: Wrong value (%d) for shm_version in shared memory at %p - should be %d",
-                  (*p)->shm_version, *p, DAF_SHM_VERSION);
-     safecpy(errmsg, msg, max_msg_length);
-     return(FALSE);
-   }
+    if ((*p)->shm_version != DAF_SHM_VERSION)
+    {
+        sprintf(msg, "remove_process_to_shared_segment: Wrong value (%d) for shm_version in shared memory at %p - should be %d",
+                (*p)->shm_version, *p, DAF_SHM_VERSION);
+        safecpy(errmsg, msg, max_msg_length);
+        return(FALSE);
+    }
 
-   return(TRUE);
+    return(TRUE);
 
 }
 
@@ -178,31 +193,37 @@ bool_t get_shared_segment_process_pointer( shm_daf_t **p, char *errmsg, int max_
 /* ---------------------------------------------------------------------- */
 
 bool_t find_cmd_log(cmd_log_object_t  **p_service_cmd_log_object,
-                    char              *errmsg, 
-                    int               max_msg_length) {
+                    char              *errmsg,
+                    int               max_msg_length)
+{
 
 #undef  SUBNAME
 #define SUBNAME "find_cmd_log"
 
-   char               msg[MAX_MSG_LEN];
-   shm_daf_t *p;
+    char               msg[MAX_MSG_LEN];
+    shm_daf_t *p;
 
-   if (errmsg != NULL) {
-     errmsg[0] = 0;
-   }
+    if (errmsg != NULL)
+    {
+        errmsg[0] = 0;
+    }
 
-   if ((p = query_shared_segment_process_pointer()) == NULL) {
-     sprintf(msg, "%s: query_shared_segement_process_pointer() returned p = NULL - continuing", SUBNAME);
-     if (errmsg != NULL) {
-        safecpy(errmsg, msg, max_msg_length);
-        safecpy(errmsg, "\n", max_msg_length);
-     }
-     return(FALSE);
-   }
+    if ((p = query_shared_segment_process_pointer()) == NULL)
+    {
+        sprintf(msg, "%s: query_shared_segement_process_pointer() returned p = NULL - continuing", SUBNAME);
 
-   *p_service_cmd_log_object    = &(p->service_cmd_log_object);
+        if (errmsg != NULL)
+        {
+            safecpy(errmsg, msg, max_msg_length);
+            safecpy(errmsg, "\n", max_msg_length);
+        }
 
-   return(TRUE);
+        return(FALSE);
+    }
+
+    *p_service_cmd_log_object    = &(p->service_cmd_log_object);
+
+    return(TRUE);
 
 }
 
@@ -222,31 +243,37 @@ bool_t find_cmd_log(cmd_log_object_t  **p_service_cmd_log_object,
 /* ---------------------------------------------------------------------- */
 
 bool_t find_active_steps(active_steps_object_t  **p_service_active_steps_object,
-                         char                   *errmsg, 
-                         int                    max_msg_length) {
+                         char                   *errmsg,
+                         int                    max_msg_length)
+{
 
 #undef  SUBNAME
 #define SUBNAME "find_active_steps"
 
-   char        msg[MAX_MSG_LEN];
-   shm_daf_t  *p;
+    char        msg[MAX_MSG_LEN];
+    shm_daf_t  *p;
 
-   if (errmsg != NULL) {
-     errmsg[0] = 0;
-   }
+    if (errmsg != NULL)
+    {
+        errmsg[0] = 0;
+    }
 
-   if ((p = query_shared_segment_process_pointer()) == NULL) {
-     sprintf(msg, "%s: query_shared_segement_process_pointer() returned p = NULL - continuing", SUBNAME);
-     if (errmsg != NULL) {
-        safecpy(errmsg, msg, max_msg_length);
-        safecpy(errmsg, "\n", max_msg_length);
-     }
-     return(FALSE);
-   }
+    if ((p = query_shared_segment_process_pointer()) == NULL)
+    {
+        sprintf(msg, "%s: query_shared_segement_process_pointer() returned p = NULL - continuing", SUBNAME);
 
-   *p_service_active_steps_object = &(p->active_steps_object);
+        if (errmsg != NULL)
+        {
+            safecpy(errmsg, msg, max_msg_length);
+            safecpy(errmsg, "\n", max_msg_length);
+        }
 
-   return(TRUE);
+        return(FALSE);
+    }
+
+    *p_service_active_steps_object = &(p->active_steps_object);
+
+    return(TRUE);
 
 }
 
@@ -289,158 +316,185 @@ bool_t find_active_steps(active_steps_object_t  **p_service_active_steps_object,
 /*                                                                        */
 /**************************************************************************/
 
-int initialise_shared_segment(char *statusmsg, 
-                              char *errmsg, 
-                              int  max_msg_length) {
+int initialise_shared_segment(char *statusmsg,
+                              char *errmsg,
+                              int  max_msg_length)
+{
 
 #undef  SUBNAME
 #define SUBNAME "initialise_shared_segment"
 
-   key_t              key;
-   int                shmid;
-   struct             shmid_ds shm_buf;
-   size_t             current_size_shm;
-   size_t             size_shm;
-   size_t             full_size_shm;
-   int                just_created = 0;
-   char               msg[MAX_MSG_LEN]    = "";
-   shm_daf_t *p;
+    key_t              key;
+    int                shmid;
+    struct             shmid_ds shm_buf;
+    size_t             current_size_shm;
+    size_t             size_shm;
+    size_t             full_size_shm;
+    int                just_created = 0;
+    char               msg[MAX_MSG_LEN]    = "";
+    shm_daf_t *p;
 
-   memset(&shm_buf, 0, sizeof(shm_buf));
-   errmsg[0]    = 0;
-   statusmsg[0] = 0;
+    memset(&shm_buf, 0, sizeof(shm_buf));
+    errmsg[0]    = 0;
+    statusmsg[0] = 0;
 
-   /* ------------------------------------------------------------- */
-   /* make the key:                                                 */
-   /* ------------------------------------------------------------- */
+    /* ------------------------------------------------------------- */
+    /* make the key:                                                 */
+    /* ------------------------------------------------------------- */
 
-   if ((key = ftok("/tmp", 'S' )) == -1) {
-      sprintf(msg, "%s: Could not create key for shared memory acess error=%d %s", SUBNAME, errno, strerror(errno));
-      safecpy(errmsg, msg, max_msg_length);
-      return(1);
-   }
+    if ((key = ftok("/tmp", 'S' )) == -1)
+    {
+        sprintf(msg, "%s: Could not create key for shared memory acess error=%d %s", SUBNAME, errno, strerror(errno));
+        safecpy(errmsg, msg, max_msg_length);
+        return(1);
+    }
 
-   /* --------------------------------------------------------------------------------- */
-   /* we are actually going to create the memory size somewhat larger than needed       */
-   // to allow for future expansion.
-   /* --------------------------------------------------------------------------------- */
+    /* --------------------------------------------------------------------------------- */
+    /* we are actually going to create the memory size somewhat larger than needed       */
+    // to allow for future expansion.
+    /* --------------------------------------------------------------------------------- */
 
-   full_size_shm = SIZE_shm_daf_BYTES;
-   size_shm      = sizeof(shm_daf_t);
-   if (size_shm > full_size_shm) {
-      sprintf(msg, "%s: internal error size_shm > full_size_shm (%d > %d)\n",
-                    SUBNAME, (int)size_shm, (int)full_size_shm);
-      safecpy(errmsg, msg, max_msg_length);
-      return(1);
+    full_size_shm = SIZE_shm_daf_BYTES;
+    size_shm      = sizeof(shm_daf_t);
 
-   }
+    if (size_shm > full_size_shm)
+    {
+        sprintf(msg, "%s: internal error size_shm > full_size_shm (%d > %d)\n",
+                SUBNAME, (int)size_shm, (int)full_size_shm);
+        safecpy(errmsg, msg, max_msg_length);
+        return(1);
 
-   /* --------------------------------------------------------------------------------- */
-   /* See if we can connect to an existing shared memory segment                        */
-   /* we try to connect to a segment and use a size of zero                             */
-   /* - this should work if any size segment with the right                             */
-   /* key exists, and if we can connect we can find out the real                        */
-   /* size from shmctl                                                                  */
-   /* --------------------------------------------------------------------------------- */
+    }
 
-   if ((shmid = shmget(key, 0, 0644 )) == -1) {
+    /* --------------------------------------------------------------------------------- */
+    /* See if we can connect to an existing shared memory segment                        */
+    /* we try to connect to a segment and use a size of zero                             */
+    /* - this should work if any size segment with the right                             */
+    /* key exists, and if we can connect we can find out the real                        */
+    /* size from shmctl                                                                  */
+    /* --------------------------------------------------------------------------------- */
 
-      /* ------------------------------------------------------------------------------ */
-      /* cannot connect - no segment present , so create a new one                      */
-      /* ------------------------------------------------------------------------------ */
+    if ((shmid = shmget(key, 0, 0644 )) == -1)
+    {
 
-      if ((shmid = shmget(key, full_size_shm, 0644 | IPC_CREAT)) == -1) {
-        sprintf(msg, "%s: errno = %d (%s): Could not create a shared memory block of size " SIZE_TSPEC,
-                      SUBNAME, errno, strerror(errno), (int)full_size_shm);
-         safecpy(errmsg, msg, max_msg_length);
-         return(1);
-      } else {
-         just_created = TRUE;
-         sprintf(msg, "%s: created shared memory block - id %d, size " SIZE_TSPEC,
-                      SUBNAME, shmid, (int)full_size_shm);
-         safecpy(errmsg, msg, max_msg_length);
-      }
+        /* ------------------------------------------------------------------------------ */
+        /* cannot connect - no segment present , so create a new one                      */
+        /* ------------------------------------------------------------------------------ */
 
-   } else {
+        if ((shmid = shmget(key, full_size_shm, 0644 | IPC_CREAT)) == -1)
+        {
+            sprintf(msg, "%s: errno = %d (%s): Could not create a shared memory block of size " SIZE_TSPEC,
+                    SUBNAME, errno, strerror(errno), (int)full_size_shm);
+            safecpy(errmsg, msg, max_msg_length);
+            return(1);
+        }
+        else
+        {
+            just_created = TRUE;
+            sprintf(msg, "%s: created shared memory block - id %d, size " SIZE_TSPEC,
+                    SUBNAME, shmid, (int)full_size_shm);
+            safecpy(errmsg, msg, max_msg_length);
+        }
 
-      /* ------------------------------------------------------------------------------ */
-      /* date structure exists already - is it the right size?                          */
-      /* ------------------------------------------------------------------------------ */
+    }
+    else
+    {
 
-      if (shmctl(shmid, IPC_STAT, &shm_buf)) {
+        /* ------------------------------------------------------------------------------ */
+        /* date structure exists already - is it the right size?                          */
+        /* ------------------------------------------------------------------------------ */
 
-         sprintf(msg, "%s: INTERNAL_ERROR: could not run shmctl with IPC_STAT errno=%d (%s)",
-                      SUBNAME, errno, strerror(errno));
-         safecpy(errmsg, msg, max_msg_length);
-         return(1);
+        if (shmctl(shmid, IPC_STAT, &shm_buf))
+        {
 
-      } else {
+            sprintf(msg, "%s: INTERNAL_ERROR: could not run shmctl with IPC_STAT errno=%d (%s)",
+                    SUBNAME, errno, strerror(errno));
+            safecpy(errmsg, msg, max_msg_length);
+            return(1);
 
-         current_size_shm = shm_buf.shm_segsz;
+        }
+        else
+        {
 
-         if (current_size_shm != full_size_shm) {
+            current_size_shm = shm_buf.shm_segsz;
 
-            /* ------------------------------------------------------------------------------ */
-            /* data structure exists but is wrong size, I thought it would                    */
-            /* be possible to dynamicallyo resize it and                                      */
-            /* treat it as a newly initialised data structure however that                    */
-            /* does not seem to work so treat this is an error for the time                   */
-            /* being                                                                          */
-            /* ------------------------------------------------------------------------------ */
+            if (current_size_shm != full_size_shm)
+            {
 
-            if (shmctl(shmid, IPC_STAT, &shm_buf)) {
-               shm_buf.shm_segsz = full_size_shm;
-               sprintf(msg, "%s: INTERNAL_ERROR: could not run shmctl with SHM_SIZE (currrent_shm_size = "
+                /* ------------------------------------------------------------------------------ */
+                /* data structure exists but is wrong size, I thought it would                    */
+                /* be possible to dynamicallyo resize it and                                      */
+                /* treat it as a newly initialised data structure however that                    */
+                /* does not seem to work so treat this is an error for the time                   */
+                /* being                                                                          */
+                /* ------------------------------------------------------------------------------ */
+
+                if (shmctl(shmid, IPC_STAT, &shm_buf))
+                {
+                    shm_buf.shm_segsz = full_size_shm;
+                    sprintf(msg, "%s: INTERNAL_ERROR: could not run shmctl with SHM_SIZE (currrent_shm_size = "
                             SIZE_TSPEC ", full_size_shm = " SIZE_TSPEC ",  errno=%d (%s)",
                             SUBNAME, (int) current_size_shm, (int)full_size_shm, errno, strerror(errno));
-               safecpy(errmsg, msg, max_msg_length);
-               return(1);
+                    safecpy(errmsg, msg, max_msg_length);
+                    return(1);
+                }
+
+                sprintf(msg, "%s: INTERNAL_ERROR: shared memory size not as expected - currrent_shm_size = "
+                        SIZE_TSPEC ", desired full_size_shm = " SIZE_TSPEC "\n",
+                        SUBNAME, (int) current_size_shm, (int) full_size_shm);
+                safecpy(errmsg, msg, max_msg_length);
+                return(1);
             }
-            sprintf(msg, "%s: INTERNAL_ERROR: shared memory size not as expected - currrent_shm_size = "
-                          SIZE_TSPEC ", desired full_size_shm = " SIZE_TSPEC "\n",
-                          SUBNAME, (int) current_size_shm, (int) full_size_shm);
-            safecpy(errmsg, msg, max_msg_length);
-            return(1);
-         }
 
-      }
-   }
+        }
+    }
 
-   /* ------------------------------------------------------------------------------ */
-   /* attach to the segment to get a pointer to it and if it is                      */
-   /* a newly created segment, then initialise it to all 0s.  If                     */
-   /* it is an existing segment, then check the shm_version                          */
-   /* number                                                                         */
-   /* ------------------------------------------------------------------------------ */
+    /* ------------------------------------------------------------------------------ */
+    /* attach to the segment to get a pointer to it and if it is                      */
+    /* a newly created segment, then initialise it to all 0s.  If                     */
+    /* it is an existing segment, then check the shm_version                          */
+    /* number                                                                         */
+    /* ------------------------------------------------------------------------------ */
 
-   p_shm = shmat(shmid, (void *)0, 0);
+    p_shm = shmat(shmid, (void *)0, 0);
 
-   if (p_shm == (char *)(-1)) {
-      sprintf(msg, "%s: Could not attach to shared memory block id=%d, error= %d %s", SUBNAME, shmid, errno, strerror(errno));
-      safecpy(errmsg, msg, max_msg_length);
-      return(1);
-   } else {
-      p = (shm_daf_t *)(p_shm);
-      if (just_created) {
-         initialise_shared_segment_values(NULL, 0);
-      } else {
-         if (p->shm_version != DAF_SHM_VERSION) {
-            sprintf(msg, "%s: Wrong value (%d) for shm_version in shared memory at %p- should be %d - ",
-                         SUBNAME, p->shm_version, p, DAF_SHM_VERSION);
- /* <<<<<<<< what to do here ??? */
-            safecpy(errmsg, msg, max_msg_length);
-            return(1);
-         }
-      }
-   }
+    if (p_shm == (char *)(-1))
+    {
+        sprintf(msg, "%s: Could not attach to shared memory block id=%d, error= %d %s", SUBNAME, shmid, errno, strerror(errno));
+        safecpy(errmsg, msg, max_msg_length);
+        return(1);
+    }
+    else
+    {
+        p = (shm_daf_t *)(p_shm);
 
-   if (just_created) {
-     sprintf(statusmsg, "%s: A new shared memory segment was created at %p", SUBNAME, p_shm);
-   } else {
-     sprintf(statusmsg, "%s: An existing shared memory segment was used at %p", SUBNAME, p_shm);
-   }
+        if (just_created)
+        {
+            initialise_shared_segment_values(NULL, 0);
+        }
+        else
+        {
+            if (p->shm_version != DAF_SHM_VERSION)
+            {
+                sprintf(msg, "%s: Wrong value (%d) for shm_version in shared memory at %p- should be %d - ",
+                        SUBNAME, p->shm_version, p, DAF_SHM_VERSION);
+                /* <<<<<<<< what to do here ??? */
+                safecpy(errmsg, msg, max_msg_length);
+                return(1);
+            }
+        }
+    }
 
-   return(0);
+    if (just_created)
+    {
+        sprintf(statusmsg, "%s: A new shared memory segment was created at %p", SUBNAME, p_shm);
+    }
+    else
+    {
+        sprintf(statusmsg, "%s: An existing shared memory segment was used at %p", SUBNAME, p_shm);
+    }
+
+    return(0);
 
 }
 
@@ -468,28 +522,31 @@ int initialise_shared_segment(char *statusmsg,
 /*                                                                        */
 /* ---------------------------------------------------------------------- */
 
-int allocate_shared_segment_mutexes(shm_daf_t *p, char *errmsg, int max_msg_length) {
+int allocate_shared_segment_mutexes(shm_daf_t *p, char *errmsg, int max_msg_length)
+{
 
 #undef  SUBNAME
 #define SUBNAME "allocate_shared_segment_mutexes"
 
-   char msg[MAX_MSG_LEN];
-   pthread_mutexattr_t psharedm;
+    char msg[MAX_MSG_LEN];
+    pthread_mutexattr_t psharedm;
 
-   pthread_mutexattr_init(&psharedm);
-   pthread_mutexattr_setpshared(&psharedm, PTHREAD_PROCESS_SHARED);
+    pthread_mutexattr_init(&psharedm);
+    pthread_mutexattr_setpshared(&psharedm, PTHREAD_PROCESS_SHARED);
 
-   if (pthread_mutex_init(&(p->service_cmd_log_object.mp), &psharedm) != 0) {
-      sprintf(msg, "%s: problem initialising service cmd log mutex, errno = %d - exiting", SUBNAME, errno);
-      exit(1);
-   }
+    if (pthread_mutex_init(&(p->service_cmd_log_object.mp), &psharedm) != 0)
+    {
+        sprintf(msg, "%s: problem initialising service cmd log mutex, errno = %d - exiting", SUBNAME, errno);
+        exit(1);
+    }
 
-   if (pthread_mutex_init(&(p->active_steps_object.mp), NULL) != 0) {
-      sprintf(msg, "%s: problem initialising active_steps_object mutex, errno = %d - exiting", SUBNAME, errno);
-      exit(1);
-   }
+    if (pthread_mutex_init(&(p->active_steps_object.mp), NULL) != 0)
+    {
+        sprintf(msg, "%s: problem initialising active_steps_object mutex, errno = %d - exiting", SUBNAME, errno);
+        exit(1);
+    }
 
-   return 0;
+    return 0;
 
 }
 
@@ -514,58 +571,68 @@ int allocate_shared_segment_mutexes(shm_daf_t *p, char *errmsg, int max_msg_leng
 /*                                                                        */
 /* Description                                                            */
 /*                                                                        */
-/*  <<<< what happens if this is called with one (or more)                */ 
+/*  <<<< what happens if this is called with one (or more)                */
 /* of the mutex in the alreaqdy locked state?                             */
 /* ---------------------------------------------------------------------- */
 
-int initialise_shared_segment_values(char *errmsg, int max_msg_length) {
+int initialise_shared_segment_values(char *errmsg, int max_msg_length)
+{
 
 #undef  SUBNAME
 #define SUBNAME "initialise_shared_segment_values"
 
-   char               msg[MAX_MSG_LEN];
-   shm_daf_t *p;
-   int rc;
-   
-   if (errmsg != NULL) {
-     errmsg[0] = 0;
-   }
+    char               msg[MAX_MSG_LEN];
+    shm_daf_t *p;
+    int rc;
 
-   if ((p = query_shared_segment_process_pointer()) == NULL) {
-     sprintf(msg, "%s: query_shared_segement_process_pointer() returned p = NULL - continuing", SUBNAME);
-     if (errmsg != NULL) {
-        safecpy(errmsg, msg, max_msg_length);
-        safecpy(errmsg, "\n", max_msg_length);
-     }
-     return(1);
-   }
+    if (errmsg != NULL)
+    {
+        errmsg[0] = 0;
+    }
 
-   // -------------------------------------------------------------
-   // -------------------------------------------------------------
+    if ((p = query_shared_segment_process_pointer()) == NULL)
+    {
+        sprintf(msg, "%s: query_shared_segement_process_pointer() returned p = NULL - continuing", SUBNAME);
 
-   memset(p, 0, sizeof(shm_daf_t));
+        if (errmsg != NULL)
+        {
+            safecpy(errmsg, msg, max_msg_length);
+            safecpy(errmsg, "\n", max_msg_length);
+        }
 
-   p->shm_version                                            = DAF_SHM_VERSION;
-   p->size_shm_shared_bytes                                  = (Iu32) sizeof(shm_daf_t);
-   p->daemon_pid                                             = 0;
-   p->daemon_tick                                            = 0;
-   p->max_num_slots                                          = DAF_MAX_PROCESSES; 
-   p->next_slot_to_use                                       = 0;
-   p->current_cmd_tag                                        = 1;
-   p->epoch_time_last_cleared                                = (Iu32) time(0);
+        return(1);
+    }
 
-   if (clear_cmd_array(errmsg, max_msg_length) != 0) {
-     sprintf(msg, "%s: problem running clear_cmd_array()", SUBNAME);
-     if (errmsg != NULL) {
-        safecpy(errmsg, msg, max_msg_length);
-        safecpy(errmsg, "\n", max_msg_length);
-     }
-     return(1);
-   }
+    // -------------------------------------------------------------
+    // -------------------------------------------------------------
 
-   rc = allocate_shared_segment_mutexes(p, errmsg, max_msg_length);
+    memset(p, 0, sizeof(shm_daf_t));
 
-   return(rc);
+    p->shm_version                                            = DAF_SHM_VERSION;
+    p->size_shm_shared_bytes                                  = (Iu32) sizeof(shm_daf_t);
+    p->daemon_pid                                             = 0;
+    p->daemon_tick                                            = 0;
+    p->max_num_slots                                          = DAF_MAX_PROCESSES;
+    p->next_slot_to_use                                       = 0;
+    p->current_cmd_tag                                        = 1;
+    p->epoch_time_last_cleared                                = (Iu32) time(0);
+
+    if (clear_cmd_array(errmsg, max_msg_length) != 0)
+    {
+        sprintf(msg, "%s: problem running clear_cmd_array()", SUBNAME);
+
+        if (errmsg != NULL)
+        {
+            safecpy(errmsg, msg, max_msg_length);
+            safecpy(errmsg, "\n", max_msg_length);
+        }
+
+        return(1);
+    }
+
+    rc = allocate_shared_segment_mutexes(p, errmsg, max_msg_length);
+
+    return(rc);
 
 }
 
@@ -593,57 +660,65 @@ int initialise_shared_segment_values(char *errmsg, int max_msg_length) {
 /*                                                                        */
 /* ---------------------------------------------------------------------- */
 
-int clear_cmd_array(char *errmsg, int max_msg_length) {
+int clear_cmd_array(char *errmsg, int max_msg_length)
+{
 
 #undef  SUBNAME
 #define SUBNAME "clear_cmd_array"
 
-   char                  msg[MAX_MSG_LEN];
-   char                  agent_log_pathname[MAX_PATHNAME_LEN];
-   shm_daf_t *  p;
-   int                   i;
-   char                  thishostname[MAX_HOSTNAME_LEN];
+    char                  msg[MAX_MSG_LEN];
+    char                  agent_log_pathname[MAX_PATHNAME_LEN];
+    shm_daf_t   *p;
+    int                   i;
+    char                  thishostname[MAX_HOSTNAME_LEN];
 
-   if (errmsg != NULL) {
-     errmsg[0] = 0;
-   }
+    if (errmsg != NULL)
+    {
+        errmsg[0] = 0;
+    }
 
-   if ((p = query_shared_segment_process_pointer()) == NULL) {
-     sprintf(msg, "%s: query_shared_segement_process_pointer() returned p = NULL - continuing", SUBNAME);
-     if (errmsg != NULL) {
-        safecpy(errmsg, msg, max_msg_length);
-     }
-     return(1);
-   }
+    if ((p = query_shared_segment_process_pointer()) == NULL)
+    {
+        sprintf(msg, "%s: query_shared_segement_process_pointer() returned p = NULL - continuing", SUBNAME);
 
-   /* what about stale processes see above <<<<<<<<<<<<<<<<<<< */
+        if (errmsg != NULL)
+        {
+            safecpy(errmsg, msg, max_msg_length);
+        }
 
-   gethostname(thishostname, sizeof(thishostname));
+        return(1);
+    }
+
+    /* what about stale processes see above <<<<<<<<<<<<<<<<<<< */
+
+    gethostname(thishostname, sizeof(thishostname));
 
 
 
-   // -------------------------------------------------------------
-   // -------------------------------------------------------------
+    // -------------------------------------------------------------
+    // -------------------------------------------------------------
 
-   for (i=0; i<DAF_MAX_COMMANDS; i++) {
+    for (i=0; i<DAF_MAX_COMMANDS; i++)
+    {
 
-      if (p->service_cmd_log_object.cmd_array[i].state == CMD_COMPLETED ) {
-         safecpy(p->service_cmd_log_object.cmd_array[i].cmdstring,   "", sizeof(p->service_cmd_log_object.cmd_array[i].cmdstring));
-         safecpy(p->service_cmd_log_object.cmd_array[i].identstring, "", sizeof(p->service_cmd_log_object.cmd_array[i].identstring));
-         safecpy(p->service_cmd_log_object.cmd_array[i].agent_log_pathname, agent_log_pathname, 
-                 sizeof(p->service_cmd_log_object.cmd_array[i].agent_log_pathname));
-         p->service_cmd_log_object.cmd_array[i].state       = CMD_FREE;
-         p->service_cmd_log_object.cmd_array[i].status      = 0;
-         p->service_cmd_log_object.cmd_array[i].start_time  = 0;
-         p->service_cmd_log_object.cmd_array[i].end_time    = 0;
-         p->service_cmd_log_object.cmd_array[i].tag         = 0;
-         p->service_cmd_log_object.cmd_array[i].pid         = 0;
-         p->service_cmd_log_object.cmd_array[i].workqueueID = 0;
-      }
+        if (p->service_cmd_log_object.cmd_array[i].state == CMD_COMPLETED )
+        {
+            safecpy(p->service_cmd_log_object.cmd_array[i].cmdstring,   "", sizeof(p->service_cmd_log_object.cmd_array[i].cmdstring));
+            safecpy(p->service_cmd_log_object.cmd_array[i].identstring, "", sizeof(p->service_cmd_log_object.cmd_array[i].identstring));
+            safecpy(p->service_cmd_log_object.cmd_array[i].agent_log_pathname, agent_log_pathname,
+                    sizeof(p->service_cmd_log_object.cmd_array[i].agent_log_pathname));
+            p->service_cmd_log_object.cmd_array[i].state       = CMD_FREE;
+            p->service_cmd_log_object.cmd_array[i].status      = 0;
+            p->service_cmd_log_object.cmd_array[i].start_time  = 0;
+            p->service_cmd_log_object.cmd_array[i].end_time    = 0;
+            p->service_cmd_log_object.cmd_array[i].tag         = 0;
+            p->service_cmd_log_object.cmd_array[i].pid         = 0;
+            p->service_cmd_log_object.cmd_array[i].workqueueID = 0;
+        }
 
-   }
+    }
 
-   return(0);
+    return(0);
 
 }
 
@@ -671,58 +746,63 @@ int clear_cmd_array(char *errmsg, int max_msg_length) {
 /*                                                                        */
 /* ---------------------------------------------------------------------- */
 
-int delete_shared_segment(char *errmsg, int max_msg_length) {
+int delete_shared_segment(char *errmsg, int max_msg_length)
+{
 
 #undef  SUBNAME
 #define SUBNAME "delete_shared_segment"
 
-   key_t           key;
-   int             shmid;
-   char            msg[MAX_MSG_LEN];
-   struct shmid_ds shm_buf;
+    key_t           key;
+    int             shmid;
+    char            msg[MAX_MSG_LEN];
+    struct shmid_ds shm_buf;
 
-   memset(&shm_buf, 0, sizeof(shm_buf));
+    memset(&shm_buf, 0, sizeof(shm_buf));
 
-   if (errmsg != NULL) {
-     errmsg[0] = 0;
-   }
+    if (errmsg != NULL)
+    {
+        errmsg[0] = 0;
+    }
 
-   errmsg[0] = 0;
+    errmsg[0] = 0;
 
-   // -------------------------------------------------------------
-   /* make the key: */
-   // -------------------------------------------------------------
+    // -------------------------------------------------------------
+    /* make the key: */
+    // -------------------------------------------------------------
 
-   if ((key = ftok("/tmp", 'N' )) == -1) {
-      sprintf(msg, "%s: Could not create key for shared memory acess error=%d %s", SUBNAME, errno, strerror(errno));
-      safecpy(errmsg, msg, max_msg_length);
-      return(1);
-   }
+    if ((key = ftok("/tmp", 'N' )) == -1)
+    {
+        sprintf(msg, "%s: Could not create key for shared memory acess error=%d %s", SUBNAME, errno, strerror(errno));
+        safecpy(errmsg, msg, max_msg_length);
+        return(1);
+    }
 
-   // -------------------------------------------------------------
-   /* See if we can connect to an existing shared memory segment */
-   // -------------------------------------------------------------
+    // -------------------------------------------------------------
+    /* See if we can connect to an existing shared memory segment */
+    // -------------------------------------------------------------
 
-   if ((shmid = shmget(key, 0, 0644 )) == -1) {
-       sprintf(msg, "%s: errno = %d (%s): Could not find a shared memory block to delete",
-                    SUBNAME, errno, strerror(errno));
-       safecpy(errmsg, msg, max_msg_length);
-       return(1);
-   }
+    if ((shmid = shmget(key, 0, 0644 )) == -1)
+    {
+        sprintf(msg, "%s: errno = %d (%s): Could not find a shared memory block to delete",
+                SUBNAME, errno, strerror(errno));
+        safecpy(errmsg, msg, max_msg_length);
+        return(1);
+    }
 
-   if (shmctl(shmid, IPC_RMID, &shm_buf) == -1) {
-      sprintf(msg, "%s: errno = %d (%s): Could not delete shared memory block",
-                   SUBNAME, errno, strerror(errno));
-      safecpy(errmsg, msg, max_msg_length);
-      return(1);
-   }
-
-
-   // -------------------------------------------------------------
-   // -------------------------------------------------------------
+    if (shmctl(shmid, IPC_RMID, &shm_buf) == -1)
+    {
+        sprintf(msg, "%s: errno = %d (%s): Could not delete shared memory block",
+                SUBNAME, errno, strerror(errno));
+        safecpy(errmsg, msg, max_msg_length);
+        return(1);
+    }
 
 
-   return(0);
+    // -------------------------------------------------------------
+    // -------------------------------------------------------------
+
+
+    return(0);
 
 }
 
@@ -749,32 +829,35 @@ int delete_shared_segment(char *errmsg, int max_msg_length) {
 /*                                                                        */
 /* ---------------------------------------------------------------------- */
 
-int terminate_use_of_shared_segment(char *errmsg, int max_msg_length) {
+int terminate_use_of_shared_segment(char *errmsg, int max_msg_length)
+{
 
 #undef  SUBNAME
 #define SUBNAME "terminate_use_of_shared_segment"
 
-   char               msg[MAX_MSG_LEN];
-   shm_daf_t *p;
+    char               msg[MAX_MSG_LEN];
+    shm_daf_t *p;
 
-   errmsg[0] = 0;
+    errmsg[0] = 0;
 
-   if (! get_shared_segment_process_pointer(&p, errmsg, max_msg_length)) {
-     return E_NOTOK;
-   }
+    if (! get_shared_segment_process_pointer(&p, errmsg, max_msg_length))
+    {
+        return E_NOTOK;
+    }
 
-   // -------------------------------------------------------------
-   /* detach from the segment:                                   */
-   // -------------------------------------------------------------
+    // -------------------------------------------------------------
+    /* detach from the segment:                                   */
+    // -------------------------------------------------------------
 
-   if (shmdt((void *) p) == -1) {
-      sprintf(msg, "%s: errno = %d (%s): Could not detach from shared memory block",
-                   SUBNAME, errno, strerror(errno));
-      safecpy(errmsg, msg, max_msg_length);
-      return(1);
-   }
+    if (shmdt((void *) p) == -1)
+    {
+        sprintf(msg, "%s: errno = %d (%s): Could not detach from shared memory block",
+                SUBNAME, errno, strerror(errno));
+        safecpy(errmsg, msg, max_msg_length);
+        return(1);
+    }
 
-   return 0;
+    return 0;
 
 }
 
@@ -794,12 +877,13 @@ int terminate_use_of_shared_segment(char *errmsg, int max_msg_length) {
 /* Description                                                            */
 /*                                                                        */
 /* ---------------------------------------------------------------------- */
-shm_daf_t *query_shared_segment_process_pointer(void) {
+shm_daf_t *query_shared_segment_process_pointer(void)
+{
 
 #undef  SUBNAME
 #define SUBNAME "query_shared_segment_process_pointer"
 
-   return (shm_daf_t *) p_shm;
+    return (shm_daf_t *) p_shm;
 
 }
 
@@ -820,29 +904,31 @@ shm_daf_t *query_shared_segment_process_pointer(void) {
 /*                                                                        */
 /* ---------------------------------------------------------------------- */
 
-int print_shared_segment_details(char *errmsg, int max_msg_length) {
+int print_shared_segment_details(char *errmsg, int max_msg_length)
+{
 
 #undef  SUBNAME
 #define SUBNAME "print_shared_segment_details"
 
-   shm_daf_t *p;
+    shm_daf_t *p;
 
-   if (! get_shared_segment_process_pointer(&p, errmsg, max_msg_length)) {
-     return E_NOTOK;
-   }
+    if (! get_shared_segment_process_pointer(&p, errmsg, max_msg_length))
+    {
+        return E_NOTOK;
+    }
 
-   // -------------------------------------------------------------
-   // -------------------------------------------------------------
+    // -------------------------------------------------------------
+    // -------------------------------------------------------------
 
-   printf("daf shared segment ------------------------------------------------------------------------\n");
-   printf("shm_version                                                 %d\n",       p->shm_version);
-   printf("size_shm_shared_bytes                                       %d\n",       p->size_shm_shared_bytes);
-   printf("size_shm_shared_bytes address                               %p\n",       p);
-   printf("daemon_pid                                                  %llu\n",     (unsigned long long) p->daemon_pid);
-   printf("daemon_tick                                                 0x%08x\n",   p->daemon_tick);
-   printf("epoch_time_last_cleared                                     0x%08x\n",   p->epoch_time_last_cleared);
+    printf("daf shared segment ------------------------------------------------------------------------\n");
+    printf("shm_version                                                 %d\n",       p->shm_version);
+    printf("size_shm_shared_bytes                                       %d\n",       p->size_shm_shared_bytes);
+    printf("size_shm_shared_bytes address                               %p\n",       p);
+    printf("daemon_pid                                                  %llu\n",     (unsigned long long) p->daemon_pid);
+    printf("daemon_tick                                                 0x%08x\n",   p->daemon_tick);
+    printf("epoch_time_last_cleared                                     0x%08x\n",   p->epoch_time_last_cleared);
 
-   return 0;
+    return 0;
 
 }
 

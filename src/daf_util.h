@@ -39,14 +39,15 @@ char *safecat(char *dest, char *src, unsigned int len);
 
 int run_system_cmd_and_print_all_output(char *cmd);
 int run_system_cmd_and_capture_single_line_output(char *cmd,
-                                                  char *output,
-                                                  int max_output_line_length);
+        char *output,
+        int max_output_line_length);
 int run_system_cmd(char *cmd, BOOL quiet);
 int run_system_cmd_in_background(char *cmd);
 
 
 pid_t get_process_pid();
 void chomp(char *mystring);
+int set_ulimit_c_unlimited(char *errmsg, int max_errmsg_len);
 
 
 #endif

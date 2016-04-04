@@ -18,6 +18,7 @@ extern "C" {
 #define MAX_SQLUSERNAME_LEN 64
 #define MAX_SQLPASSWORD_LEN 64
 #define MAX_SQLDATABASENAME_LEN 64
+#define MAX_SQLSOCKETNAME_LEN 64
 #define MAX_MSG_LEN 512
 #define MAX_HOSTNAME_LEN 64
 #define MAX_PATHNAME_LEN 128
@@ -121,7 +122,7 @@ extern "C" {
 #define DAF_TESTLEVEL_DESCRIPTION_LEN 128
 #define DAF_LICENCE_LEN 49
 
-typedef int BOOL;
+typedef bool_t BOOL;
 
 typedef u_quad_t Iu64;
 

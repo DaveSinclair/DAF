@@ -10,7 +10,7 @@ ifeq ($(OS),Linux)
      CFLAGS1 = -g
      LIBS = -lpthread 
      INCLUDES = -I/usr/include/mysql
-     DEFINES = -DUNAME="\"$(shell uname -a)\"" -DBUILDMACHINE="\"$(HOSTNAME)\""  -D_GNU_SOURCE -D_THREAD_SAFE -DLINUX
+     DEFINES = -DUNAME="\"$(shell uname -a)\"" -DBUILDMACHINE="\"$(HOSTNAME)\""  -D_GNU_SOURCE -D_THREAD_SAFE -DLINUX -DDAF_AGENT -DPOLLING_SERVER
 endif
 
 ifeq ($(OS),SunOS)
@@ -20,7 +20,7 @@ ifeq ($(OS),SunOS)
      CFLAGS1 = -g
      LIBS = -lpthread -lsocket -lnsl 
      INCLUDES = -I/usr/include/mysql
-     DEFINES = -DUNAME="\"$(shell uname -a)\"" -DBUILDMACHINE="\"$(HOSTNAME)\"" -DSOLARIS
+     DEFINES = -DUNAME="\"$(shell uname -a)\"" -DBUILDMACHINE="\"$(HOSTNAME)\"" -DSOLARIS -DDAF_AGENT -DPOLLING_SERVER
 endif
 
 # check to see if we are running this compile on a 64 bit machine
@@ -41,7 +41,7 @@ endif
 #endif
 
 
-DAFAGENTOBJ =  dafservice.o dafclient.o daf_util.o OSstuff.o daf_service_environment.o daf_shared_memory.o daf_agent.o daf_protocol_xdr.o 
+DAFAGENTOBJ =  dafservice.o dafclient.o daf_util.o OSstuff.o daf_service_environment.o daf_shared_memory.o daf_agent.o daf_protocol_xdr.o daf_threads.o
 
 BINS = daf_agent  
 OBJS = $(DAFAGENTOBJ)
@@ -84,7 +84,7 @@ daf_protocol.h: daf_protocol.x
 	$(RPCGEN) -h daf_protocol.x -o daf_protocol.h
 
 daf_protocol_xdr.o: daf_protocol_xdr.c 
-	gcc $(CFLAGS) $(DEFINES) $(INCLUDES) daf_protocol_xdr.c -c
+	gcc $(CFLAGS) $(DEFINES) $(INCLUDES) daf_protocol_xdr.c -c -Wno-unused-variable
 
 email.o: email.c 
 	gcc $(CFLAGS) $(DEFINES) $(INCLUDES) email.c -c

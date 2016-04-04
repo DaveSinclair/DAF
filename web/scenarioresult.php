@@ -986,7 +986,7 @@ function show_detailed_scenarioresult($ID, $status_db) {
       echo "</td>\n";
       echo "<td class=td_smd>";
       // cellbutton(null, "actionresult_delete_$i", "delete", "index.php?action=show&operation=delete&object=actionresult&ID=$ID", "submit");  
-      button_with_confirm("actionresult_delete_$j", "delete", "delete", "index.php?action=show&operation=delete&object=actionresult&ID=$ID", 
+      button_with_confirm("actionresult_delete_$i", "delete", "delete", "index.php?action=show&operation=delete&object=actionresult&ID=$ID", 
                           "index.php?action=show&object=actionresult");
       echo "</td>\n";
       echo "<td class=td_smd>";

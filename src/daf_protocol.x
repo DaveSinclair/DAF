@@ -17,6 +17,7 @@ const MAX_SQLSERVERNAME_LEN   = 64;
 const MAX_SQLUSERNAME_LEN     = 64;
 const MAX_SQLPASSWORD_LEN     = 64;
 const MAX_SQLDATABASENAME_LEN = 64;
+const MAX_SQLSOCKETNAME_LEN   = 64;
 
 const MAX_MSG_LEN             = 512;
 const MAX_HOSTNAME_LEN        = 64;
@@ -42,7 +43,7 @@ const DAF_LOGFILNAME_LEN = 64;
 const DAF_STATE_LEN      = 24;
 const DAF_STATUS_LEN     = 32;
 const DAF_STATEMODIFIER_LEN     = 32;
-const DAF_TESTCASE_LEN   = 32;
+const DAF_TESTCASE_LEN   = 64;
 const DAF_TESTCASE_DESCRIPTION_LEN   = 64;
 const DAF_TESTSTAND_LEN  = 32;
 const DAF_TESTSTAND_COMMENTS_LEN = 128;
@@ -136,7 +137,7 @@ const DAF_TESTLEVEL_DESCRIPTION_LEN = 128;
 const DAF_LICENCE_LEN = 49;
 
 
-typedef int BOOL;
+typedef bool_t BOOL;
 typedef unsigned hyper Iu64;
 typedef unsigned int Iu32;
 typedef unsigned short Iu16;
