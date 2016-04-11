@@ -279,6 +279,8 @@ function show_query_scenarioresults($gp) {
       }
    }
    
+   $where .= "ORDER BY ID DESC";                    // TODO provide this a button ?
+   
    $query = "SELECT * FROM " . $tablename . " $where";
    
    $result = mysql_query($query);

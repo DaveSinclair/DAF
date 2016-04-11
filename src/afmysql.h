@@ -43,9 +43,15 @@ typedef struct af_agent_status_daemon_thread_data
 void lock_active_steps(active_steps_object_t *active_steps);
 void unlock_active_steps(active_steps_object_t *active_steps);
 
+void determine_status_database_name(char *Project, char *Phase, char *status_database_name, int max_status_database_name_len);
+void determine_status_table_name(char *status_database_name, char *tablename, char *status_table_name, int max_status_table_name_len);
+
 bool_t lookup_collectortypeID(collectortype_t *collectortypes, int num_collectortype_records, char *name, int *ID);
 void lookup_actiontype(actiontype_t *actiontypes, int num_actiontype_records, int ID, char *actiontype, int max_actiontype_len);
 void lookup_testcase(testcase_t *testcases, int num_testcase_records, int ID, char *testcase, int max_testcase_len);
+
+int lookupID(MYSQL *sql_connection, char *tablename, char *name, int *ID, char *errmsg, int max_msg_len);
+int count_actions_in_scenario(MYSQL *sql_connection, int scenarioID);
 
 void get_all_actiontype_records(MYSQL         *sql_connection,
                                 actiontype_t  *actiontype,
@@ -98,6 +104,9 @@ void get_environmentvalue_assignments(MYSQL          *sql_connection,
 void get_testcase_record(MYSQL_RES   *res_set,
                          MYSQL_ROW   *row,
                          testcase_t  *testcase);
+void get_parameter_record(MYSQL_RES   *res_set,
+                          MYSQL_ROW   *row,
+                          parameter_t  *parameter);
 void get_actiontype_record(MYSQL_RES    *res_set,
                            MYSQL_ROW    *row,
                            actiontype_t *actiontype);
@@ -136,13 +145,7 @@ void get_environmentvalue_record(MYSQL_RES      *res_set,
                                  environmentvalue_t  *environmentvalue);
 
 void process_workqueue(MYSQL *sql_connection);
-void process_new_workqueue_requests(MYSQL *sql_connection,
-                                    char *sql_servername,
-                                    char *sql_username,
-                                    char *sql_password,
-                                    char *sql_databasename,
-                                    Iu16 sql_port,
-                                    bool_t process_new_workqueue_requests);
+void process_new_workqueue_requests(MYSQL *sql_connection);
 void process_new_scenario_requests(MYSQL *sql_connection);
 
 void *af_work_daemon(void *p);

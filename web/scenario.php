@@ -98,7 +98,7 @@
 // Description:
 //
 // Handles requests to do something with a scenario object.   The allowed actions are to create, modify or delete the 
-// scenario record in the node table.
+// scenario record in the scenario table.
 //
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -1030,7 +1030,7 @@ _END;
       echo "<tr><th colspan=2>Step number 1</th></tr>\n";
       echo "<tr><th>Description</th><td>";
       echo "<input type=\"text\" name=\"description\" value=\"Step X\" size = \"" . DAF_STEPDESCRIPTION_LEN . '"  maxlength="' . DAF_STEPDESCRIPTION_LEN . '" ' .  
-           'dojoType="dijit.form.ValidationTextBox" style="width:100%" regExp=".{1,' . DAF_STEPDESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a description" ' . 
+           'dojoType="dijit.form.ValidationTextBox" style="width:50em" regExp=".{1,' . DAF_STEPDESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a description" ' . 
            'invalidMessage="Invalid Scenario Step description (must be 1 to ' . DAF_STEPDESCRIPTION_LEN . ' characters)"/></td></tr>';
       echo "</table>\n";
       echo "<input type=\"hidden\" name=\"stepnumber\" value=\"1\" />\n";
@@ -1054,11 +1054,11 @@ _END;
       echo "</select></td></tr>\n";
       echo "<tr><th>Number of steps to create</th><td>";
       echo '<input type="text" name="numsteps" value="1" size="10" maxlength="10" ' .  
-           'dojoType="dijit.form.ValidationTextBox" style="width:100%" regExp="\d{1,4}" required="true" trim="true" promptMessage="Enter the number of steps to be inserted" ' . 
+           'dojoType="dijit.form.ValidationTextBox" style="width:10em" regExp="\d{1,4}" required="true" trim="true" promptMessage="Enter the number of steps to be inserted" ' . 
            'invalidMessage="Invalid number of steps (must be 1 to 999)"/></td></tr>';
       echo "<tr><th>Description</th><td>";
       echo "<input type=\"text\" name=\"description\" value=\"Step X\" size = \"" . DAF_STEPDESCRIPTION_LEN . '"  maxlength="' . DAF_STEPDESCRIPTION_LEN . '" ' .  
-           'dojoType="dijit.form.ValidationTextBox" style="width:100%" regExp=".{1,' . DAF_STEPDESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a description" ' . 
+           'dojoType="dijit.form.ValidationTextBox" style="width:50em" regExp=".{1,' . DAF_STEPDESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a description" ' . 
            'invalidMessage="Invalid Scenario Step description (must be 1 to ' . DAF_STEPDESCRIPTION_LEN . ' characters)"/></td></tr>';
       echo "</table>\n";
       echo "<input type=\"hidden\" name=\"operation\" value=\"insertstep\" />\n";
@@ -1126,7 +1126,7 @@ _END;
    echo "<td><input type=\"text\" name=\"stepnumber\" value=\"" . $step_row[0] . "\" readonly=\"true\" /></td></tr>\n";
    echo "<tr><th>Description</th>\n";
    echo "<td><input type=\"text\" name=\"description\" value=\"" . $step_row[1] . '" size = "' . DAF_STEPDESCRIPTION_LEN . '"  maxlength="' . DAF_STEPDESCRIPTION_LEN . '" ' .  
-        'dojoType="dijit.form.ValidationTextBox" style="width:100%" regExp=".{1,' . DAF_STEPDESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a description" ' . 
+        'dojoType="dijit.form.ValidationTextBox" style="width:50em" regExp=".{1,' . DAF_STEPDESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a description" ' . 
         'invalidMessage="Invalid Scenario Step description (must be 1 to ' . DAF_STEPDESCRIPTION_LEN . ' characters)"/></td></tr>';
    echo "</table>\n";
    
@@ -1206,15 +1206,15 @@ _END;
    echo "</select></td></tr>\n";
    echo "<tr><th>Number of steps to copy</th><td>";
    echo '<input type="text" name="numsteps" value="1" size="10" maxlength="10" ' .  
-        'dojoType="dijit.form.ValidationTextBox" style="width:100%" regExp="\d{1,4}" required="true" trim="true" promptMessage="Enter the number of steps to be copied" ' . 
+        'dojoType="dijit.form.ValidationTextBox" style="width:10em" regExp="\d{1,4}" required="true" trim="true" promptMessage="Enter the number of steps to be copied" ' . 
         'invalidMessage="Invalid number of steps (must be 1 to 999)"/></td></tr>';
    echo "<tr><th>Number of times to duplicate steps</th><td>";
    echo '<input type="text" name="numdups" value="1" size="10" maxlength="10" ' .  
-        'dojoType="dijit.form.ValidationTextBox" style="width:100%" regExp="\d{1,4}" required="true" trim="true" promptMessage="Enter the number of times the steps are to be copied" ' . 
+        'dojoType="dijit.form.ValidationTextBox" style="width:10em" regExp="\d{1,4}" required="true" trim="true" promptMessage="Enter the number of times the steps are to be copied" ' . 
         'invalidMessage="Invalid number of duplicates (must be 1 to 999)"/></td></tr>';
    echo '<tr><th>Description</th>';                /* what happens if description has a ' in it etc  here and elsewhere <<<<< */
    echo '<td><input type="text" name="description" value="Duplicate of ' . $description . '" size="' . DAF_ACTIONDESCRIPTION_LEN . '" maxlength="' . DAF_ACTIONDESCRIPTION_LEN . '" ' .
-        'dojoType="dijit.form.ValidationTextBox" style="width:100%" regExp=".{1,' . DAF_ACTIONDESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Description" ' . 
+        'dojoType="dijit.form.ValidationTextBox" style="width:50em" regExp=".{1,' . DAF_ACTIONDESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Description" ' . 
         'invalidMessage="Invalid Description (must be 1 to ' . DAF_ACTIONDESCRIPTION_LEN . ' characters)"/>';
    echo "</td></tr>\n";
    echo "</table></td></tr>\n";
@@ -1264,7 +1264,7 @@ _END;
    
    echo '<tr><th>Description</th>';
    echo '<td><input type="text" name="description" size="' . DAF_ACTIONDESCRIPTION_LEN . '" maxlength="' . DAF_ACTIONDESCRIPTION_LEN . '" ' .
-        'dojoType="dijit.form.ValidationTextBox" style="width:100%" regExp=".{1,' . DAF_ACTIONDESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Description" ' . 
+        'dojoType="dijit.form.ValidationTextBox" style="width:50em" regExp=".{1,' . DAF_ACTIONDESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Description" ' . 
         'invalidMessage="Invalid Description (must be 1 to ' . DAF_ACTIONDESCRIPTION_LEN . " characters)\"/></td></tr>\n";
    echo "<tr><th>Action</th><td><select name=\"actiontypeID\"/>\n";
    selectorID("actiontype", "Type");
@@ -1427,7 +1427,7 @@ _END;
       } else if ($fieldname == "Parameters") {
          echo '<tr><th>Parameters</th>';                            /* <<<<<<<<<  validation for a textarea needed, what happens if parameters has a ' in it */
          echo '<td><input type="text" name="parameters" value="' . $parameters . '" size = "' . DAF_PARAMETERS_LEN . '" maxlength="' . DAF_PARAMETERS_LEN . '" ' .
-              'dojoType="dijit.form.ValidationTextBox" style="width:100%" regExp=".{1,' . DAF_PARAMETERS_LEN . '}" trim="true" promptMessage="Enter the parameters for the testcase" ' . 
+              'dojoType="dijit.form.ValidationTextBox" style="width:50em" regExp=".{1,' . DAF_PARAMETERS_LEN . '}" trim="true" promptMessage="Enter the parameters for the testcase" ' . 
               'invalidMessage="Invalid parameters (must be 1 to ' . DAF_PARAMETERS_LEN . ' characters)"/>';
          echo "</td></tr>\n";
       } else if ($fieldname == "Duration") {
@@ -1640,7 +1640,7 @@ _END;
    //echo "</select></td></tr>\n";
    echo '<tr><th>Comments</th>';
    echo '<td><input type="text" name="comments" size="' . DAF_COMMENTS_LEN . '" maxlength="' . DAF_COMMENTS_LEN . '" ' . 
-        'dojoType="dijit.form.ValidationTextBox" style="width:100%;" regExp=".{1,' . DAF_COMMENTS_LEN . '}" promptMessage="Enter optional Comments" ' . 
+        'dojoType="dijit.form.ValidationTextBox" style="width:50em;" regExp=".{1,' . DAF_COMMENTS_LEN . '}" promptMessage="Enter optional Comments" ' . 
         'invalidMessage="Invalid Comments (must be 1 to ' . DAF_COMMENTS_LEN . ' characters)"/>';
    echo "</td></tr>\n";
    echo "</table>\n";
@@ -1773,66 +1773,7 @@ function run_scenario($gp, $project, $phase) {
     if (($teststandrecordID = do_mysql_query_id($query, $db_server, 1)) == 0) {
        return;
     } 
-     
-    // are there any clusters to record ?
-  
-   /* $query = "SELECT Name FROM cluster WHERE TeststandID = $teststandID";
-    $result = mysql_query($query, $db_server);
-    if (! $result) {
-       echo "<br />select $query failed - " . mysql_error() . "<br />";
-       return;
-    } 
-        
-    $num_rows = mysql_num_rows($result);
-  
-    for ($i= 0; $i < $num_rows; $i++) {
-
-       $row = mysql_fetch_row($result);
-
-       $clustername = $row[0];
-       $fields = array("ScenarioresultID", "Name", "Teststandname");
-       $values = array($scenarioresultID, $clustername, $teststand);
-       $tablename = determine_status_table_name($status_db, "clusterrecord");  
-       $query = "INSERT INTO $tablename (" . implode(",", $fields) . ") " .
-                                         "VALUES('" . implode("','", $values) . "')";             
-       if (! mysql_query($query, $db_server)) {
-          add_error_message("insert $query failed - " . mysql_error());
-          return;
-       }
-       $clusterrecordID = mysql_insert_id(); */ /* <<<<<<<<< needs rewrite XXXXXXXXXXXXXX */
-    
-       // are there any nodes to record ?
-  
- /*      $query = "SELECT Name, Type, Model, Serial FROM node WHERE clusterID = (SELECT ID FROM cluster where TeststandID = $teststandID)";
-       $nodes = mysql_query($query, $db_server);
-       if (! $result) {
-          echo "<br />select $query failed - " . mysql_error() . "<br />";
-          return;
-       } 
-        
-       $num_node_rows = mysql_num_rows($nodes);
-  
-       for ($i = 0; $i < $num_node_rows; $i++) {
-
-          $node_row = mysql_fetch_row($nodes);
-
-          $Name   = $node_row[0];
-          $Type   = $node_row[1];
-          $Model  = $node_row[2];
-          $Serial = $node_row[3];
-          $fields = array("ScenarioresultID", "Clustername", "Name", "Type", "Model", "Serial");
-          $values = array($scenarioresultID, $clustername, $Name, $Type, $Model, $Serial);
-          $tablename = determine_status_table_name($status_db, "noderecord");
-          $query = "INSERT INTO $tablename (" . implode(",", $fields) . ") " .
-                                            "VALUES('" . implode("','", $values) . "')";             
-          if (! mysql_query($query, $db_server)) {
-             add_error_message("insert $query failed - " . mysql_error());
-             return;
-          }
-          $noderecordID = mysql_insert_id();
-       }   
-    } */
-    
+         
    /* -----------------------------------------------------------------------------------------*/
    /* update the scenarioresult for this run                                                   */
    /* -----------------------------------------------------------------------------------------*/ 
@@ -1841,7 +1782,7 @@ function run_scenario($gp, $project, $phase) {
     
     $logdirectory = $gp['logdirectory'];
    
-    $loglocation = $logdirectory . '/' . 'scenario_' . $scenarioresultID . '_' . make_legal_filename($gp['jobname'], 32);;
+    $loglocation = $logdirectory . '/' . 'scenario_' . $scenarioresultID . '_' . make_legal_filename($gp['jobname'], 32);
     $tablename = determine_status_table_name($status_db, "scenarioresult");
     $query = "UPDATE $tablename SET Loglocation = '$loglocation', TeststandrecordID = '$teststandrecordID', " . 
              "TestlevelrecordID = '$testlevelrecordID', Actionsinscenario = '$num_actions_in_scenario' WHERE ID='$scenarioresultID'";     
@@ -1856,7 +1797,7 @@ function run_scenario($gp, $project, $phase) {
     
     $teststandID = lookupID("teststand", $teststand);
      
-    $query = "INSERT INTO daf.workrequest(Project, Phase, RequestType, TesterID, Tablename1, ObjectID1, Tablename2, ObjectID2, Tablename3, ObjectID3, Tablename4, ObjectID4, Logdirectory, Scenariologfilename ) " .
+    $query = "INSERT INTO daf.workrequest(Project, Phase, RequestType, TesterID, Tablename1, ObjectID1, Tablename2, ObjectID2, Tablename3, ObjectID3, Tablename4, ObjectID4, Description1, Description1Type, Logdirectory, Scenariologfilename ) " .
                                       "VALUES(" . 
                                       "'" . $gp['project'] . "'," . 
                                       "'" . $gp['phase'] . "'," . 
@@ -1870,6 +1811,8 @@ function run_scenario($gp, $project, $phase) {
                                       "'" . $testlevelID . "'," .
                                       "'teststand'," .
                                       "'" . $teststandID . "'," .
+                                      "''," .
+                                      "'None'," .
                                       "'" . $logdirectory . "'," .
                                       "'" . $gp['scenariologfilename'] . "')";
 
@@ -2155,7 +2098,7 @@ _END;
         'invalidMessage="Invalid Description (must be 1 to ' . DAF_ENVIRONMENT_NAME_LEN . ' characters)"/>';
    echo "</td></tr>\n";
    echo '<tr><th>Description</th><td><input type="text" name="description" size = "' . DAF_ENVIRONMENT_DESCRIPTION_LEN . '" maxlength="' . DAF_ENVIRONMENT_DESCRIPTION_LEN . '" ' . 
-        'dojoType="dijit.form.ValidationTextBox" style="width:100%" regExp=".{1,' . DAF_ENVIRONMENT_DESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Description" ' . 
+        'dojoType="dijit.form.ValidationTextBox" style="width:50em" regExp=".{1,' . DAF_ENVIRONMENT_DESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Description" ' . 
         'invalidMessage="Invalid Description (must be 1 to ' . DAF_ENVIRONMENT_DESCRIPTION_LEN . ' characters)"/>';
    echo "</td></tr>\n";   
    echo "</table>\n";
@@ -2340,7 +2283,7 @@ _END;
               'invalidMessage="Invalid Description (must be 1 to ' . DAF_ENVIRONMENT_NAME_LEN . ' characters)"/></td>';
       } else if ($fieldname == "Description") {
          echo '<tr><th>Description</th><td><input type="text" name="description" value="' . $row[$i] . '" size = "' . DAF_ENVIRONMENT_DESCRIPTION_LEN . '" maxlength="' . DAF_ENVIRONMENT_DESCRIPTION_LEN . '" ' . 
-              'dojoType="dijit.form.ValidationTextBox" style="width:100%" regExp=".{1,' . DAF_ENVIRONMENT_DESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Description" ' . 
+              'dojoType="dijit.form.ValidationTextBox" style="width:50em" regExp=".{1,' . DAF_ENVIRONMENT_DESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Description" ' . 
               'invalidMessage="Invalid Description (must be 1 to ' . DAF_ENVIRONMENT_DESCRIPTION_LEN . ' characters)"/></td>';
       }
       echo '</tr>';

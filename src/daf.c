@@ -63,14 +63,16 @@
 typedef struct params
 {
 
-#ifndef DAF_AGENT
+    bool_t                 quiet_flag;
     char                   remotehostname[MAX_HOSTNAME_LEN+1];
+    bool_t                 remote_flag;
+    bool_t                 start_scenario_flag;
+#ifndef DAF_AGENT
     char                   cmdstring[MAX_SYSTEM_CMD_LEN];
     char                   identstring[MAX_IDENT_LEN];
     char                   localpathname[MAX_PATHNAME_LEN+1];
     char                   remotepathname[MAX_PATHNAME_LEN+1];
     char                   delimiter_string[16];
-    bool_t                 quiet_flag;
     bool_t                 no_headers_flag;
     bool_t                 delimiter_flag;
     bool_t                 get_flag;
@@ -80,7 +82,6 @@ typedef struct params
     bool_t                 query_version_flag;
     bool_t                 action_flag;
     bool_t                 execute_flag;
-    bool_t                 remote_flag;
     bool_t                 tag_flag;
     bool_t                 version_flag;
     bool_t                 query_tag_flag;
@@ -132,6 +133,16 @@ typedef struct params
     char                   sql_socketname[MAX_SQLSOCKETNAME_LEN];
     bool_t                 workqueueID_flag;
     Iu64                   workqueueID;
+    char                   project[DAF_PROJECT_LEN];
+    char                   phase[DAF_PHASE_LEN];
+	char                   jobname[DAF_SCENARIO_LEN];
+	char                   loglocation[DAF_LOGDIRECTORY_LEN];
+	char                   scenariologfile[DAF_LOGFILENAME_LEN];
+	char                   teststand[DAF_TESTSTAND_LEN];
+	char                   testlevel[DAF_TESTLEVEL_LEN];
+	char                   comments[DAF_SCENARIORESULT_COMMENTS_LEN];
+	char                   username[DAF_USERNAME_LEN];
+	parameterlist          parameters;
 
 } parameters_t;
 
@@ -165,9 +176,9 @@ bool_t multiprocess_daf_service = FALSE;
 
 /* Declare flags that may be altered in another execution context (thread or
  * signal handler) as volatile. */
-static volatile BOOL SIGINTReceived   = FALSE;   // signal 2
-static volatile BOOL SIGTERMReceived  = FALSE;   // signal 15
-static volatile BOOL SIGQUITReceived  = FALSE;
+static volatile bool_t SIGINTReceived   = FALSE;   // signal 2
+static volatile bool_t SIGTERMReceived  = FALSE;   // signal 15
+static volatile bool_t SIGQUITReceived  = FALSE;
 
 /*--------------------------------------------------------------------------------------------------------*/
 /*                                                                                                        */
@@ -253,30 +264,32 @@ void print_usage()
 #ifdef DAF_AGENT
     printf("   daf_agent  -service | multiprocess_service [-msglevel N]\n");
     printf("              -query version\n");
+    printf("	          -remote hostname -start_scenario jobname -project project -phase phase [-loglocation pathtodir] [-scenariologfile filename] -teststand stand -testlevel level -comments string -username ussername\n");
 #else
     printf("   daf  -help | -detailedhelp\n");
-    printf("   daf   -remote hostname\n");
-    printf("        [-msglevel N] [-timeout N] [-consolelog pathname]\n");
-    printf("         -query version  -debug sql|nosql|zombie_reaper|nozombie_reaper\n");
-    printf("         -execute cmdstring [-run_in_background] [-ident identstring]\n");
-    printf("             [-workqueueID N] [-sqlserver hostname] [-sqluser username] [-sqlpassword password]\n");
-    printf("    		 [-sqldatabase databasename] [-sqlport N]  [-sqlsocketname socketpath]\n");
-    printf("         -report cmds\n");
-    printf("         -query  cmds [-nohdr] [-delim C]\n");
-    printf("         -query  tag -tag N [-nohdr] [-delim C]\n");
-    printf("         -clear  tag -tag N\n");
-    printf("         -cancel tag -tag N\n");
-    printf("         -query  alltags [-nohdr] [-delim C]\n");
-    printf("         -clear  alltags\n");
-    printf("         -clear  shared_memory\n");
-    printf("         -query  ident -ident identstring [-nohdr] [-delim C]\n");
-    printf("         -cancel ident -ident string\n");
-    printf("         -clear  ident -ident string\n");
-    printf("         -dirlist remotepathname\n");
-    printf("         -getfile localpathname remotepathname\n");
-    printf("         -putfile localname remotepathname\n");
-    printf("         -validate_licence licencepathname\n");
-    printf("         -write_licence licencepathname -licence NNNNN\n");
+    printf("   or\n");
+    printf("   daf  -remote hostname\n");
+    printf("          [-msglevel N] [-timeout N] [-consolelog pathname] [-quiet]\n");
+    printf("           -query version  -debug sql|nosql|zombie_reaper|nozombie_reaper\n");
+    printf("           -execute cmdstring [-run_in_background] [-ident identstring [-workqueueID N]\n");
+    printf("	       -start_scenario jobname -project project -phase phase -loglocation pathtodir -scenariologfile filename -teststand stand\n");
+    printf("              -testlevel level -comments string -parameters name=value name=value...\n");
+    printf("           -report cmds\n");
+    printf("           -query  cmds [-nohdr] [-delim C]\n");
+    printf("           -query  tag -tag N [-nohdr] [-delim C]\n");
+    printf("           -clear  tag -tag N\n");
+    printf("           -cancel tag -tag N\n");
+    printf("           -query  alltags [-nohdr] [-delim C]\n");
+    printf("           -clear  alltags\n");
+    printf("           -clear  shared_memory\n");
+    printf("           -query  ident -ident identstring [-nohdr] [-delim C]\n");
+    printf("           -cancel ident -ident string\n");
+    printf("           -clear  ident -ident string\n");
+    printf("           -dirlist remotepathname\n");
+    printf("           -getfile localpathname remotepathname\n");
+    printf("           -putfile localname remotepathname\n");
+    printf("           -validate_licence licencepathname\n");
+    printf("           -write_licence licencepathname -licence NNNNN\n");
     printf("   or\n");
     printf("   daf  -service|-multiprocess_service|-threaded_service install|start|stop|delete|run\n");
     printf("		[-msglevel N]\n");
@@ -344,6 +357,17 @@ void initialise_args(parameters_t *parameters)
     parameters->query_version_flag = FALSE;
     parameters->action_flag        = FALSE;
     parameters->execute_flag       = FALSE;
+    strncpy(parameters->cmdstring, "", sizeof(parameters->cmdstring));
+    parameters->start_scenario_flag   = FALSE;
+    strncpy(parameters->jobname,         "", sizeof(parameters->jobname));
+    strncpy(parameters->project,         "", sizeof(parameters->project));
+    strncpy(parameters->phase,           "", sizeof(parameters->phase));
+    strncpy(parameters->loglocation,     "", sizeof(parameters->loglocation));
+    strncpy(parameters->scenariologfile, "", sizeof(parameters->scenariologfile));
+    strncpy(parameters->teststand,       "", sizeof(parameters->teststand));
+    strncpy(parameters->testlevel,       "", sizeof(parameters->testlevel));
+    strncpy(parameters->comments,        "", sizeof(parameters->comments));
+    strncpy(parameters->username,        "", sizeof(parameters->username));
     parameters->validate_licence_flag = FALSE;
     parameters->write_licence_flag = FALSE;
     strncpy(parameters->licence_pathname, "", sizeof(parameters->licence_pathname));
@@ -409,7 +433,10 @@ void initialise_args(parameters_t *parameters)
 void print_parameters(parameters_t *parameters)
 {
 
-    char                   msg[MAX_MSG_LEN];
+    char          msg[MAX_MSG_LEN];
+#ifndef DAF_AGENT
+	parameterlist p = parameters->parameters;
+#endif
 
     print_msg_to_console("\n");
     sprintf(msg, "daf:\n");
@@ -417,7 +444,7 @@ void print_parameters(parameters_t *parameters)
 #ifndef DAF_AGENT
     print_msg_to_console("\n");
     print_msg_to_console(msg);
-    sprintf(msg, "   -remote:         %s\n", parameters->remotehostname);
+    sprintf(msg, "-remote:           %s\n", parameters->remotehostname);
     print_msg_to_console(msg);
 
     if (parameters->execute_flag)
@@ -435,18 +462,54 @@ void print_parameters(parameters_t *parameters)
         }
     }
 
-    sprintf(msg, "   -buffersize:     %d\n", parameters->buffersize);
+    if (parameters->start_scenario_flag)
+    {
+        sprintf(msg, "-start_scenario:   %s\n", parameters->jobname);
+        print_msg_to_console(msg);
+        sprintf(msg, "-project:          %s\n", parameters->project);
+        print_msg_to_console(msg);
+        sprintf(msg, "-phase:            %s\n", parameters->phase);
+        print_msg_to_console(msg);
+        sprintf(msg, "-loglocation:      %s\n", parameters->loglocation);
+        print_msg_to_console(msg);
+        sprintf(msg, "-scenariologfile:  %s\n", parameters->scenariologfile);
+        print_msg_to_console(msg);
+        sprintf(msg, "-teststand:        %s\n", parameters->teststand);
+        print_msg_to_console(msg);
+        sprintf(msg, "-testlevel:        %s\n", parameters->testlevel);
+        print_msg_to_console(msg);
+        sprintf(msg, "-comments:         %s\n", parameters->comments);
+        print_msg_to_console(msg);
+        sprintf(msg, "-username:         %s\n", parameters->username);
+        print_msg_to_console(msg);
+	    while (p != NULL) {
+	       sprintf(msg, "-parameter:        %s = %s\n", p->name, p->value);
+	       print_msg_to_console(msg);
+	       p = p->next;
+	    }
+    }
+
+    sprintf(msg, "-buffersize:       %d\n", parameters->buffersize);
     print_msg_to_console(msg);
-    sprintf(msg, "   -consolelog:     %s\n", parameters->consolelog_pathname);
+    sprintf(msg, "-consolelog:       %s\n", parameters->consolelog_pathname);
     print_msg_to_console(msg);
-    sprintf(msg, "   -msglevel:       %d\n", parameters->msglevel);
+    sprintf(msg, "-quiet:            %d\n", parameters->quiet_flag);
     print_msg_to_console(msg);
-    sprintf(msg, "   -timeout:        %d\n", parameters->timeout);
+    sprintf(msg, "-nohdr:            %d\n", parameters->no_headers_flag);
+    print_msg_to_console(msg);
+    if (parameters->delimiter_flag)
+    {
+       sprintf(msg, "-delim:            %s\n", parameters->delimiter_string);
+       print_msg_to_console(msg);
+    }
+    sprintf(msg, "-msglevel:         %d\n", parameters->msglevel);
+    print_msg_to_console(msg);
+    sprintf(msg, "-timeout:          %d\n", parameters->timeout);
     print_msg_to_console(msg);
 
     if (parameters->get_flag)
     {
-        sprintf(msg, "   -get:\n");
+        sprintf(msg, "-get:\n");
         print_msg_to_console(msg);
     }
 
@@ -458,13 +521,13 @@ void print_parameters(parameters_t *parameters)
 
     if (parameters->query_flag)
     {
-        sprintf(msg, "   -query:\n");
+        sprintf(msg, "-query:\n");
         print_msg_to_console(msg);
     }
 
     if (parameters->dirlist_flag)
     {
-        sprintf(msg, "   -dirlist:\n");
+        sprintf(msg, "-dirlist:\n");
         print_msg_to_console(msg);
         sprintf(msg, " -remotepath:       %s\n",    parameters->remotepathname);
         print_msg_to_console(msg);
@@ -472,21 +535,21 @@ void print_parameters(parameters_t *parameters)
 
     if (parameters->getfile_flag)
     {
-        sprintf(msg, "   -getfile:\n");
+        sprintf(msg, "-getfile:\n");
         print_msg_to_console(msg);
-        sprintf(msg, "  -localpath:       %s\n",    parameters->localpathname);
+        sprintf(msg, "   -localpath:      %s\n",    parameters->localpathname);
         print_msg_to_console(msg);
-        sprintf(msg, " -remotepath:       %s\n",    parameters->remotepathname);
+        sprintf(msg, "   -remotepath:     %s\n",    parameters->remotepathname);
         print_msg_to_console(msg);
     }
 
     if (parameters->putfile_flag)
     {
-        sprintf(msg, "   -putfile:\n");
+        sprintf(msg, "-putfile:\n");
         print_msg_to_console(msg);
-        sprintf(msg, "  -localpath:       %s\n",    parameters->localpathname);
+        sprintf(msg, "   -localpath:       %s\n",    parameters->localpathname);
         print_msg_to_console(msg);
-        sprintf(msg, " -remotepath:       %s\n",    parameters->remotepathname);
+        sprintf(msg, "   -remotepath:      %s\n",    parameters->remotepathname);
         print_msg_to_console(msg);
     }
 
@@ -495,6 +558,7 @@ void print_parameters(parameters_t *parameters)
 #endif
 
 }
+
 
 
 /*--------------------------------------------------------------------------------------------------------*/
@@ -518,6 +582,12 @@ int parse_args(int argc, char **argv, parameters_t *parameters )
     int i;
     char  thishostname[MAX_HOSTNAME_LEN];
     char  temp[64];
+	bool_t end_of_params;
+	int        num_daf_params;
+	char       parameter_name[DAF_PARAMETER_NAME_LEN];
+	char       parameter_value[DAF_PARAMETER_VALUE_LEN];
+	parameterlist p;
+	parameterlist *q = &(parameters->parameters);
 
     if (argc == 1)
     {
@@ -546,6 +616,10 @@ int parse_args(int argc, char **argv, parameters_t *parameters )
                 return E_NOTOK;
             }
         }
+        else if ((strcmp(argv[i], "-quiet") == 0))
+        {
+            parameters->quiet_flag = TRUE;
+        }
     }
 
     /* Open the console log */
@@ -564,7 +638,7 @@ int parse_args(int argc, char **argv, parameters_t *parameters )
     }
 
     ensure_directory_path_exists(DAF_SERVICE_LOG_DIR);
-    open_consolelog(parameters->consolelog_pathname);
+    open_consolelog(parameters->consolelog_pathname, parameters->quiet_flag);
 
     for (i = 1; i < argc; i++)
     {
@@ -652,12 +726,211 @@ int parse_args(int argc, char **argv, parameters_t *parameters )
             {
                 i++;
             }
+        }
+		else if (strcmp(argv[i], "-remote") == 0)
+		{
+			i++;
+
+			if (i < argc)
+			{
+				safecpy(parameters->remotehostname, argv[i], sizeof(parameters->remotehostname));
+			}
+			else
+			{
+				printf("daf: missing value for -remote parameter\n");
+				return E_NOTOK;
+			}
+
+			parameters->remote_flag = TRUE;
+		}
+		else if (strcmp(argv[i], "-start_scenario") == 0)
+		{
+			parameters->start_scenario_flag = TRUE;
+			i++;
+
+			if (i < argc)
+			{
+				safecpy(parameters->jobname, argv[i], sizeof(parameters->jobname));
+			}
+			else
+			{
+				printf("daf: missing value for -start_scenario parameter\n");
+				return E_NOTOK;
+			}
+		}
+		else if (strcmp(argv[i], "-phase") == 0)
+		{
+			i++;
+
+			if (i < argc)
+			{
+				safecpy(parameters->phase, argv[i], sizeof(parameters->phase));
+			}
+			else
+			{
+				printf("daf: missing value for -phase parameter\n");
+				return E_NOTOK;
+			}
+		}
+		else if (strcmp(argv[i], "-loglocation") == 0)
+		{
+			i++;
+
+			if (i < argc)
+			{
+				safecpy(parameters->loglocation, argv[i], sizeof(parameters->loglocation));
+			}
+			else
+			{
+				printf("daf: missing value for -loglocation parameter\n");
+				return E_NOTOK;
+			}
+		}
+		else if (strcmp(argv[i], "-scenariologfile") == 0)
+		{
+			i++;
+
+			if (i < argc)
+			{
+				safecpy(parameters->scenariologfile, argv[i], sizeof(parameters->scenariologfile));
+			}
+			else
+			{
+				printf("daf: missing value for -scenariologfile parameter\n");
+			return E_NOTOK;
+			}
+		}
+		else if (strcmp(argv[i], "-teststand") == 0)
+		{
+			i++;
+
+			if (i < argc)
+			{
+				safecpy(parameters->teststand, argv[i], sizeof(parameters->teststand));
+			}
+			else
+			{
+				printf("daf: missing value for -teststand parameter\n");
+				return E_NOTOK;
+			}
+		}
+		else if (strcmp(argv[i], "-testlevel") == 0)
+		{
+			i++;
+
+			if (i < argc)
+			{
+				safecpy(parameters->testlevel, argv[i], sizeof(parameters->testlevel));
+			}
+			else
+			{
+				printf("daf: missing value for -testlevel parameter\n");
+				return E_NOTOK;
+			}
+		}
+		else if (strcmp(argv[i], "-comments") == 0)
+		{
+			i++;
+
+			if (i < argc)
+			{
+				safecpy(parameters->comments, argv[i], sizeof(parameters->comments));
+			}
+			else
+			{
+				printf("daf: missing value for -comments parameter\n");
+				return E_NOTOK;
+			}
+		}
+		else if (strcmp(argv[i], "-parameters") == 0)
+		{
+
+			end_of_params = FALSE;
+
+			while (! end_of_params)
+			{
+				if ((i+1) >= argc)
+				{
+					break;
+				}
+
+				if (argv[i+1][0] != '-')
+				{
+					i++;
+					if (num_daf_params >= DAF_MAX_NUM_PARAMS)
+					{
+						end_of_params = TRUE;
+						printf("daf: Too many name=value parameters specified at -parameters parameter, %s\n", argv[i]);
+						return E_NOTOK;
+					}
+					else
+					{
+						p = (parameterlist) malloc(sizeof(struct parameternode));
+						split_namevalue_parameter(argv[i],
+								                  parameter_name,
+												  DAF_PARAMETER_NAME_LEN,
+								                  parameter_value,
+												  DAF_PARAMETER_VALUE_LEN);
+						p->name = parameter_name;
+						p->value = parameter_value;
+						p->next = NULL;
+						if (*q == NULL) {
+							*q = p;
+						} else {
+							(*q)->next = p;
+						}
+						num_daf_params++;
+					}
+				}
+				else
+				{
+					end_of_params = TRUE;
+				}
+			}
+
+			if (num_daf_params == 0)
+			{
+				printf("daf: name=value(s) missing from -parameters parameter\n");
+				return E_NOTOK;
+			}
+		}
+		else if (strcmp(argv[i], "-username") == 0)
+		{
+			i++;
+
+			if (i < argc)
+			{
+				safecpy(parameters->username, argv[i], sizeof(parameters->username));
+			}
+			else
+			{
+				printf("daf: missing value for -username parameter\n");
+				return E_NOTOK;
+			}
 
 #ifndef DAF_AGENT
         }
         else if ((strcmp(argv[i], "-simulator_mode") == 0))
         {
             parameters->simulator_mode_flag = TRUE;
+        }
+        else if ((strcmp(argv[i], "-delim") == 0))
+        {
+            i++;
+
+            if (i < argc)
+            {
+                safecpy(parameters->delimiter_string, argv[i], sizeof(parameters->delimiter_string));
+            }
+            else
+            {
+                printf("daf: missing value for -delim parameter\n");
+                return E_NOTOK;
+            }
+        }
+        else if ((strcmp(argv[i], "-nohdr") == 0))
+        {
+            parameters->no_headers_flag = TRUE;
         }
         else if ((strcmp(argv[i], "-timeout") == 0))
         {
@@ -672,22 +945,6 @@ int parse_args(int argc, char **argv, parameters_t *parameters )
                 printf("daf: missing value for -timeout parameter\n");
                 return E_NOTOK;
             }
-        }
-        else if (strcmp(argv[i], "-remote") == 0)
-        {
-            i++;
-
-            if (i < argc)
-            {
-                safecpy(parameters->remotehostname, argv[i], sizeof(parameters->remotehostname));
-            }
-            else
-            {
-                printf("daf: missing value for -remote parameter\n");
-                return E_NOTOK;
-            }
-
-            parameters->remote_flag = TRUE;
         }
         else if (strcmp(argv[i], "-execute") == 0)
         {
@@ -750,6 +1007,21 @@ int parse_args(int argc, char **argv, parameters_t *parameters )
                 return E_NOTOK;
             }
         }
+        else if (strcmp(argv[i], "-project") == 0)
+        {
+            i++;
+
+            if (i < argc)
+            {
+                safecpy(parameters->project, argv[i], sizeof(parameters->project));
+            }
+            else
+            {
+                printf("daf: missing value for -project parameter\n");
+                return E_NOTOK;
+            }
+        }
+
         else if (strcmp(argv[i], "-ident") == 0)
         {
             i++;
@@ -851,7 +1123,10 @@ int parse_args(int argc, char **argv, parameters_t *parameters )
                     printf("daf: %s is not a valid option for -query\n", argv[i]);
                     return E_NOTOK;
                 }
-            }
+            } else if ((strcmp(argv[i], "-quiet") == 0))
+             {
+                 // we have already dealt with this - so nothing to do
+             }
             else
             {
                 printf("daf: missing option for -query\n");
@@ -1220,6 +1495,17 @@ int parse_args(int argc, char **argv, parameters_t *parameters )
     sql_server.sql_port = parameters->sql_port;
     safecpy(sql_server.sql_socketname,     parameters->sql_socketname,     sizeof(sql_server.sql_socketname));
 
+    if (MATCH(parameters->loglocation, "")) {
+    	safecpy(parameters->loglocation, "/tmp/", sizeof(parameters->loglocation));
+    	safecat(parameters->loglocation, parameters->project, sizeof(parameters->loglocation));
+    }
+
+    if (MATCH(parameters->scenariologfile, "")) {
+    	safecpy(parameters->scenariologfile, "console_", sizeof(parameters->scenariologfile));
+    	safecat(parameters->scenariologfile, parameters->jobname, sizeof(parameters->scenariologfile));
+       	safecat(parameters->scenariologfile, ".out", sizeof(parameters->scenariologfile));
+    }
+
     return E_OK;
 
 }
@@ -1508,6 +1794,7 @@ void *daf_prog_dispatcher_1(void *data)
         remote_client_prepare_cmd_args       client_remote_client_prepare_cmd_1_arg;
         remote_client_execute_cmd_args       client_remote_client_execute_cmd_1_arg;
         remote_client_run_cmd_args           client_remote_client_run_cmd_1_arg;
+        remote_client_start_scenario_args    client_remote_client_start_scenario_1_arg;
         remote_client_query_version_args     client_remote_client_query_version_1_arg;
         remote_client_query_tag_args         client_remote_client_query_tag_1_arg;
         remote_client_query_cmdlog_args      client_remote_client_query_cmdlog_1_arg;
@@ -1534,6 +1821,7 @@ void *daf_prog_dispatcher_1(void *data)
         remote_client_prepare_cmd_res      client_remote_client_prepare_cmd_1_res;
         remote_client_execute_cmd_res      client_remote_client_execute_cmd_1_res;
         remote_client_run_cmd_res          client_remote_client_run_cmd_1_res;
+        remote_client_start_scenario_res   client_remote_client_start_scenario_1_res;
         remote_client_query_version_res    client_remote_client_query_version_1_res;
         remote_client_query_tag_res        client_remote_client_query_tag_1_res;
         remote_client_query_alltags_res    client_remote_client_query_alltags_1_res;
@@ -1615,6 +1903,16 @@ void *daf_prog_dispatcher_1(void *data)
         _xdr_result = (xdrproc_t) xdr_remote_client_run_cmd_res;
         local = (bool_t (*) (char *, void *,  struct svc_req *))client_remote_client_run_cmd_1_svc;
         break;
+
+#ifndef DAF_AGENT
+
+    case CLIENT_REMOTE_CLIENT_START_SCENARIO:
+        _xdr_argument = (xdrproc_t) xdr_remote_client_start_scenario_args;
+        _xdr_result = (xdrproc_t) xdr_remote_client_start_scenario_res;
+        local = (bool_t (*) (char *, void *,  struct svc_req *))client_remote_client_start_scenario_1_svc;
+        break;
+
+#endif
 
     case CLIENT_REMOTE_CLIENT_QUERY_VERSION:
         _xdr_argument = (xdrproc_t) xdr_remote_client_query_version_args;
@@ -2337,9 +2635,14 @@ int main(int argc, char **argv)
         int run_in_shell = 0;
 
         exit_rc = remote_client_cmd(parameters.remotehostname, run_in_shell, parameters.cmdstring, parameters.identstring,  parameters.run_in_background_flag,
-                                    parameters.workqueueID_flag, parameters.workqueueID, 0,
-                                    parameters.sql_servername, parameters.sql_username, parameters.sql_password,
-                                    parameters.sql_databasename, parameters.sql_port, parameters.sql_socketname);
+                                    parameters.workqueueID_flag, parameters.workqueueID, 0);
+
+    } else if (parameters.start_scenario_flag)
+    {
+
+        exit_rc = remote_client_start_scenario(parameters.remotehostname, parameters.jobname, parameters.project, parameters.phase,
+                                               parameters.loglocation, parameters.scenariologfile,
+											   parameters.teststand, parameters.testlevel, parameters.comments, parameters.username, parameters.parameters);
 
     }
     else if (parameters.get_flag)

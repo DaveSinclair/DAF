@@ -18,9 +18,9 @@
 
 int remote_client_cntrl(char *remotehostname, bool_t clear_shared_memory_flag);
 int remote_client_cmd(char *remotehostname, int run_in_shell, char *cmdstring, char *identstring,
-                      bool_t run_in_background, bool_t workqueueID_flag, Iu32 workqueueID, Iu32 actionresultID,
-                      char *sql_servername, char *sql_username,
-                      char *sql_password, char *sql_databasename, Iu16 sql_port, char *sql_socketname);
+                      bool_t run_in_background, bool_t workqueueID_flag, Iu32 workqueueID, Iu32 actionresultID);
+int remote_client_start_scenario(char *remotehostname, char *jobname, char *project, char *phase, char*loglocation, char *scenariologfile,
+		                         char *teststand, char *testlevel, char *comments, char *username, parameterlist parameters);
 int remote_client_query_cmdlog(char *remotehostname, bool_t no_headers, bool_t use_delimiter, char *delimter_string);
 int remote_client_query_auditlog(char *remotehostname, bool_t no_headers, bool_t use_delimiter, char *delimiter_string);
 

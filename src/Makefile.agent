@@ -46,7 +46,7 @@ DAFAGENTOBJ =  dafservice.o dafclient.o daf_util.o OSstuff.o daf_service_environ
 BINS = daf_agent  
 OBJS = $(DAFAGENTOBJ)
 
-GEN = daf_protocol.h 
+GEN = daf_protocol.h daf_protocol_xdr.c
 RPCGEN = rpcgen -M
 CC = gcc
 
@@ -81,10 +81,13 @@ OSstuff.o: OSstuff.c OSstuff.h
 	gcc $(CFLAGS) $(DEFINES) $(INCLUDES) OSstuff.c -c
 
 daf_protocol.h: daf_protocol.x
-	$(RPCGEN) -h daf_protocol.x -o daf_protocol.h
+	$(RPCGEN) -h daf_protocol.x -o daf_protocol.h 
+	
+daf_protocol_xdr.c: daf_protocol.x
+	$(RPCGEN) -c -o daf_protocol_xdr.c daf_protocol.x
 
-daf_protocol_xdr.o: daf_protocol_xdr.c 
-	gcc $(CFLAGS) $(DEFINES) $(INCLUDES) daf_protocol_xdr.c -c -Wno-unused-variable
+daf_protocol_xdr.o: daf_protocol.h daf_protocol_xdr.c
+	${CC} ${CFLAGS} ${DEFINES} -o $@ -c daf_protocol_xdr.c $(INCLUDES) -Wno-unused-variable
 
 email.o: email.c 
 	gcc $(CFLAGS) $(DEFINES) $(INCLUDES) email.c -c

@@ -38,7 +38,7 @@ extern "C" {
 #define DAF_SCENARIO_LEN 48
 #define DAF_AUTHOR_LEN 32
 #define DAF_ACTIONTYPE_LEN 32
-#define DAF_LOGFILNAME_LEN 64
+#define DAF_LOGFILENAME_LEN 64
 #define DAF_STATE_LEN 24
 #define DAF_STATUS_LEN 32
 #define DAF_STATEMODIFIER_LEN 32
@@ -46,6 +46,8 @@ extern "C" {
 #define DAF_TESTCASE_DESCRIPTION_LEN 64
 #define DAF_TESTSTAND_LEN 32
 #define DAF_TESTSTAND_COMMENTS_LEN 128
+#define DAF_DESCRIPTOR1_LEN 256
+#define DAF_DESCRIPTOR1TYPE_LEN 24
 #define DAF_INVOCATION_LEN 1024
 #define DAF_DURATION_LEN 24
 #define DAF_LOGLOCATION_LEN 128
@@ -78,6 +80,11 @@ extern "C" {
 #define DAF_LEVEL_LEN 32
 #define DAF_TESTLEVEL_LEN 32
 #define DAF_TESTER_LEN 32
+#define DAF_MAX_NUM_PARAMS 10
+#define DAF_PARAMETER_NAME_LEN 32
+#define DAF_PARAMETER_DEFAULTVALUE_LEN 64
+#define DAF_PARAMETER_VALUE_LEN 64
+#define DAF_PARAMETER_DESCRIPTION_LEN 64
 #define DAF_HOSTSELECTORTYPE_NAME_LEN 16
 #define DAF_HOSTSELECTORVALUE_NAME_LEN 32
 #define DAF_ACTIONDESCRIPTION_LEN 64
@@ -111,6 +118,7 @@ extern "C" {
 #define DAF_OUTCOMEACTION_LEN 32
 #define DAF_FIRSTNAME_LEN 32
 #define DAF_LASTNAME_LEN 32
+#define DAF_USERNAME_LEN 32
 #define DAF_AREA_LEN 32
 #define DAF_EMAIL_LEN 64
 #define DAF_PASSWORD_LEN 32
@@ -121,8 +129,6 @@ extern "C" {
 #define DAF_OBJECTNAME_LEN 32
 #define DAF_TESTLEVEL_DESCRIPTION_LEN 128
 #define DAF_LICENCE_LEN 49
-
-typedef bool_t BOOL;
 
 typedef u_quad_t Iu64;
 
@@ -211,6 +217,12 @@ enum remote_client_dirlist_error_types {
 	REMOTE_DIRLIST_COULD_NOT_OPEN_DIR = 2,
 };
 typedef enum remote_client_dirlist_error_types remote_client_dirlist_error_types;
+
+enum remote_client_start_scenario_error_types {
+	REMOTE_START_SCENARIO_OK = 0,
+	REMOTE_START_SCENARIO_FAILED = 1,
+};
+typedef enum remote_client_start_scenario_error_types remote_client_start_scenario_error_types;
 
 struct filehandle {
 	int len;
@@ -363,11 +375,6 @@ struct remote_client_cmd_args {
 	bool_t workqueueID_flag;
 	Iu32 workqueueID;
 	Iu32 actionresultID;
-	char *sql_servername;
-	char *sql_username;
-	char *sql_password;
-	char *sql_databasename;
-	short sql_port;
 	int msglevel;
 };
 typedef struct remote_client_cmd_args remote_client_cmd_args;
@@ -386,6 +393,48 @@ struct remote_client_cmd_res {
 	} remote_client_cmd_res_u;
 };
 typedef struct remote_client_cmd_res remote_client_cmd_res;
+
+typedef char *parametername;
+
+typedef char *parametervalue;
+
+typedef struct parameternode *parameterlist;
+
+struct parameternode {
+	parametername name;
+	parametervalue value;
+	parameterlist next;
+};
+typedef struct parameternode parameternode;
+
+struct remote_client_start_scenario_args {
+	char *project;
+	char *phase;
+	char *jobname;
+	char *loglocation;
+	char *scenariologfile;
+	char *teststand;
+	char *testlevel;
+	char *username;
+	char *comments;
+	parameterlist parameters;
+	int msglevel;
+};
+typedef struct remote_client_start_scenario_args remote_client_start_scenario_args;
+
+struct remote_client_start_scenario_outcome {
+	remote_client_start_scenario_error_types valid_start_scenario;
+	char *errmsg;
+};
+typedef struct remote_client_start_scenario_outcome remote_client_start_scenario_outcome;
+
+struct remote_client_start_scenario_res {
+	int status;
+	union {
+		remote_client_start_scenario_outcome outcome;
+	} remote_client_start_scenario_res_u;
+};
+typedef struct remote_client_start_scenario_res remote_client_start_scenario_res;
 
 struct remote_client_query_version_args {
 	u_int agent_major_version;
@@ -773,6 +822,9 @@ extern  bool_t client_remote_client_execute_cmd_1_svc(remote_client_execute_cmd_
 #define CLIENT_REMOTE_CLIENT_RUN_CMD 49
 extern  enum clnt_stat client_remote_client_run_cmd_1(remote_client_run_cmd_args *, remote_client_run_cmd_res *, CLIENT *);
 extern  bool_t client_remote_client_run_cmd_1_svc(remote_client_run_cmd_args *, remote_client_run_cmd_res *, struct svc_req *);
+#define CLIENT_REMOTE_CLIENT_START_SCENARIO 50
+extern  enum clnt_stat client_remote_client_start_scenario_1(remote_client_start_scenario_args *, remote_client_start_scenario_res *, CLIENT *);
+extern  bool_t client_remote_client_start_scenario_1_svc(remote_client_start_scenario_args *, remote_client_start_scenario_res *, struct svc_req *);
 #define CLIENT_REMOTE_CLIENT_QUERY_VERSION 35
 extern  enum clnt_stat client_remote_client_query_version_1(remote_client_query_version_args *, remote_client_query_version_res *, CLIENT *);
 extern  bool_t client_remote_client_query_version_1_svc(remote_client_query_version_args *, remote_client_query_version_res *, struct svc_req *);
@@ -839,6 +891,9 @@ extern  bool_t client_remote_client_execute_cmd_1_svc();
 #define CLIENT_REMOTE_CLIENT_RUN_CMD 49
 extern  enum clnt_stat client_remote_client_run_cmd_1();
 extern  bool_t client_remote_client_run_cmd_1_svc();
+#define CLIENT_REMOTE_CLIENT_START_SCENARIO 50
+extern  enum clnt_stat client_remote_client_start_scenario_1();
+extern  bool_t client_remote_client_start_scenario_1_svc();
 #define CLIENT_REMOTE_CLIENT_QUERY_VERSION 35
 extern  enum clnt_stat client_remote_client_query_version_1();
 extern  bool_t client_remote_client_query_version_1_svc();
@@ -893,7 +948,6 @@ extern int daf_prog_1_freeresult ();
 /* the xdr functions */
 
 #if defined(__STDC__) || defined(__cplusplus)
-extern  bool_t xdr_BOOL (XDR *, BOOL*);
 extern  bool_t xdr_Iu64 (XDR *, Iu64*);
 extern  bool_t xdr_Iu32 (XDR *, Iu32*);
 extern  bool_t xdr_Iu16 (XDR *, Iu16*);
@@ -910,6 +964,7 @@ extern  bool_t xdr_remote_client_copyfile_error_types (XDR *, remote_client_copy
 extern  bool_t xdr_remote_client_deletefile_error_types (XDR *, remote_client_deletefile_error_types*);
 extern  bool_t xdr_remote_client_cmd_error_types (XDR *, remote_client_cmd_error_types*);
 extern  bool_t xdr_remote_client_dirlist_error_types (XDR *, remote_client_dirlist_error_types*);
+extern  bool_t xdr_remote_client_start_scenario_error_types (XDR *, remote_client_start_scenario_error_types*);
 extern  bool_t xdr_filehandle (XDR *, filehandle*);
 extern  bool_t xdr_cmd_log_state (XDR *, cmd_log_state*);
 extern  bool_t xdr_cmd_log_entry (XDR *, cmd_log_entry*);
@@ -932,6 +987,13 @@ extern  bool_t xdr_remote_client_execute_cmd_res (XDR *, remote_client_execute_c
 extern  bool_t xdr_remote_client_cmd_args (XDR *, remote_client_cmd_args*);
 extern  bool_t xdr_remote_client_cmd_outcome (XDR *, remote_client_cmd_outcome*);
 extern  bool_t xdr_remote_client_cmd_res (XDR *, remote_client_cmd_res*);
+extern  bool_t xdr_parametername (XDR *, parametername*);
+extern  bool_t xdr_parametervalue (XDR *, parametervalue*);
+extern  bool_t xdr_parameterlist (XDR *, parameterlist*);
+extern  bool_t xdr_parameternode (XDR *, parameternode*);
+extern  bool_t xdr_remote_client_start_scenario_args (XDR *, remote_client_start_scenario_args*);
+extern  bool_t xdr_remote_client_start_scenario_outcome (XDR *, remote_client_start_scenario_outcome*);
+extern  bool_t xdr_remote_client_start_scenario_res (XDR *, remote_client_start_scenario_res*);
 extern  bool_t xdr_remote_client_query_version_args (XDR *, remote_client_query_version_args*);
 extern  bool_t xdr_remote_client_query_version_outcome (XDR *, remote_client_query_version_outcome*);
 extern  bool_t xdr_remote_client_query_version_res (XDR *, remote_client_query_version_res*);
@@ -986,7 +1048,6 @@ extern  bool_t xdr_remote_client_update_workqueue_status_outcome (XDR *, remote_
 extern  bool_t xdr_remote_client_update_workqueue_status_res (XDR *, remote_client_update_workqueue_status_res*);
 
 #else /* K&R C */
-extern bool_t xdr_BOOL ();
 extern bool_t xdr_Iu64 ();
 extern bool_t xdr_Iu32 ();
 extern bool_t xdr_Iu16 ();
@@ -1003,6 +1064,7 @@ extern bool_t xdr_remote_client_copyfile_error_types ();
 extern bool_t xdr_remote_client_deletefile_error_types ();
 extern bool_t xdr_remote_client_cmd_error_types ();
 extern bool_t xdr_remote_client_dirlist_error_types ();
+extern bool_t xdr_remote_client_start_scenario_error_types ();
 extern bool_t xdr_filehandle ();
 extern bool_t xdr_cmd_log_state ();
 extern bool_t xdr_cmd_log_entry ();
@@ -1025,6 +1087,13 @@ extern bool_t xdr_remote_client_execute_cmd_res ();
 extern bool_t xdr_remote_client_cmd_args ();
 extern bool_t xdr_remote_client_cmd_outcome ();
 extern bool_t xdr_remote_client_cmd_res ();
+extern bool_t xdr_parametername ();
+extern bool_t xdr_parametervalue ();
+extern bool_t xdr_parameterlist ();
+extern bool_t xdr_parameternode ();
+extern bool_t xdr_remote_client_start_scenario_args ();
+extern bool_t xdr_remote_client_start_scenario_outcome ();
+extern bool_t xdr_remote_client_start_scenario_res ();
 extern bool_t xdr_remote_client_query_version_args ();
 extern bool_t xdr_remote_client_query_version_outcome ();
 extern bool_t xdr_remote_client_query_version_res ();

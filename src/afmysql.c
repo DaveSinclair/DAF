@@ -635,6 +635,68 @@ void make_legal_filename(char *filename)
 
 }
 
+/* ------------------------------------------------------------------------------------------------- */
+/*                                                                                                   */
+/* Function:   lookupID                                                                              */
+/*                                                                                                   */
+/* Inputs:     sql_connection        An established connection to the MYSQL database                 */
+/*                                                                                                   */
+/*             tablename             A DAF table name such as "scenario"                             */
+/*                                                                                                   */
+/*             name                  the name of the object being looked up, eg "RunMigrationTests"  */
+/*                                                                                                   */
+/*             max_msg_len the max length (including the terminating 0) allowed in the errmsg        */
+/*                                                                                                   */
+/* Outputs:    ID                    ID of the specified object                                      */
+/*                                                                                                   */
+/*             errmsg                an error message indicating what went wrong if rc != 0          */
+/*                                                                                                   */
+/* Returns:    0 if successful, 1 if an error occurred                                               */
+/*                                                                                                   */
+/* Function:   Looks up the row in the specified table with the specified name and determines the    */
+/*             the value of the ID field in that row                                                 */
+/*                                                                                                   */
+/* ------------------------------------------------------------------------------------------------- */
+
+int lookupID(MYSQL *sql_connection, char *tablename, char *name, int *ID, char *msg, int max_msg_len) {
+
+#undef  SUBNAME
+#define SUBNAME "lookupID"
+
+   char query[1024];
+   int rc = 0;
+   MYSQL_RES  *res_set;
+   MYSQL_ROW  row;
+
+   snprintf(query, sizeof(query), "SELECT ID FROM %s where Name = '%s';", tablename, name);
+
+   if (perform_query(SUBNAME, sql_connection, query) == 0)
+   {
+      if ((res_set = check_for_res_set(SUBNAME, sql_connection, query)))
+      {
+
+         if ((row = mysql_fetch_row(res_set)) != NULL)
+         {
+
+            *ID = strtoll(row[0], NULL, 0);
+
+          }
+
+          mysql_free_result(res_set);
+
+      }
+
+   }
+   else
+   {
+	   snprintf(msg, max_msg_len, "Could not run %s", query);
+	   rc = 1;
+   }
+
+    return(rc);
+
+}
+
 /*--------------------------------------------------------------------------------------------------------*/
 /*                                                                                                        */
 /* PROCEDURE:  lock_active_steps                                                                          */
@@ -857,6 +919,7 @@ int get_name_from_ID(MYSQL *sql_connection,
     MYSQL_ROW  row;
     char query[256];
     int rc = 1;
+    char msg[MAX_MSG_LEN];
 
     safecpy(scenario_name, "", max_scenario_name_length);
     snprintf(query, sizeof(query), "SELECT Name FROM %s where ID='%u'", tablename, ID);
@@ -879,6 +942,10 @@ int get_name_from_ID(MYSQL *sql_connection,
 
         }
 
+    } else {
+    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+        SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+        print_msg_to_console(msg);
     }
 
     return(rc);
@@ -922,6 +989,7 @@ void get_all_actiontype_records(MYSQL         *sql_connection,
     MYSQL_RES  *res_set;
     MYSQL_ROW  row;
     char *query =  "SELECT " ACTIONTYPE_FIELDS " FROM daf.actiontype";
+    char msg[MAX_MSG_LEN];
 
     *num_records = 0;
 
@@ -944,6 +1012,10 @@ void get_all_actiontype_records(MYSQL         *sql_connection,
 
         }
 
+    }  else {
+    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+        SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+        print_msg_to_console(msg);
     }
 
 }
@@ -980,6 +1052,7 @@ actiontype_t *allocate_and_get_all_actiontype_records(MYSQL  *sql_connection,
     actiontype_t *p, *q = NULL;
     int num_rows = 0;
     char *query = "SELECT " ACTIONTYPE_FIELDS " FROM daf.actiontype";
+    char msg[MAX_MSG_LEN];
 
     *num_records = 0;
 
@@ -1005,6 +1078,10 @@ actiontype_t *allocate_and_get_all_actiontype_records(MYSQL  *sql_connection,
 
         }
 
+    } else {
+    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+        SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+        print_msg_to_console(msg);
     }
 
     return(p);
@@ -1048,6 +1125,7 @@ void get_all_testcase_records(MYSQL       *sql_connection,
     MYSQL_RES  *res_set;
     MYSQL_ROW  row;
     char *query = "SELECT " TESTCASE_FIELDS " FROM daf.testcase";
+    char msg[MAX_MSG_LEN];
 
     *num_records = 0;
 
@@ -1070,6 +1148,10 @@ void get_all_testcase_records(MYSQL       *sql_connection,
 
         }
 
+    } else {
+    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+        SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+        print_msg_to_console(msg);
     }
 
 }
@@ -1110,6 +1192,7 @@ host_t *allocate_and_get_host_records(MYSQL  *sql_connection,
     int num_rows = 0;
     char *fmt = "SELECT " HOST_FIELDS " FROM daf.host WHERE %s";
     char query[1024];
+    char msg[MAX_MSG_LEN];
 
     snprintf(query, sizeof(query), fmt, where);
     *num_records = 0;
@@ -1136,6 +1219,10 @@ host_t *allocate_and_get_host_records(MYSQL  *sql_connection,
 
         }
 
+    } else {
+        snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+        SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+        print_msg_to_console(msg);
     }
 
     return(p);
@@ -1265,6 +1352,10 @@ hosts_in_use_t *allocate_and_get_host_in_use_records_in_this_scenario_step(MYSQL
 
             mysql_free_result(res_set);
 
+        }  else {
+        	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+            SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+            print_msg_to_console(msg);
         }
 
     }
@@ -1305,6 +1396,7 @@ testcase_t *allocate_and_get_all_testcase_records(MYSQL  *sql_connection,
     testcase_t *p, *q = NULL;
     int num_rows = 0;
     char *query = "SELECT " TESTCASE_FIELDS " FROM daf.testcase";
+    char msg[MAX_MSG_LEN];
 
     *num_records = 0;
 
@@ -1330,11 +1422,64 @@ testcase_t *allocate_and_get_all_testcase_records(MYSQL  *sql_connection,
 
         }
 
+    }  else {
+    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+       SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+       print_msg_to_console(msg);
     }
 
     return(p);
 
 }
+
+parameter_t *allocate_and_get_all_parameter_records(MYSQL  *sql_connection,
+        int    *num_records )
+{
+
+#undef  SUBNAME
+#define SUBNAME "allocate_and_get_all_parameter_records"
+
+    MYSQL_RES  *res_set;
+    MYSQL_ROW  row;
+    parameter_t *p, *q = NULL;
+    int num_rows = 0;
+    char *query = "SELECT " PARAMETER_FIELDS " FROM daf.parameter";
+    char msg[MAX_MSG_LEN];
+
+    *num_records = 0;
+
+    if (perform_query(SUBNAME, sql_connection, query) == 0)
+    {
+
+        if ((res_set = check_for_res_set(SUBNAME, sql_connection, query)))
+        {
+
+            num_rows = mysql_num_rows(res_set);
+
+            p = q = malloc( num_rows * sizeof(parameter_t) );
+
+            while (((row = mysql_fetch_row(res_set)) != NULL) && ((*num_records) < num_rows))
+            {
+
+                get_parameter_record(res_set, &row, q);
+                (*num_records)++;
+                q++;
+            }
+
+            mysql_free_result(res_set);
+
+        }
+
+    } else {
+    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+       SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+       print_msg_to_console(msg);
+    }
+
+    return(p);
+
+}
+
 
 
 /* ------------------------------------------------------------------------------------------------- */
@@ -1374,6 +1519,7 @@ void get_all_workqueue_records(MYSQL         *sql_connection,
     MYSQL_RES  *res_set;
     MYSQL_ROW  row;
     char *query = "SELECT " WORKQUEUE_FIELDS " FROM daf.workqueue";
+    char msg[MAX_MSG_LEN];
 
     *num_records = 0;
 
@@ -1396,6 +1542,10 @@ void get_all_workqueue_records(MYSQL         *sql_connection,
 
         }
 
+    } else {
+    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+        SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+        print_msg_to_console(msg);
     }
 
 }
@@ -1432,6 +1582,7 @@ workqueue_t *allocate_and_get_all_workqueue_records(MYSQL  *sql_connection,
     workqueue_t *p, *q = NULL;
     int num_rows = 0;
     char *query = "SELECT " WORKQUEUE_FIELDS " FROM daf.workqueue";
+    char msg[MAX_MSG_LEN];
 
     *num_records = 0;
 
@@ -1457,6 +1608,10 @@ workqueue_t *allocate_and_get_all_workqueue_records(MYSQL  *sql_connection,
 
         }
 
+    } else {
+    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+        SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+        print_msg_to_console(msg);
     }
 
     return(p);
@@ -1591,6 +1746,10 @@ void get_collectortype_records(MYSQL            *sql_connection,
 
         }
 
+    } else {
+    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+        SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+        print_msg_to_console(msg);
     }
 
 }
@@ -1639,6 +1798,7 @@ void get_collectorvalue_records(MYSQL             *sql_connection,
     MYSQL_RES  *res_set;
     MYSQL_ROW  row;
     char       query[256];
+    char       msg[MAX_MSG_LEN];
 
     *num_records = 0;
 
@@ -1675,6 +1835,10 @@ void get_collectorvalue_records(MYSQL             *sql_connection,
 
         }
 
+    } else {
+    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+        SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+        print_msg_to_console(msg);
     }
 
 }
@@ -1722,6 +1886,7 @@ void get_environmentvalue_records(MYSQL               *sql_connection,
     MYSQL_RES  *res_set;
     MYSQL_ROW  row;
     char       query[256];
+    char       msg[MAX_MSG_LEN];
 
     *num_records = 0;
 
@@ -1758,6 +1923,10 @@ void get_environmentvalue_records(MYSQL               *sql_connection,
 
         }
 
+    } else {
+    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+        SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+        print_msg_to_console(msg);
     }
 
 }
@@ -1807,6 +1976,7 @@ void get_environmentvalue_assignments(MYSQL          *sql_connection,
     MYSQL_ROW           row;
     char                query[256];
     environmentvalue_t  environmentvalue;
+    char                msg[MAX_MSG_LEN];
 
     *num_records = 0;
 
@@ -1844,6 +2014,10 @@ void get_environmentvalue_assignments(MYSQL          *sql_connection,
 
             mysql_free_result(res_set);
 
+        } else {
+        	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+            SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+            print_msg_to_console(msg);
         }
 
     }
@@ -1893,6 +2067,8 @@ void get_action_records(MYSQL     *sql_connection,
     MYSQL_ROW  row;
 
     char       query[256];
+    char       msg[MAX_MSG_LEN];
+
     *num_records = 0;
 
     if (where == NULL)
@@ -1928,6 +2104,10 @@ void get_action_records(MYSQL     *sql_connection,
 
         }
 
+    } else {
+    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+        SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+        print_msg_to_console(msg);
     }
 
 }
@@ -1967,6 +2147,7 @@ action_t *allocate_and_get_action_records(MYSQL     *sql_connection,
     char       query[256];
     action_t   *p, *q = NULL;
     int        num_rows;
+    char       msg[MAX_MSG_LEN];
 
     *num_records = 0;
 
@@ -2007,6 +2188,10 @@ action_t *allocate_and_get_action_records(MYSQL     *sql_connection,
 
         }
 
+    } else {
+    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+        SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+        print_msg_to_console(msg);
     }
 
     return(p);
@@ -2056,6 +2241,8 @@ void get_host_records(MYSQL     *sql_connection,
     MYSQL_ROW  row;
 
     char       query[256];
+    char       msg[MAX_MSG_LEN];
+
     *num_records = 0;
 
     if (where == NULL)
@@ -2091,6 +2278,10 @@ void get_host_records(MYSQL     *sql_connection,
 
         }
 
+    } else {
+    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+        SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+        print_msg_to_console(msg);
     }
 
 }
@@ -2139,6 +2330,8 @@ void get_collectorset_records(MYSQL           *sql_connection,
     MYSQL_ROW  row;
 
     char       query[256];
+    char       msg[MAX_MSG_LEN];
+
     *num_records = 0;
 
     if (where == NULL)
@@ -2173,6 +2366,10 @@ void get_collectorset_records(MYSQL           *sql_connection,
             mysql_free_result(res_set);
         }
 
+    } else {
+    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+        SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+        print_msg_to_console(msg);
     }
 
 }
@@ -2221,6 +2418,8 @@ void get_collectorsetmembers_records(MYSQL                 *sql_connection,
     MYSQL_ROW  row;
 
     char       query[256];
+    char       msg[MAX_MSG_LEN];
+
     *num_records = 0;
 
     if (where == NULL)
@@ -2256,6 +2455,10 @@ void get_collectorsetmembers_records(MYSQL                 *sql_connection,
 
         }
 
+    } else {
+    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+        SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+        print_msg_to_console(msg);
     }
 
 }
@@ -2307,6 +2510,69 @@ void get_testcase_record(MYSQL_RES   *res_set,
 
         case 2:
             safecpy(testcase->Description, (*row)[i], sizeof(testcase->Description));
+            break;
+
+        default:
+            /* problem */
+            snprintf(msg, sizeof(msg), "%s: internal error - unexpected switch index value i=%d (more fields than expected in mysql row\n",
+                     SUBNAME, i);
+            print_msg_to_console(msg);
+            break;
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+/*                                                                                                   */
+/* Function:   get_parameter_record                                                                  */
+/*                                                                                                   */
+/* Inputs:     res_set               A MYSQL result set that contains the result of a query          */
+/*                                   on the testcase table.                                          */
+/*                                                                                                   */
+/*             row                   A MYSQL row structure obtained from the res_set above           */
+/*                                                                                                   */
+/* Outputs     parameter             A structure representing the fields in a row in the parameter   */
+/*                                   table - this structure is filled in with values taken from the  */
+/*                                   row in the table                                                */
+/*                                                                                                   */
+/* Returns:    void                                                                                  */
+/*                                                                                                   */
+/* Function:   Decodes the contents of a row of the parameter table and places it in a structure.    */
+/*             The query that set up the MYSQL row structure must have been such that the            */
+/*             row is populated in the order specified by the PARAMETER_FIELDS definition in the     */
+/*             af_defns.h file                                                                       */
+/*                                                                                                   */
+/* ------------------------------------------------------------------------------------------------- */
+
+void get_parameter_record(MYSQL_RES   *res_set,
+                          MYSQL_ROW   *row,
+                          parameter_t  *parameter)
+{
+
+#undef  SUBNAME
+#define SUBNAME "get_parameter_record"
+
+    int          i;
+    char         msg[MAX_MSG_LEN];
+
+    for (i = 0; i < mysql_num_fields(res_set); i++)
+    {
+        switch(i)
+        {
+        case 0:
+            parameter->ID = (Iu32) strtoull((*row)[i], NULL, 0);
+            break;
+
+        case 1:
+            safecpy(parameter->Name, (*row)[i], sizeof(parameter->Name));
+            break;
+
+        case 2:
+            safecpy(parameter->Defaultvalue, (*row)[i], sizeof(parameter->Defaultvalue));
+            break;
+
+        case 3:
+            safecpy(parameter->Description, (*row)[i], sizeof(parameter->Description));
             break;
 
         default:
@@ -2558,106 +2824,110 @@ void get_workqueue_record(MYSQL_RES    *res_set,
             break;
 
         case 1:
+             workqueue->WorkrequestID = (Iu32) strtoull((*row)[i], NULL, 0);
+             break;
+
+        case 2:
             safecpy(workqueue->Project, (*row)[i], sizeof(workqueue->Project));
             break;
 
-        case 2:
+        case 3:
             safecpy(workqueue->Phase, (*row)[i], sizeof(workqueue->Phase));
             break;
 
-        case 3:
+        case 4:
             workqueue->ScenarioID = (Iu32) strtoull((*row)[i], NULL, 0);
             break;
 
-        case 4:
+        case 5:
             workqueue->TestlevelID = (Iu32) strtoull((*row)[i], NULL, 0);
             break;   /* what if this field is NULL etc <<<<<<<<<< */
 
-        case 5:
+        case 6:
             workqueue->TeststandID = (Iu32) strtoull((*row)[i], NULL, 0);
             break;
 
-        case 6:
+        case 7:
             workqueue->ScenarioresultID = (Iu32) strtoull((*row)[i], NULL, 0);
             break;
 
-        case 7:
+        case 8:
             workqueue->ActionresultID = (Iu32) strtoull((*row)[i], NULL, 0);
             break;
 
-        case 8:
+        case 9:
             workqueue->EnvironmentID = (Iu32) strtoull((*row)[i], NULL, 0);
             break;
 
-        case 9:
+        case 10:
             workqueue->OutcomeactionID = (Iu32) strtoull((*row)[i], NULL, 0);
             break;
 
-        case 10:
+        case 11:
             workqueue->TesterID = (Iu32) strtoull((*row)[i], NULL, 0);
             break;
 
-        case 11:
+        case 12:
             workqueue->MaillistID = (Iu32) strtoull((*row)[i], NULL, 0);
             break;
 
-        case 12:
+        case 13:
             safecpy(workqueue->Actiontype, (*row)[i], sizeof(workqueue->Actiontype));
             break;
 
-        case 13:
+        case 14:
             workqueue->Stepnumber = strtoull((*row)[i], NULL, 0);
             break;
 
-        case 14:
+        case 15:
             safecpy(workqueue->Hostname, (*row)[i], sizeof(workqueue->Hostname));
             break;
 
-        case 15:
+        case 16:
             safecpy(workqueue->State, (*row)[i],sizeof(workqueue->State));
             break;
 
-        case 16:
+        case 17:
             safecpy(workqueue->Statemodifier, (*row)[i],sizeof(workqueue->Statemodifier));
             break;
 
-        case 17:
+        case 18:
             safecpy(workqueue->Testcase, (*row)[i], sizeof(workqueue->Testcase));
             break;
 
-        case 18:
+        case 19:
             safecpy(workqueue->Invocation, (*row)[i], sizeof(workqueue->Invocation));
             break;
 
-        case 19:
+        case 20:
             safecpy(workqueue->Duration, (*row)[i], sizeof(workqueue->Duration));
             break;
 
-        case 20:
+        case 21:
             workqueue->Maxduration = (Iu32) strtoull((*row)[i], NULL, 0);
             break;
 
-        case 21:
+        case 22:
             workqueue->Pass = (Iu32) strtoull((*row)[i], NULL, 0);
             break;
 
-        case 22:
+        case 23:
             safecpy(workqueue->Start, (*row)[i], sizeof(workqueue->Start));
             break;
 
-        case 23:
+        case 24:
             safecpy(workqueue->End, (*row)[i], sizeof(workqueue->End));
             break;
 
-        case 24:
+        case 25:
             workqueue->Tag = strtoull((*row)[i], NULL, 0);
             break;
 
-        case 25:
+        case 26:
             safecpy(workqueue->Loglocation, (*row)[i], sizeof(workqueue->Loglocation));
             break;
 
-        case 26:
+        case 27:
             safecpy(workqueue->Scenariologfilename, (*row)[i], sizeof(workqueue->Scenariologfilename));
             break;
 
@@ -2759,10 +3029,18 @@ void get_workrequest_record(MYSQL_RES      *res_set,
             break;
 
         case 16:
-            safecpy(workrequest->Logdirectory, (*row)[i], sizeof(workrequest->Logdirectory));
+            safecpy(workrequest->Description1, (*row)[i], sizeof(workrequest->Description1));
             break;
 
         case 17:
+            safecpy(workrequest->Description1Type, (*row)[i], sizeof(workrequest->Description1Type));
+            break;
+
+        case 18:
+            safecpy(workrequest->Logdirectory, (*row)[i], sizeof(workrequest->Logdirectory));
+            break;
+
+        case 19:
             safecpy(workrequest->Scenariologfilename, (*row)[i], sizeof(workrequest->Scenariologfilename));
             break;
 
@@ -2962,7 +3240,7 @@ void get_scenarioresult_record(MYSQL_RES            *res_set,
 /*                                                                                                   */
 /*             row                   A MYSQL row structure obtained from the res_set above           */
 /*                                                                                                   */
-/* Outputs     testcase              A structure representing the fields in a row in the host        */
+/* Outputs     host                  A structure representing the fields in a row in the host        */
 /*                                   table - this structure is filled in with values taken from      */
 /*                                   row parameter.                                                  */
 /*                                                                                                   */
@@ -3054,7 +3332,7 @@ void get_host_record(MYSQL_RES   *res_set,
 /*                                                                                                   */
 /*             row                   A MYSQL row structure obtained from the res_set above           */
 /*                                                                                                   */
-/* Outputs     testcase              A structure representing the fields in a row in the             */
+/* Outputs     collectorvalue        A structure representing the fields in a row in the             */
 /*                                   collectorvlaue table - this structure is filled in with values  */
 /*                                   taken from row parameter.                                       */
 /*                                                                                                   */
@@ -3118,7 +3396,7 @@ void get_collectorvalue_record(MYSQL_RES         *res_set,
 /*                                                                                                   */
 /*             row                   A MYSQL row structure obtained from the res_set above           */
 /*                                                                                                   */
-/* Outputs     testcase              A structure representing the fields in a row in the             */
+/* Outputs     collectortype         A structure representing the fields in a row in the             */
 /*                                   collectortype table - this structure is filled in with values   */
 /*                                   taken from row parameter.                                       */
 /*                                                                                                   */
@@ -3186,7 +3464,7 @@ void get_collectortype_record(MYSQL_RES         *res_set,
 /*                                                                                                   */
 /*             row                   A MYSQL row structure obtained from the res_set above           */
 /*                                                                                                   */
-/* Outputs     testcase              A structure representing the fields in a row in the             */
+/* Outputs     collectorset          A structure representing the fields in a row in the             */
 /*                                   collectorset table - this structure is filled in with values    */
 /*                                   taken from row parameter.                                       */
 /*                                                                                                   */
@@ -3246,7 +3524,7 @@ void get_collectorset_record(MYSQL_RES       *res_set,
 /*                                                                                                   */
 /*             row                   A MYSQL row structure obtained from the res_set above           */
 /*                                                                                                   */
-/* Outputs     testcase              A structure representing the fields in a row in the             */
+/* Outputs     collectorsetmember    A structure representing the fields in a row in the             */
 /*                                   collectorsetmember table - this structure is filled in with     */
 /*                                   values taken from row parameter.                                */
 /*                                                                                                   */
@@ -3310,7 +3588,7 @@ void get_collectorsetmember_record(MYSQL_RES             *res_set,
 /*                                                                                                   */
 /*             row                   A MYSQL row structure obtained from the res_set above           */
 /*                                                                                                   */
-/* Outputs     testcase              A structure representing the fields in a row in the             */
+/* Outputs     environment           A structure representing the fields in a row in the             */
 /*                                   environment table - this structure is filled in with values     */
 /*                                   taken from row parameter.                                       */
 /*                                                                                                   */
@@ -3370,7 +3648,7 @@ void get_environment_record(MYSQL_RES      *res_set,
 /*                                                                                                   */
 /*             row                   A MYSQL row structure obtained from the res_set above           */
 /*                                                                                                   */
-/* Outputs     testcase              A structure representing the fields in a row in the             */
+/* Outputs     environmentvalue      A structure representing the fields in a row in the             */
 /*                                   environmentvalue table - this structure is filled in with       */
 /*                                   values taken from row parameter.                                */
 /*                                                                                                   */
@@ -3433,7 +3711,7 @@ void get_environmentvalue_record(MYSQL_RES           *res_set,
 /*                                                                                                   */
 /*             row                   A MYSQL row structure obtained from the res_set above           */
 /*                                                                                                   */
-/* Outputs     testcase              A structure representing the fields in a row in the             */
+/* Outputs     outcomeaction         A structure representing the fields in a row in the             */
 /*                                   outcomeaction table - this structure is filled in with          */
 /*                                   values taken from row parameter.                                */
 /*                                                                                                   */
@@ -3602,7 +3880,7 @@ void get_user_record(MYSQL_RES         *res_set,
 /*                                                                                                   */
 /*             row                   A MYSQL row structure obtained from the res_set above           */
 /*                                                                                                   */
-/* Outputs     user                  A structure representing the fields in a row in the             */
+/* Outputs     objecttype            A structure representing the fields in a row in the             */
 /*                                   objecttype table - this structure is filled in with values      */
 /*                                   taken from row parameter.                                       */
 /*                                                                                                   */
@@ -5706,6 +5984,214 @@ levelstuff_t *getlevelstuff(MYSQL *sql_connection,
 
 }
 
+void parse_userdefinedparameters(char *parameterstring, userdefinedparameter_t *p_userdefinedparameters, int num_userdefinedparameters) {
+
+
+   char tempstring[128];   // TODO what length should this be??
+   char token[128];
+   int i, j, k;
+
+   bool_t in_token = FALSE;
+   bool_t token_found = FALSE;
+
+   safecpy(tempstring, parameterstring, sizeof(tempstring));
+
+   for (i=0, j=0, k=0; i<strlen(tempstring); i++) {
+
+	   if (tempstring[i] == ' ') {
+		   if (in_token) {
+			   token_found = TRUE;
+			   in_token = FALSE;
+		   }
+	   } else {
+		   if (! in_token) {
+			   in_token = TRUE;
+		   }
+	   }
+
+	   if (in_token) {
+		   token[j] = tempstring[i];
+		   j++;
+	   }
+
+	   if (in_token && (i == (strlen(tempstring)-1))) {
+		   token_found = TRUE;
+	   }
+
+	   if (token_found) {
+		   token[j] = 0;
+	      if (k < num_userdefinedparameters) {
+	         split_namevalue_parameter(token, p_userdefinedparameters[k].Name, sizeof(p_userdefinedparameters[k].Name),
+			                           p_userdefinedparameters[k].Value, sizeof(p_userdefinedparameters[k].Value));
+	         k++;
+	      }
+	      j = 0;
+	   }
+
+   }
+
+
+
+}
+
+/*---------------------------------------------------------------------------------------------------*/
+/*                                                                                                   */
+/* Function:   substitute_user_defined_parameters                                                    */
+/*                                                                                                   */
+/* Inputs:     parameters      a string containing the parameters that might be substituted          */
+/*                                                                                                   */
+/*             pParameters     a pointer to an array of structures describing all the user defined   */
+/*                             parameters                                                            */
+/*                                                                                                   */
+/*             num_paramater_records     the number of entries in the pParameters array              */
+/*                                                                                                   */
+/*             pParameters     a structure described all the user defined parameters                 */
+/*                                                                                                   */
+/*             max_substitutedParameters_len    max length of the output string                      */
+/*                                                                                                   */
+/* Outputs:    substitutedParameters    a which contains the contents of the input parameters string */
+/*                                      in which any user defined parameter has been substituted     */
+/*                                      with the user defined value, if it exists, or the default    */
+/*                                      value if it does not                                         */
+/*                                                                                                   */
+/* Returns:    void                                                                                  */
+/*                                                                                                   */
+/* Function:   A user defined parameter name appears as %%%name in the input parameter string  eg    */
+/*                                                                                                   */
+/*             input string:   "--num_vdisks=%%N%% --num_hosts=%%num_hosts%%"                        */
+/*                                                                                                   */
+/*             might get substituted so that the output string was:                                  */
+/*                                                                                                   */
+/*             output string:   "--num_vdisks=10 --num_hosts=20"                                     */
+/*---------------------------------------------------------------------------------------------------*/
+
+void substitute_user_defined_parameters(char *parameters,  parameter_t *pParameters, int num_parameter_records,
+		                                userdefinedparameter_t * p_userdefinedparameters, int num_userdefinedparameters,
+		                                char *substitutedParameters, int max_substitutedParameters_len) {
+
+	int i;
+	int j = 0;
+	int k;
+	bool_t udpFound = FALSE;
+	bool_t udpMatchedinUserParameters = FALSE;
+	bool_t udpMatchedinDefaultParameters = FALSE;
+	bool_t inStartMarker = FALSE;
+	bool_t startMarkerFound = FALSE;
+	bool_t inEndMarker = FALSE;
+	bool_t endMarkerFound = FALSE;
+	int udpStart;
+	int udpEnd;
+	int udpNameStart;
+	int udpNameEnd;
+	int udpStartInDestination;
+	char updChar = '%';
+	char udp[DAF_PARAMETER_VALUE_LEN];
+	int udpNameLength;
+
+	for (i=0; (i<strlen(parameters)) && (j<(max_substitutedParameters_len-1)); i++) {
+
+		if (parameters[i] == updChar) {
+			if (! startMarkerFound) {
+				if (! inStartMarker) {     // found the first % at the start of a udp
+					inStartMarker = TRUE;
+ 				    udpStart = i;
+ 				    udpStartInDestination= j;
+			    } else {                   // found the second % at the start of a udp
+					inStartMarker = FALSE;
+					startMarkerFound = TRUE;
+			    }
+			} else {
+				if (! inEndMarker) {       // found the second % at the start of a udp
+					inEndMarker = TRUE;
+			    } else {                   // found the second % at the start of a udp
+					inEndMarker = FALSE;
+					endMarkerFound = TRUE;
+ 				    udpEnd = i;
+			    }
+			}
+		} else {
+			if (inStartMarker) {        // found a single % only
+				inStartMarker = FALSE;  // since we only found one % we have not found a start marker (%%) for a udp
+			} else if (inEndMarker) {   // found a single % only
+				inEndMarker = FALSE;    // since we only found one % we have not found an end marker (%%) for a udp either
+			}
+		}
+
+		if (startMarkerFound && endMarkerFound) {
+			// we have found a UDP - its first character is at index udpStart+2 and its last character is at index udpEnd-2
+			udpNameStart = udpStart + 2;
+			udpNameEnd = udpEnd - 2;
+			if (udpNameEnd >= udpNameStart) {     // the length of the name of the udp could be 0  our string contained %%%% so we do not treat this as a UDP after all
+			   udpFound = TRUE;	          // but in fact the length of the upd is > 0, so we really have found a UDP
+			   udpNameLength = udpNameEnd - udpNameStart + 1;
+			   memcpy(udp, parameters+udpNameStart, udpNameLength);
+			   udp[udpNameLength] = 0;
+			}
+		}
+
+
+
+		if (udpFound) {
+
+			// did the user provide a value for this parameter?
+			udpMatchedinUserParameters = FALSE;
+			for (k=0; k<num_userdefinedparameters; k++) {
+				if (MATCH(udp, p_userdefinedparameters[k].Name)) {
+					udpMatchedinUserParameters = TRUE;
+					break;
+				}
+
+			}
+			if (udpMatchedinUserParameters) {
+		       udpFound = FALSE;
+			   inStartMarker = FALSE;
+			   startMarkerFound = FALSE;
+			   inEndMarker = FALSE;
+			   endMarkerFound = FALSE;
+			}
+		}
+
+		if (udpFound) {
+
+           // search for the UDP in the parameters_t structure
+
+			udpMatchedinDefaultParameters = FALSE;
+			for (k=0; k<num_parameter_records; k++) {
+				if (MATCH(udp, pParameters[k].Name)) {
+					udpMatchedinDefaultParameters = TRUE;
+					break;
+				}
+			}
+			udpFound = FALSE;
+			inStartMarker = FALSE;
+			startMarkerFound = FALSE;
+			inEndMarker = FALSE;
+			endMarkerFound = FALSE;
+		}
+
+		if (udpMatchedinUserParameters) {
+		    if ((udpStartInDestination+strlen(p_userdefinedparameters[k].Value)) < (max_substitutedParameters_len-1)) {
+		       memcpy(substitutedParameters+udpStartInDestination, p_userdefinedparameters[k].Value, strlen(p_userdefinedparameters[k].Value));
+			   j = udpStartInDestination + strlen(p_userdefinedparameters[k].Value);
+		    }
+            udpMatchedinUserParameters = FALSE;
+		} else if (udpMatchedinDefaultParameters) {
+		    if ((udpStartInDestination+strlen(pParameters[k].Defaultvalue)) < (max_substitutedParameters_len-1)) {
+		       memcpy(substitutedParameters+udpStartInDestination, pParameters[k].Defaultvalue, strlen(pParameters[k].Defaultvalue));     // TODO what about default value ???????
+			   j = udpStartInDestination + strlen(pParameters[k].Defaultvalue);
+		    }
+            udpMatchedinDefaultParameters = FALSE;
+		} else {
+		    substitutedParameters[j++] = parameters[i];
+		}
+
+	}
+
+	substitutedParameters[j] = 0;
+
+}
+
+
 
 /*---------------------------------------------------------------------------------------------------*/
 /*                                                                                                   */
@@ -5976,6 +6462,9 @@ int validate_object_code_levels(MYSQL *sql_connection, int TestlevelID, char *te
         free(levelstuff);
     }
 
+    snprintf(msg, sizeof(msg), "validate_object_code_levels complete\n");
+    print_scenario_console_log(msg);
+
     return return_code;
 
 }
@@ -6039,6 +6528,8 @@ int spawn_new_workrequest(MYSQL *sql_connection,
     char        S_ObjectID3[16];
     char        S_Tablename4[32];
     char        S_ObjectID4[16];
+    char        S_Description1[DAF_DESCRIPTOR1_LEN];
+    char        S_Description1Type[DAF_DESCRIPTOR1TYPE_LEN];
     char        S_Start[16];
     char        S_End[16];
     char        S_Logdirectory[128];
@@ -6065,7 +6556,7 @@ int spawn_new_workrequest(MYSQL *sql_connection,
 
     char        *fields1[] = {"Project", "Phase", "RequestType", "TesterID", "State", "Tablename1", "ObjectID1",
                               "Tablename2", "ObjectID2", "Tablename3", "ObjectID3",
-                              "Tablename4", "ObjectID4", "Start", "End",
+                              "Tablename4", "ObjectID4", "Description1", "Description1Type", "Start", "End",
                               "Logdirectory", "Scenariologfilename", NULL
                              };
     char        *values1[19];
@@ -6083,11 +6574,13 @@ int spawn_new_workrequest(MYSQL *sql_connection,
     values1[11] = &S_ObjectID3[0];
     values1[12] = &S_Tablename4[0];
     values1[13] = &S_ObjectID4[0];
-    values1[14] = &S_Start[0];
-    values1[15] = &S_End[0];
-    values1[16] = &S_Logdirectory[0];
-    values1[17] = &S_Scenariologfilename[0];
-    values1[18] = NULL;
+    values1[14] = &S_Description1[0];
+    values1[15] = &S_Description1Type[0];
+    values1[16] = &S_Start[0];
+    values1[17] = &S_End[0];
+    values1[18] = &S_Logdirectory[0];
+    values1[19] = &S_Scenariologfilename[0];
+    values1[20] = NULL;
 
     print_scenario_console_log_rule();
     snprintf(msg, sizeof(msg), "Creating workrequest item for Scenario ID %u\n", new_scenarioID);
@@ -6148,7 +6641,7 @@ int spawn_new_workrequest(MYSQL *sql_connection,
        safecat(S_Scenariologfilename, timestamp, sizeof(S_Scenariologfilename)); */
     safecat(S_Scenariologfilename, ".out", sizeof(S_Scenariologfilename));
 
-    /* loglocation = $gp['loglocation'] . '/' . 'scenario_' . $scenarioresultID . '_' . $sanitised_name . "_" . date("Ymd");  <<<< */
+    /* loglocation = $gp['loglocation'] . '/' . 'scenario_' . $scenarioresultID . '_' . $sanitised_name;  <<<< */
     safecpy(loglocation, original_workrequest.Logdirectory, sizeof(loglocation));
     safecat(loglocation, "/scenario_", sizeof(loglocation));
     snprintf(temp, sizeof(temp), "%u", scenarioresultID);
@@ -6176,6 +6669,8 @@ int spawn_new_workrequest(MYSQL *sql_connection,
     snprintf(S_ObjectID3, sizeof(S_ObjectID3), "%u", original_workrequest.ObjectID3);        /* testlevel */
     safecpy(S_Tablename4,    original_workrequest.Tablename4,     sizeof(S_Tablename4));
     snprintf(S_ObjectID4, sizeof(S_ObjectID4), "%u", original_workrequest.ObjectID4);        /* teststand */
+    safecpy(S_Description1,  "",                                  sizeof(S_Description1));
+    safecpy(S_Description1Type,  "None",                          sizeof(S_Description1Type));
     safecpy(S_Start,         "NOW()",                             sizeof(S_Start));
     safecpy(S_Logdirectory,  original_workrequest.Logdirectory,   sizeof(S_Logdirectory));
 
@@ -6212,6 +6707,7 @@ int spawn_new_workrequest(MYSQL *sql_connection,
 /*---------------------------------------------------------------------------------------------------*/
 
 int create_new_workqueue_record(MYSQL          *sql_connection,
+		                        int            WorkrequestID,
                                 char           *Project,
                                 char           *Phase,
                                 action_t       *actions,
@@ -6220,6 +6716,8 @@ int create_new_workqueue_record(MYSQL          *sql_connection,
                                 int            num_actiontype_records,
                                 testcase_t     *testcases,
                                 int            num_testcase_records,
+								userdefinedparameter_t * p_userdefinedparameters,
+								int            num_userdefinedparameters,
                                 int            index,
                                 int            ScenarioID,
                                 int            Stepnumber,
@@ -6242,6 +6740,7 @@ int create_new_workqueue_record(MYSQL          *sql_connection,
     char        actiontype[32];
     char        testcase[32];
 
+    char        S_WorkrequestID[16];
     char        S_Project[64];
     char        S_Phase[64];
     char        S_ScenarioID[16];
@@ -6264,36 +6763,37 @@ int create_new_workqueue_record(MYSQL          *sql_connection,
     char        S_Loglocation[128];
     char        S_Scenariologfilename[128];
     char        S_Start[24];
-    char        *fields1[] = {"Project", "Phase", "ScenarioID", "TestlevelID", "TeststandID", "ScenarioresultID",
+    char        *fields1[] = {"WorkrequestID", "Project", "Phase", "ScenarioID", "TestlevelID", "TeststandID", "ScenarioresultID",
                               "EnvironmentID", "OutcomeactionID", "TesterID", "MaillistID", "Actiontype",
                               "Stepnumber", "Hostname", "State", "Statemodifier", "Testcase", "Invocation", "Duration",
                               "Maxduration", "Loglocation", "Scenariologfilename", "Start", NULL
                              };
     char        *values1[23];
 
-    values1[0] = &S_Project[0];
-    values1[1] = &S_Phase[0];
-    values1[2] = &S_ScenarioID[0];
-    values1[3] = &S_TestlevelID[0];
-    values1[4] = &S_TeststandID[0];
-    values1[5] = &S_ScenarioresultID[0];
-    values1[6] = &S_EnvironmentID[0];
-    values1[7] = &S_OutcomeactionID[0];
-    values1[8] = &S_TesterID[0];
-    values1[9] = &S_MaillistID[0];
-    values1[10] = &S_Actiontype[0];
-    values1[11] = &S_Stepnumber[0];
-    values1[12] = &S_Hostname[0];
-    values1[13] = &S_State[0];
-    values1[14] = &S_Statemodifier[0];
-    values1[15] = &S_Testcase[0];
-    values1[16] = &S_Invocation[0];
-    values1[17] = &S_Duration[0];
-    values1[18] = &S_Maxduration[0];
-    values1[19] = &S_Loglocation[0];
-    values1[20] = &S_Scenariologfilename[0];
-    values1[21] = &S_Start[0];
-    values1[22] = NULL;
+    values1[0] = &S_WorkrequestID[0];
+    values1[1] = &S_Project[0];
+    values1[2] = &S_Phase[0];
+    values1[3] = &S_ScenarioID[0];
+    values1[4] = &S_TestlevelID[0];
+    values1[5] = &S_TeststandID[0];
+    values1[6] = &S_ScenarioresultID[0];
+    values1[7] = &S_EnvironmentID[0];
+    values1[8] = &S_OutcomeactionID[0];
+    values1[9] = &S_TesterID[0];
+    values1[10] = &S_MaillistID[0];
+    values1[11] = &S_Actiontype[0];
+    values1[12] = &S_Stepnumber[0];
+    values1[13] = &S_Hostname[0];
+    values1[14] = &S_State[0];
+    values1[15] = &S_Statemodifier[0];
+    values1[16] = &S_Testcase[0];
+    values1[17] = &S_Invocation[0];
+    values1[18] = &S_Duration[0];
+    values1[19] = &S_Maxduration[0];
+    values1[20] = &S_Loglocation[0];
+    values1[21] = &S_Scenariologfilename[0];
+    values1[22] = &S_Start[0];
+    values1[23] = NULL;
 
     lookup_actiontype(actiontypes,  num_actiontype_records, (actions+index)->ActiontypeID, actiontype, sizeof(actiontype));
     lookup_testcase(testcases,      num_testcase_records,   (actions+index)->TestcaseID,   testcase,   sizeof(testcase));
@@ -6321,6 +6821,16 @@ int create_new_workqueue_record(MYSQL          *sql_connection,
 
     }
 
+    int num_parameter_records;
+    parameter_t *pParameters;
+    char substitutedParameters[1024];
+    pParameters = allocate_and_get_all_parameter_records(sql_connection, &num_parameter_records);
+    substitute_user_defined_parameters((actions+index)->Parameters, pParameters, num_parameter_records,
+    		                           p_userdefinedparameters,
+									   num_userdefinedparameters,
+			                           substitutedParameters, sizeof(substitutedParameters));
+
+    snprintf(S_WorkrequestID,    sizeof(S_WorkrequestID),    "%d", WorkrequestID);
     safecpy(S_Project, Project, sizeof(S_Project));
     safecpy(S_Phase,   Phase,   sizeof(S_Phase));
     snprintf(S_ScenarioID,       sizeof(S_ScenarioID),       "%d", ScenarioID);
@@ -6339,7 +6849,7 @@ int create_new_workqueue_record(MYSQL          *sql_connection,
     safecpy(S_Testcase,    testcase,                 sizeof(S_Testcase));
     safecpy(S_Invocation,  testcase,                 sizeof(S_Invocation));
     safecat(S_Invocation,  " ",                      sizeof(S_Invocation));
-    safecat(S_Invocation,  (actions+index)->Parameters,  sizeof(S_Invocation));
+    safecat(S_Invocation,  substitutedParameters,  sizeof(S_Invocation));
     safecpy(S_Loglocation, Loglocation,                  sizeof(S_Loglocation));
     safecpy(S_Scenariologfilename, Scenariologfilename,  sizeof(S_Scenariologfilename));
     safecpy(S_Start,       "XXXX_CURRENT_TIME_XXXX", sizeof(S_Start));
@@ -6376,6 +6886,7 @@ int create_new_workqueue_record(MYSQL          *sql_connection,
 /*---------------------------------------------------------------------------------------------------*/
 
 int create_actions_for_step(MYSQL           *sql_connection,
+		                    int             WorkrequestID,
                             char            *Project,
                             char            *Phase,
                             action_t        *actions,
@@ -6384,6 +6895,8 @@ int create_actions_for_step(MYSQL           *sql_connection,
                             int             num_actiontype_records,
                             testcase_t      *testcases,
                             int             num_testcase_records,
+							userdefinedparameter_t * p_userdefinedparameters,
+							int             num_userdefinedparameters,
                             int             ScenarioID,
                             int             Stepnumber,
                             int             ScenarioresultID,
@@ -6406,6 +6919,7 @@ int create_actions_for_step(MYSQL           *sql_connection,
     {
 
         rc = rc |  create_new_workqueue_record(sql_connection,
+        		                               WorkrequestID,
                                                Project,
                                                Phase,
                                                actions,
@@ -6414,6 +6928,8 @@ int create_actions_for_step(MYSQL           *sql_connection,
                                                num_actiontype_records,
                                                testcases,
                                                num_testcase_records,
+											   p_userdefinedparameters,
+											   num_userdefinedparameters,
                                                k,
                                                ScenarioID,
                                                Stepnumber,
@@ -6716,6 +7232,7 @@ void process_workqueue(MYSQL *sql_connection)
 
     typedef struct step
     {
+    	int WorkrequestID;
         char Project[DAF_PROJECT_LEN];
         char Phase[DAF_PHASE_LEN];
         int ScenarioID;
@@ -6741,6 +7258,7 @@ void process_workqueue(MYSQL *sql_connection)
     int         num_known_step;
     int         num_records_in_this_step;
     bool_t      allcomplete;
+    int         WorkrequestID;
     int         ScenarioID;
     int         ScenarioresultID;
     int         TestlevelID;
@@ -6776,7 +7294,7 @@ void process_workqueue(MYSQL *sql_connection)
     bool_t  actions_in_step_have_failed;
     bool_t  terminate_scenario;
 
-    int     num_actions;
+    int     num_actions = 0;
     int     num_completed;
     int     num_pass;
     int     num_failed;
@@ -6785,12 +7303,11 @@ void process_workqueue(MYSQL *sql_connection)
     char    status_database_name[DAF_DATABASE_NAME_LEN];
     char    status_table_name[DAF_TABLE_NAME_LEN];
 
-    int num_current_actions;
+    int num_current_actions = 0;
     int max_allowed_actions;
 
-    snprintf(msg, sizeof(msg), "process_workqueue\n");
-    print_scenario_console_log(msg);
-
+    int num_userdefinedparameters = 0;
+    userdefinedparameter_t * p_userdefinedparameters = NULL;
 
     if ((steps = (step_t *) malloc(500 * sizeof(step_t))) == NULL)    /* 5000 ? <<<<<<<<<<<<<<<<<<<<<< */
     {
@@ -6807,16 +7324,16 @@ void process_workqueue(MYSQL *sql_connection)
     p_actiontypes = allocate_and_get_all_actiontype_records(sql_connection, &num_actiontype_records);
     p_testcases   = allocate_and_get_all_testcase_records(sql_connection, &num_testcase_records);
 
+#if defined POLLING_SERVER
+
+    /* --------------------------------------------------------------------------------------------- */
+    /* Turn this code on if the agent's can't see the server (eg fulla)  POLLING OPTION              */
+    /* Examine the workqueue records and see if any slaves have completed a testcase                 */
+	/* When POLLING_SERVER is defined, the corresponding code in the agent is turned off             */
+    /* --------------------------------------------------------------------------------------------- */
+
     if (num_workqueue_records > 0)
     {
-
-         /* --------------------------------------------------------------------------------------------- */
-         /* Turn this code on if the agent's can't see the server (eg fulla)  POLLING OPTION              */
-         /* Examine the workqueue records and see if any slaves have completed a testcase                 */
-    	 /* When POLLING_SERVER is defined, the corresponding code in the agent is turned off             */
-         /* --------------------------------------------------------------------------------------------- */
-
-#if defined POLLING_SERVER
 
          for (i=0; i<num_workqueue_records; i++) {
 
@@ -6886,16 +7403,19 @@ void process_workqueue(MYSQL *sql_connection)
 					 snprintf(temp, sizeof(temp), " WHERE ID = '%u'", p_workqueues[i].ID);
 					 safecat(query, temp, sizeof(query));
 
-					 safecpy(p_workqueues[i].State, "Pendingcompletion", sizeof(p_workqueues[i].State));
-
 					 if (perform_query(SUBNAME, sql_connection, query) != 0)
 					 {
 							   // something bad happened
-						 printf("update failed\n");
+						 snprintf(msg, sizeof(msg), "update failed - %s\n", query);
+						 print_scenario_console_log(msg);
 					 }
 					 else
 					 {
-						printf("update okay\n");
+
+						 safecpy(p_workqueues[i].State, "Pendingcompletion", sizeof(p_workqueues[i].State));
+
+						 snprintf(msg, sizeof(msg), "update okay - %s\n", query);
+					     print_scenario_console_log(msg);
 						// table update was okay
 					 }
 				}
@@ -6939,7 +7459,7 @@ void process_workqueue(MYSQL *sql_connection)
                 num_known_scenario++;
             }
 
-            // first, find out if this workqueue record is associated with a step that we have
+            // now find out if this workqueue record is associated with a step that we have
             // already found to be active, if not, then add the step to the list of known active steps
             known_step = FALSE;
 
@@ -6955,6 +7475,7 @@ void process_workqueue(MYSQL *sql_connection)
 
             if (! known_step)
             {
+                steps[num_known_step].WorkrequestID    = p_workqueues[i].WorkrequestID;
                 steps[num_known_step].ScenarioID       = p_workqueues[i].ScenarioID;
                 steps[num_known_step].ScenarioresultID = p_workqueues[i].ScenarioresultID;
                 steps[num_known_step].TestlevelID      = p_workqueues[i].TestlevelID;
@@ -6967,6 +7488,10 @@ void process_workqueue(MYSQL *sql_connection)
                 safecpy(steps[num_known_step].Loglocation,         p_workqueues[i].Loglocation,         sizeof(steps[num_known_step].Loglocation));
                 safecpy(steps[num_known_step].Project,             p_workqueues[i].Project,             sizeof(steps[num_known_step].Project));
                 safecpy(steps[num_known_step].Phase,               p_workqueues[i].Phase,               sizeof(steps[num_known_step].Phase));
+
+     printf("DEBUG DEBUG: xx  i %d  Project %s  Phase %s\n", i, steps[i].Project, steps[i].Phase);
+
+     printf("Copy Phase %s to %s\n", p_workqueues[i].Phase, steps[num_known_step].Phase);
                 num_known_step++;
             }
 
@@ -6984,7 +7509,9 @@ void process_workqueue(MYSQL *sql_connection)
                      steps[i].ScenarioID, steps[i].ScenarioresultID, steps[i].Stepnumber);
             print_scenario_console_log(msg);
 
-            snprintf(msg, sizeof(msg), "Active Workqueue items for this step....\n");
+            snprintf(msg, sizeof(msg), "Active Workqueue items for step %d....num_workqueue_records=%d\n", steps[i].Stepnumber, num_workqueue_records);
+            print_scenario_console_log(msg);
+            snprintf(msg, sizeof(msg), "Project %s Phase %s\n", steps[i].Project, steps[i].Phase);
             print_scenario_console_log(msg);
 
             for (j=0; j<num_workqueue_records; j++)
@@ -6995,6 +7522,7 @@ void process_workqueue(MYSQL *sql_connection)
                 			                   "Tag=%u, Pass=%u\n", j,
 											   p_workqueues[j].ID, p_workqueues[j].Hostname, p_workqueues[j].ScenarioresultID, p_workqueues[j].Stepnumber,
 											   p_workqueues[j].State, p_workqueues[j].Statemodifier, p_workqueues[j].Tag, p_workqueues[j].Pass);
+                    print_scenario_console_log(msg);
 
                     snprintf(msg, sizeof(msg), "ID=%u, host=%s, j=%u, ScenarioresultID = %u, Stepnumber = %d, "
                              "State = %s, Statemodifier = %s, Tag = %d, Pass = %d\n",
@@ -7006,7 +7534,7 @@ void process_workqueue(MYSQL *sql_connection)
                 }
             }
 
-            print_scenario_console_log("------------\n");
+            //print_scenario_console_log("------------\n");
             close_scenario_console_log();
         }
 
@@ -7032,6 +7560,7 @@ void process_workqueue(MYSQL *sql_connection)
 
             outcomeaction_t outcomeaction;
 
+            WorkrequestID    = steps[i].WorkrequestID;
             ScenarioID       = steps[i].ScenarioID;
             ScenarioresultID = steps[i].ScenarioresultID;
             TeststandID      = steps[i].TeststandID;
@@ -7043,6 +7572,8 @@ void process_workqueue(MYSQL *sql_connection)
             determine_status_database_name(steps[i].Project, steps[i].Phase, status_database_name, sizeof(status_database_name));
             safecpy(Scenariologfilename, steps[i].Scenariologfilename, sizeof(Scenariologfilename));
             safecpy(Loglocation,         steps[i].Loglocation,         sizeof(Loglocation));
+
+            printf("DEBUG DEBUG: yy  i %d Step %d Project %s  Phase %s\n", i, Stepnumber, steps[i].Project, steps[i].Phase);
 
             open_scenario_console_log(Loglocation, Scenariologfilename);
 
@@ -7074,8 +7605,8 @@ void process_workqueue(MYSQL *sql_connection)
 
             }
 
-            snprintf(msg, sizeof(msg), "allcomplete %d  actions_in_step_have_failed %d\n", allcomplete, actions_in_step_have_failed);
-            print_scenario_console_log(msg);
+            //snprintf(msg, sizeof(msg), "allcomplete %d  actions_in_step_have_failed %d\n", allcomplete, actions_in_step_have_failed);
+            //print_scenario_console_log(msg);
 
             get_outcomeaction(sql_connection, OutcomeactionID, &outcomeaction); /* too many calls?  <<<< */
 
@@ -7190,6 +7721,8 @@ void process_workqueue(MYSQL *sql_connection)
                     /* state of the Scenarioresult record to the same state as the original Workrequest - this     */
                     /* means the scenarioresult State will either be 'Canceled' or 'Completed'                     */
                     /* ------------------------------------------------------------------------------------------- */
+
+          printf("DEBUG DEBUG:  i %d Step %d Project %s  Phase %s\n", i, Stepnumber, steps[i].Project, steps[i].Phase);
 
                     determine_status_database_name(steps[i].Project, steps[i].Phase, status_database_name, sizeof(status_database_name));
                     determine_status_table_name(status_database_name, "scenarioresult", status_table_name, sizeof(status_table_name));
@@ -7356,15 +7889,43 @@ void process_workqueue(MYSQL *sql_connection)
                     if (((num_current_actions + num_action_records_in_next_step) <= max_allowed_actions) || (max_allowed_actions == 0))
                     {
 
+                    	workrequest_t workrequest;
+                    	if (get_workrequest(sql_connection, WorkrequestID, "daf.workrequest", &workrequest) != 0) {
+
+                    		// problem   TODO add error message
+
+                    	}
+						if (MATCH(workrequest.Description1Type, "UserDefinedParameters")) {
+							// build a structure containing all the user defined parameters that have been supplied
+							int i;
+							for (i=0; i<strlen(workrequest.Description1); i++) {
+								if (workrequest.Description1[i] == '=') {
+									num_userdefinedparameters++;
+								}
+							}
+							if (num_userdefinedparameters>0) {
+								p_userdefinedparameters = (userdefinedparameter_t *) malloc(num_userdefinedparameters * sizeof(userdefinedparameter_t));
+								parse_userdefinedparameters(workrequest.Description1, p_userdefinedparameters, num_userdefinedparameters);
+							} else {
+								p_userdefinedparameters = NULL;
+							}
+
+						}
+
+						printf("DEBUG DEBUG: Step %d Project %s  Phase %s\n", Stepnumber+1, steps[Stepnumber].Project, steps[Stepnumber].Phase);
+
                         rc =  create_actions_for_step(sql_connection,
-                                                      steps[i].Project,
-                                                      steps[i].Phase,
+                        		                      WorkrequestID,
+                                                      steps[i].Project,             // this is the project from the previous step, but that will be the same
+                                                      steps[i].Phase,               // this is the phase from the previous step, but it will be the same
                                                       p_actions,
                                                       num_action_records_in_next_step,
                                                       p_actiontypes,
                                                       num_actiontype_records,
                                                       p_testcases,
                                                       num_testcase_records,
+													  p_userdefinedparameters,
+													  num_userdefinedparameters,
                                                       ScenarioID,
                                                       (Stepnumber+1),
                                                       ScenarioresultID,
@@ -7418,6 +7979,12 @@ void process_workqueue(MYSQL *sql_connection)
     {
         free(steps);
     }
+
+    if (p_userdefinedparameters != NULL)
+    {
+         free(p_userdefinedparameters);
+    }
+
 }
 
 
@@ -7444,13 +8011,7 @@ void process_workqueue(MYSQL *sql_connection)
 /*             and the action removed from the active workqueue list                                 */
 /*---------------------------------------------------------------------------------------------------*/
 
-void process_new_workqueue_requests(MYSQL *sql_connection,
-                                    char *sql_servername,
-                                    char *sql_username,
-                                    char *sql_password,
-                                    char *sql_databasename,
-                                    Iu16 sql_port,
-                                    bool_t simulator_mode)
+void process_new_workqueue_requests(MYSQL *sql_connection)
 {
 
 #undef  SUBNAME
@@ -7503,6 +8064,8 @@ void process_new_workqueue_requests(MYSQL *sql_connection,
     remote_client_prepare_cmd_res   prepare_result;
     remote_client_execute_cmd_args  execute_args;
     remote_client_execute_cmd_res   execute_result;
+//    remote_client_start_scenario_args  start_scenario_args;
+//    remote_client_start_scenario_res   start_scenario_result;
     enum clnt_stat          stat;
     char identstring[10] = "";
     CLIENT   *remote_client;            /* the RPC handle to reach the remote test host                 */
@@ -7544,9 +8107,6 @@ void process_new_workqueue_requests(MYSQL *sql_connection,
     char    remote_pathname[MAX_PATHNAME_LEN];
     char    status_database_name[DAF_DATABASE_NAME_LEN];
     char    table_name[DAF_TABLE_NAME_LEN];
-
-    snprintf(msg, sizeof(msg), "Starting process_new_workqueue_requests\n");
-    print_scenario_console_log(msg);
 
     if (perform_query(SUBNAME, sql_connection, "SELECT " WORKQUEUE_FIELDS " FROM daf.workqueue "
                       "WHERE State = 'Notstarted' OR State = 'Pendingcompletion' OR State = 'Tobecanceled'") != 0)
@@ -8041,7 +8601,13 @@ void process_new_workqueue_requests(MYSQL *sql_connection,
                                     print_scenario_console_log(msg);
                                     rc = remote_client_deletefile(workqueue.Hostname, remote_pathname);
 
-                                    if (rc != E_OK)
+                                    if (rc == E_OK)
+                                    {
+                                        snprintf(msg, sizeof(msg), "   Deleted %s on remote test host %s, log directory %s\n",
+                                                  remote_pathname, workqueue.Hostname, remote_pathname);
+                                         print_scenario_console_log(msg);
+                                    }
+                                    else
                                     {
                                         snprintf(msg, sizeof(msg), "Problem deleting %s on remote test host %s, log directory %s\n",
                                                  remote_pathname, workqueue.Hostname, remote_pathname);
@@ -8107,6 +8673,8 @@ void process_new_workqueue_requests(MYSQL *sql_connection,
 /*             Tablename1            "testlevel - the name of the table used for ObjectID3           */
 /*             ObjectID4             the ID of the teststand record to be used in this request       */
 /*             Tablename1            "teststand" - the name of the table used for ObjectID4          */
+/*             Description1          a list of user supplied name=value pairs                        */
+/*             Description1Type      "UserDefinedParameters" - indicates what is in Description1     */
 /*                                                                                                   */
 /*             For each workrequest record in the Idle state, the routine sets the state of that     */
 /*             record to the Running state and creates a corresponding new ScenarioResult record,    */
@@ -8139,6 +8707,7 @@ void process_new_scenario_requests(MYSQL *sql_connection)
     char        where[128];
     char        msg[MAX_MSG_LEN];
     char        errmsg[MAX_MSG_LEN];
+    int         WorkrequestID;
     int         TesterID;
     int         ScenarioID;
     int         ScenarioresultID;
@@ -8157,7 +8726,7 @@ void process_new_scenario_requests(MYSQL *sql_connection)
 
     int            num_actiontype_records;
     int            num_testcase_records;
-    int            num_action_records;
+    int            num_action_records = 0;
     actiontype_t   *p_actiontypes = NULL;
     testcase_t     *p_testcases = NULL;
     action_t       *p_actions = NULL;
@@ -8169,10 +8738,9 @@ void process_new_scenario_requests(MYSQL *sql_connection)
     outcomeaction_t outcomeaction;
     int  num_current_actions;
     int  max_allowed_actions;
-
-    snprintf(msg, sizeof(msg), "Starting process_new_scenario_requests\n");
-    print_scenario_console_log(msg);
-
+    int num_userdefinedparameters = 0;
+    userdefinedparameter_t * p_userdefinedparameters = NULL;
+    int i;
 
     /* --------------------------------------------------------------------------------------------- */
     /*                                                                                               */
@@ -8186,6 +8754,8 @@ void process_new_scenario_requests(MYSQL *sql_connection)
         snprintf(msg, sizeof(msg), "%s: query failed %u - %s\n",
                  SUBNAME, mysql_errno(sql_connection), mysql_error(sql_connection));
         print_msg_to_console(msg);
+
+        print_scenario_console_log("xxx0\n");
 
     }
     else
@@ -8206,17 +8776,34 @@ void process_new_scenario_requests(MYSQL *sql_connection)
             while ((row = mysql_fetch_row(res_set)) != NULL)
             {
 
-            	printf("Checking workrequest of state %s\n", workrequest.State);
                 get_workrequest_record(res_set, &row, &workrequest);
 
                 if (MATCH(workrequest.State, "Idle"))     /* <<<<<<<<<< */
                 {
 
+                    WorkrequestID    = workrequest.ID;
                     ScenarioID       = workrequest.ObjectID1;
                     ScenarioresultID = workrequest.ObjectID2;
                     TestlevelID      = workrequest.ObjectID3;
                     TeststandID      = workrequest.ObjectID4;
                     TesterID         = workrequest.TesterID;
+
+                    if (MATCH(workrequest.Description1Type, "UserDefinedParameters")) {
+                    	// build a structure containing all the user defined parameters that have been supplied
+
+                    	for (i=0; i<strlen(workrequest.Description1); i++) {
+                    		if (workrequest.Description1[i] == '=') {
+                    			num_userdefinedparameters++;
+                    		}
+                    	}
+                    	if (num_userdefinedparameters>0) {
+                    		p_userdefinedparameters = (userdefinedparameter_t *) malloc(num_userdefinedparameters * sizeof(userdefinedparameter_t));
+                    		parse_userdefinedparameters(workrequest.Description1, p_userdefinedparameters, num_userdefinedparameters);
+                    	} else {
+                    		p_userdefinedparameters = NULL;
+                    	}
+
+                    }
 
                     get_scenario(sql_connection, ScenarioID, &scenario);
                     OutcomeactionID = scenario.OutcomeactionID;
@@ -8319,6 +8906,8 @@ void process_new_scenario_requests(MYSQL *sql_connection)
                     /* <<<< should we be checking the error code of the next routine here and elsewhere??? */
                     get_scenarioresult(sql_connection, ScenarioresultID, status_table_name, &scenarioresult);
 
+
+
                     if (validate_object_code_levels(sql_connection, TestlevelID, testlevel_name,
                                                     TeststandID, teststand_name, workrequest.Project, workrequest.Phase, scenarioresult.TestlevelrecordID) != E_OK)
                     {
@@ -8359,6 +8948,10 @@ void process_new_scenario_requests(MYSQL *sql_connection)
                         num_current_actions = count_entries_in_workqueue(sql_connection);
                         max_allowed_actions = get_licence_max_actions("/opt/daf/daf_licence_file", errmsg, sizeof(errmsg)); /* <<<< hardcoded */
 
+                        snprintf(msg, sizeof(msg), "num_current_actions %d, num_action_records %d max_allowed_actions %d\n",
+                        		                   num_current_actions, num_action_records, max_allowed_actions);
+                        print_scenario_console_log(msg);
+
                         if (max_allowed_actions == 0)
                         {
 
@@ -8367,6 +8960,7 @@ void process_new_scenario_requests(MYSQL *sql_connection)
 
                         }
 
+                        // TODO - do not think this if statement is right, because num_action_records has not been set yet
                         if (((num_current_actions + num_action_records) <= max_allowed_actions) || (max_allowed_actions == 0))
                         {
 
@@ -8383,6 +8977,9 @@ void process_new_scenario_requests(MYSQL *sql_connection)
                                 print_scenario_console_log("xxx3");
                                 print_scenario_console_log(errmsg);
                             }
+
+                            snprintf(msg, sizeof(msg), "rc from perform_update to set workrequest to Running = %d\n",  rc );
+                            print_scenario_console_log(msg);
 
                             snprintf(where, sizeof(where), "ID = %u", ScenarioresultID);
                             rc = perform_update(SUBNAME, sql_connection, status_table_name, fields, values, where, errmsg, sizeof(errmsg));
@@ -8405,6 +9002,7 @@ void process_new_scenario_requests(MYSQL *sql_connection)
                             print_scenario_console_log(msg);
 
                             rc = create_actions_for_step(sql_connection,
+                            		                     WorkrequestID,
                                                          workrequest.Project,
                                                          workrequest.Phase,
                                                          p_actions,
@@ -8413,6 +9011,8 @@ void process_new_scenario_requests(MYSQL *sql_connection)
                                                          num_actiontype_records,
                                                          p_testcases,
                                                          num_testcase_records,
+														 p_userdefinedparameters,
+														 num_userdefinedparameters,
                                                          ScenarioID,
                                                          Stepnumber,
                                                          ScenarioresultID,
@@ -8450,6 +9050,11 @@ void process_new_scenario_requests(MYSQL *sql_connection)
             if (p_testcases != NULL)
             {
                 free(p_testcases);
+            }
+
+            if (p_userdefinedparameters != NULL)
+            {
+                 free(p_userdefinedparameters);
             }
 
             mysql_free_result(res_set);
@@ -8563,13 +9168,8 @@ void *af_work_daemon(void *p)
         {
 
             process_new_scenario_requests(sql_connection);
-            process_new_workqueue_requests(sql_connection,
-                                           p_af_daemon_thread_data->sql_servername,
-                                           p_af_daemon_thread_data->sql_username,
-                                           p_af_daemon_thread_data->sql_password,
-                                           p_af_daemon_thread_data->sql_databasename,
-                                           p_af_daemon_thread_data->sql_port,
-                                           p_af_daemon_thread_data->simulator_mode);
+            process_new_workqueue_requests(sql_connection);
+
             process_workqueue(sql_connection);
             do_disconnect(SUBNAME, sql_connection);
 

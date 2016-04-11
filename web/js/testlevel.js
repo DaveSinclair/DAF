@@ -144,13 +144,14 @@ function showVarcharOrEnum(typeSelectorId) {
          inp1.destroyRecursive();
          dojo.create("input", {id:"inp1", type:"text", name:"varcharwidth", innerHTML: ""}, td1);
       };
-      var v = new dijit.form.ValidationTextBox({
-         id: "inp1",
-         regExp: "\\d+",
-         promtMessage: "Enter varchar field with for Object Attribute Type",
-         invalidMessage: "Invalid Object Attribute Varchar width (must be a decimal number)",
-         trim: true,
-         required: true }, "inp1");
+ //     var v = new dijit.form.ValidationTextBox({
+ //        id: "inp1",
+ //        regExp: "\\d+",
+ //        promtMessage: "Enter varchar field with for Object Attribute Type",
+ //        invalidMessage: "Invalid Object Attribute Varchar width (must be a decimal number)",
+ //        trim: true,
+ //        required: true }, "inp1");
+ //     dojo.place(v, inp1, "last");
    } else {
  
       val1.innerHTML = 'Enum Values';
@@ -158,14 +159,14 @@ function showVarcharOrEnum(typeSelectorId) {
          inp1.destroyRecursive();
          dojo.create("input", {id:"inp1", type:"text", name:"enumvalues", innerHTML: ""}, td1);
       };
-      var v = new dijit.form.ValidationTextBox({
-         id: "inp1",
-         regExp: ".*",
-         promtMessage: "Enter a comma separated list of Object Attribute Values, enclosed in single quotes, eg \'blue\',\'green\',\'red\'",
-         invalidMessage: "Invalid Object Attribute Varchar width (must be 1 to ? characters)",
-         trim: true,
-         required: true }, "inp1");
-
+ //     var v = new dijit.form.ValidationTextBox({
+ //        id: "inp1",
+ //        regExp: ".*",
+ //        promtMessage: "Enter a comma separated list of Object Attribute Values, enclosed in single quotes, eg \'blue\',\'green\',\'red\'",
+ //        invalidMessage: "Invalid Object Attribute Varchar width (must be 1 to ? characters)",
+ //        trim: true,
+ //        required: true }, "inp1");
+ //     dojo.place(v, inp1, "last");
    }
 
 }

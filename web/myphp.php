@@ -197,6 +197,11 @@ function set_field_widths() {
 
    define("DAF_TESTLEVEL_LEN", 32);
    define("DAF_TESTLEVEL_DESCRIPTION_LEN", 128);
+   
+   define("DAF_PARAMETER_NAME_LEN", 32);
+   define("DAF_PARAMETER_DEFAULTVALUE_LEN", 64);
+   define("DAF_PARAMETER_VALUE_LEN", 64);
+   define("DAF_PARAMETER_DESCRIPTION_LEN", 64);
 
    define("DAF_HOSTSELECTORTYPE_NAME_LEN", 16);   /* is this used <<<< */
    define("DAF_HOSTSELECTORVALUE_NAME_LEN", 32);
@@ -440,6 +445,9 @@ echo <<<_END
                     <div dojoType="dijit.MenuItem" onClick="window.location='index.php?object=outcomeaction&action=show'">
                         Outcome Actions
                     </div>
+		            <div dojoType="dijit.MenuItem" onClick="window.location='index.php?object=parameter&action=show'">
+                        User Defined Parameters
+                    </div>
                 </div>
             </div>
             <div dojoType="dijit.PopupMenuBarItem">
@@ -621,6 +629,44 @@ _END;
 
 //---------------------------------------------------------------------------------------------------------------------
 //
+// Function:   generateCallTrace
+//
+// Inputs:     none
+//
+// Outputs:    none
+//
+// Returns:    A string describing the stack trace
+//
+// Description:
+//
+// Produces a string like:
+//  1) /opt/lampp/htdocs/daf/index.php(272): objectattributetype(Array)
+//  2) /opt/lampp/htdocs/daf/testlevel.php(2556): do_mysql_query('ALTER TABLE daf...', Resource id #16)
+//  3) /opt/lampp/htdocs/daf/myphp.php(3486): add_error_message('DAF0004: mysql ...')
+//
+//----------------------------------------------------------------------------------------------------------------------
+
+function generateCallTrace()
+{
+	$e = new Exception();
+	$trace = explode("\n", $e->getTraceAsString());
+	// reverse array to make steps line up chronologically
+	$trace = array_reverse($trace);
+	array_shift($trace); // remove {main}
+	array_pop($trace); // remove call to this method
+	$length = count($trace);
+	$result = array();
+	 
+	for ($i = 0; $i < $length; $i++)
+	{
+		$result[] = ($i + 1)  . ')' . substr($trace[$i], strpos($trace[$i], ' ')); // replace '#someNum' with '$i)', set the right ordering
+	}
+	 
+	return implode("\n", $result);
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+//
 // Function:   add_error_message
 //
 // Inputs:     none 
@@ -635,10 +681,12 @@ _END;
 
 function add_error_message($message) {        /* what happens if there is a ' in the message string ??  or a \n? <<<<<<<< */
 
+   $backtrace = generateCallTrace();
    echo "<script>\n";
    echo "   dojo.ready(function() {\n"; 
    echo "    errorarea = dojo.byId('errorarea');\n";  
-   echo "	 errorarea.innerHTML += '" . str_replace("\n", "<br>", str_replace("'", "\\'", $message)) .  "' + '<br>';\n";
+   echo "	 errorarea.innerHTML += '" . str_replace("\n", "<br>", str_replace("'", "\\'", $message)) .  
+        "' + '<br>' + '" . str_replace("\n", "<br>", str_replace("'", "\\'", $backtrace)) . "';\n";
    echo "       });\n";
    echo "</script>\n";
 

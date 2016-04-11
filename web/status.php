@@ -432,12 +432,6 @@ _END;
       } else if ($gp['object'] == 'teststandrecord') {
          $tablename = determine_status_table_name($status_db, "teststandrecord");
          show_table($tablename, "Test stand record for scenario result XXXX in project $current_project, phase $current_phase");   /* <<<<<< */
-      } else if ($gp['object'] == 'clusterrecord') {
-         $tablename = determine_status_table_name($status_db, "clusterrecord");
-         show_table($tablename, "Cluster record for scenario result XXXX in project $current_project, phase $current_phase");   /* <<<<<< */
-      } else if ($gp['object'] == 'clusterrecord') {
-         $tablename = determine_status_table_name($status_db, "noderecord");
-         show_table($tablename, "Node record for scenario result XXXX in project $current_project, phase $current_phase");   /* <<<<<< */
       } else if ($gp['object'] == 'testlevelrecord') {
          $tablename = determine_status_table_name($status_db, "testlevelrecord");
          show_table($tablename, "Test level record for scenario result XXXX in project $current_project, phase $current_phase");   /* <<<<<< */

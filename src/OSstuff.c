@@ -216,7 +216,7 @@ Iu64 convert_Iu64_to_bigendian(Iu64 value)
 /*                                                                      */
 /************************************************************************/
 
-BOOL am_I_root(void)
+bool_t am_I_root(void)
 {
 
 #if defined AIX || defined LINUX || defined LINUX_PPC64 || defined SOLARIS || defined HPUX
@@ -288,7 +288,7 @@ Iu32 get_my_pid(void)
 /*                                                                      */
 /************************************************************************/
 
-void comment_on_OSbase(BOOL quiet)
+void comment_on_OSbase(bool_t quiet)
 {
 
     char msg[MAX_MSG_LEN];

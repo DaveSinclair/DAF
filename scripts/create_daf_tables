@@ -48,6 +48,21 @@ CREATE TABLE IF NOT EXISTS `actiontype` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `parameter`
+--
+
+CREATE TABLE IF NOT EXISTS `parameter` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Name` varchar(32) NOT NULL,
+  `Defaultvalue` varchar(64) NOT NULL,
+  `Description` varchar(128) NOT NULL,
+  PRIMARY KEY (`ID`),
+  UNIQUE KEY `ID` (`ID`)
+) ENGINE=InnoDB  DEFAULT CHARSET=ascii DEFAULT COLLATE=ascii_bin;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `collectorset`
 --
 
@@ -441,6 +456,7 @@ CREATE TABLE IF NOT EXISTS `user` (
 
 CREATE TABLE IF NOT EXISTS `workqueue` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `WorkrequestID` int(11) NOT NULL,
   `Project` varchar(32) NOT NULL,
   `Phase` varchar(32) NOT NULL,
   `ScenarioID` int(11) NOT NULL,
@@ -493,6 +509,8 @@ CREATE TABLE IF NOT EXISTS `workrequest` (
   `ObjectID4` int(11) NOT NULL,
   `Tablename5` varchar(32) NOT NULL,
   `ObjectID5` int(11) NOT NULL,
+  `Description1` varchar(256) NOT NULL,
+  `Description1Type` Enum('None','UserDefinedParameters') NOT NULL,
   `Start` datetime NOT NULL,
   `End` datetime NOT NULL,
   `Logdirectory` varchar(128) NOT NULL,
@@ -510,7 +528,7 @@ CREATE TABLE IF NOT EXISTS `objectattributetype` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
   `Name` varchar(32) NOT NULL,
   `ObjecttypeID` int(11) NOT NULL,
-  `Type` enum('varbinary','enum') NOT NULL,
+  `Type` enum('varchar','enum') NOT NULL,
   `Varcharwidth` int(11) NOT NULL,
   `Enumvalues` varchar(1024) NOT NULL,
   PRIMARY KEY (`ID`)

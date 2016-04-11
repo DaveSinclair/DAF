@@ -50,7 +50,7 @@ DAFLICENCEOBJ = daf_licence.o licence.o daf_util.o
 BINS = daf daf_agent daf_generate_licence daf_licence 
 OBJS = $(DAFOBJ) $(DAFAGENTOBJ) $(DAFGENERATELICENCEOBJ) $(DAFLICENCEOBJ)
 
-GEN = daf_protocol.h 
+GEN = daf_protocol.h daf_protocol_xdr.c
 RPCGEN = rpcgen -M
 CC = gcc
 
@@ -101,15 +101,18 @@ OSstuff.o: OSstuff.c OSstuff.h
 
 daf_protocol.h: daf_protocol.x
 	$(RPCGEN) -h daf_protocol.x -o daf_protocol.h 
+	
+daf_protocol_xdr.c: daf_protocol.x
+	$(RPCGEN) -c -o daf_protocol_xdr.c daf_protocol.x
+
+daf_protocol_xdr.o: daf_protocol.h daf_protocol_xdr.c
+	${CC} ${CFLAGS} ${DEFINES} -o $@ -c daf_protocol_xdr.c $(INCLUDES) -Wno-unused-variable
 
 af_mysql.o: af_mysql.c
 	gcc $(CFLAGS) $(DEFINES) $(INCLUDES) af_mysql.c -c
 
 afmysql.o: afmysql.c
 	gcc $(CFLAGS) $(DEFINES) $(INCLUDES) afmysql.c -c
-
-daf_protocol_xdr.o: daf_protocol_xdr.c 
-	gcc $(CFLAGS) $(DEFINES) $(INCLUDES) daf_protocol_xdr.c -c -Wno-unused-variable
 
 daf_licence.o: daf_licence.c
 	gcc $(CFLAGS) $(DEFINES) $(INCLUDES) daf_licence.c -c

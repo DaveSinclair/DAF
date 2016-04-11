@@ -5,7 +5,7 @@
 
 typedef char datetime[40];
 
-#define WORKREQUEST_FIELDS "ID, Project, Phase, RequestType, TesterID, State, Tablename1, ObjectID1, Tablename2, ObjectID2, Tablename3, ObjectID3, Tablename4, ObjectID4, Tablename5, ObjectID5, Logdirectory, Scenariologfilename"
+#define WORKREQUEST_FIELDS "ID, Project, Phase, RequestType, TesterID, State, Tablename1, ObjectID1, Tablename2, ObjectID2, Tablename3, ObjectID3, Tablename4, ObjectID4, Tablename5, ObjectID5, description1, Description1Type, Logdirectory, Scenariologfilename"
 typedef struct workrequest
 {
     Iu32      ID;
@@ -24,14 +24,17 @@ typedef struct workrequest
     Iu32      ObjectID4;
     char      Tablename5[32];
     Iu32      ObjectID5;
+    char      Description1[DAF_DESCRIPTOR1_LEN];
+    char      Description1Type[DAF_DESCRIPTOR1TYPE_LEN];
     char      Logdirectory[DAF_LOGLOCATION_LEN];
     char      Scenariologfilename[DAF_FILENAME_LEN];
 } workrequest_t;
 
-#define WORKQUEUE_FIELDS "ID, Project, Phase, ScenarioID, TestlevelID, TeststandID, ScenarioresultID, ActionresultID, EnvironmentID, OutcomeactionID, TesterID, MaillistID, Actiontype, Stepnumber, Hostname, State, Statemodifier, Testcase, Invocation, Duration, Maxduration, Pass, Start, End, Tag, Loglocation, Scenariologfilename"
+#define WORKQUEUE_FIELDS "ID, WorkrequestID, Project, Phase, ScenarioID, TestlevelID, TeststandID, ScenarioresultID, ActionresultID, EnvironmentID, OutcomeactionID, TesterID, MaillistID, Actiontype, Stepnumber, Hostname, State, Statemodifier, Testcase, Invocation, Duration, Maxduration, Pass, Start, End, Tag, Loglocation, Scenariologfilename"
 typedef struct workqueue
 {
     Iu32      ID;
+    Iu32      WorkrequestID;
     char      Project[DAF_PROJECT_LEN];
     char      Phase[DAF_PHASE_LEN];
     Iu32      ScenarioID;
@@ -148,6 +151,21 @@ typedef struct testcase
     char      Name[DAF_TESTCASE_LEN];
     char      Description[DAF_TESTCASE_DESCRIPTION_LEN];
 } testcase_t;
+
+#define PARAMETER_FIELDS "ID, Name, Defaultvalue, Description"
+typedef struct parameter
+{
+    Iu32      ID;
+    char      Name[DAF_PARAMETER_NAME_LEN];
+    char      Defaultvalue[DAF_PARAMETER_DEFAULTVALUE_LEN];
+    char      Description[DAF_PARAMETER_DESCRIPTION_LEN];
+} parameter_t;
+
+typedef struct userdefinedparameter
+{
+    char      Name[DAF_PARAMETER_NAME_LEN];
+    char      Value[DAF_PARAMETER_VALUE_LEN];
+} userdefinedparameter_t;
 
 #define HOST_FIELDS "ID, TeststandID, Name, Type, Model, Serial, Hostselectorvalue, Teststandprimary, Comments, Agentstatus, Agentstatusdate"
 typedef struct host

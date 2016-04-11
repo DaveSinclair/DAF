@@ -400,7 +400,7 @@ float time_sub_secs(time_control_t *ptimer1, float seconds, time_control_t *ptim
 void initialise_thread_workitem( thread_workitem_t *pthread_workitem,
                                  int threadnum,
                                  int num_trace_entries,
-                                 BOOL reinitialise)
+                                 bool_t reinitialise)
 {
 
     char msg[MAX_MSG_LEN];
@@ -1589,7 +1589,7 @@ Inputs:     microsecs            the number of microseconds that this thread
  The routine sleeps for the specified number of microseconds.
 
 ------------------------------------------------------------------------*/
-void sleep_for_microseconds( int microsecs, volatile BOOL *pexit_flag )
+void sleep_for_microseconds( int microsecs, volatile bool_t *pexit_flag )
 {
 
 #if defined HPUX
@@ -1685,7 +1685,7 @@ Inputs:     milliseconds         the number of milliseconds that this thread
 
   ------------------------------------------------------------------------*/
 
-void sleep_for_milliseconds( int milliseconds, volatile BOOL *pexit_flag)
+void sleep_for_milliseconds( int milliseconds, volatile bool_t *pexit_flag)
 {
 
 #if defined AIX || defined LINUX || defined LINUX_PPC64 || defined SOLARIS || defined HPUX
@@ -1738,7 +1738,7 @@ Inputs:     seconds             the number of seconds that this thread
 
 ------------------------------------------------------------------------*/
 
-void sleep_for_seconds( int seconds, volatile BOOL *pexit_flag)
+void sleep_for_seconds( int seconds, volatile bool_t *pexit_flag)
 {
 
 #if defined AIX || defined LINUX || defined LINUX_PPC64 || defined SOLARIS || defined HPUX

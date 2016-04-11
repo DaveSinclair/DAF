@@ -75,9 +75,9 @@ function testlevel($gp) {
 
       } else if ($gp['operation'] === "modify") {
       
-         if ((count_rows("daf.operation", "Name = '" . $gp['name'] . "'") > 0) && ($gp['name'] != $gp['originalname'])) {
+         if ((count_rows("daf.testlevel", "Name = '" . $gp['name'] . "'") > 0) && ($gp['name'] != $gp['originalname'])) {
           
-            add_error_message("DAFE0065: Cannot modify testcase name to " . $gp['name'] . " because a testcase of that name already exists");
+            add_error_message("DAFE0065: Cannot modify testlevel name to " . $gp['name'] . " because a testlevel of that name already exists");
             
          } else {
 
@@ -219,7 +219,7 @@ function show_testlevels() {
           echo "</td>\n";
           echo "<td class=td_smd>";
           // cellbutton(null, "testlevel_delete_$j", "delete", "index.php?action=show&operation=delete&object=testlevel&ID=$ID");
-          button_with_confirm("testlevel_delete_$j", "delete", "delete", "index.php?action=show&operation=delete&object=testlevel&ID=$ID", 
+          button_with_confirm("testlevel_delete_$j", "Delete", "delete", "index.php?action=show&operation=delete&object=testlevel&ID=$ID", 
                           "index.php?action=show&object=testlevel");
           echo "</td>\n";
        
@@ -273,7 +273,7 @@ _END;
    echo "</td></tr>\n";
    echo '<tr><th>Description</th><td>';
    echo '<input type="text" name="description" size=' . DAF_TESTLEVEL_DESCRIPTION_LEN . '" maxlength="' . DAF_TESTLEVEL_DESCRIPTION_LEN . '" ' .
-        'dojoType="dijit.form.ValidationTextBox" style="width:100%" regExp=".{1,' . DAF_TESTLEVEL_DESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Test Level description" ' . 
+        'dojoType="dijit.form.ValidationTextBox" style="width:50em" regExp=".{1,' . DAF_TESTLEVEL_DESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Test Level description" ' . 
         'invalidMessage="Invalid Test Level description (must be 1 to ' . DAF_TESTLEVEL_DESCRIPTION_LEN . ' characters)"/>';
    echo "</td></tr>\n";
    echo "</table>\n";
@@ -387,7 +387,7 @@ function show_detailed_testlevel($ID) {
       echo '<tr>';
        echo "<td class=td_smd>";
       //cellbutton('td', "testlevelmember_delete_$i", "delete", "index.php?action=show&object=testlevel&operation=deletetestlevelmember&ID=$ID&testlevelmemberid=$testlevelmemberID");
-      button_with_confirm("testlevelmember_delete_$i", "delete", "delete", "index.php?action=show&object=testlevel&operation=deletetestlevelmember&ID=$ID&testlevelmemberid=$testlevelmemberID", 
+      button_with_confirm("testlevelmember_delete_$i", "Delete", "delete", "index.php?action=show&object=testlevel&operation=deletetestlevelmember&ID=$ID&testlevelmemberid=$testlevelmemberID", 
                           "index.php?action=show&object=testlevel&ID=$ID");
       echo '</td>';
 
@@ -481,7 +481,7 @@ _END;
       } else if ($fieldname == "Description") {
          echo '<th>Description</th>';
          echo '<td><input type="text" name="description" value="' . $row[$i] . '" size=' . DAF_TESTLEVEL_DESCRIPTION_LEN . '" maxlength="' . DAF_TESTLEVEL_DESCRIPTION_LEN . '" ' .
-              'dojoType="dijit.form.ValidationTextBox" style="width:100%" regExp=".{1,' . DAF_TESTLEVEL_DESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Test Level description" ' . 
+              'dojoType="dijit.form.ValidationTextBox" style="width:50em" regExp=".{1,' . DAF_TESTLEVEL_DESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Test Level description" ' . 
               'invalidMessage="Invalid Test Level description (must be 1 to ' . DAF_TESTLEVEL_DESCRIPTION_LEN . ' characters)"/>';
          echo '</td>';
       }
@@ -722,7 +722,7 @@ function show_levels() {
           echo "</td>\n";
           echo "<td class=td_smd>";
           // cellbutton(null, "level_delete_$j", "delete", "index.php?action=show&operation=delete&object=level&ID=$ID");
-          button_with_confirm("level_delete_$j", "delete", "delete", "index.php?action=show&operation=delete&object=level&ID=$ID", 
+          button_with_confirm("level_delete_$j", "Delete", "delete", "index.php?action=show&operation=delete&object=level&ID=$ID", 
                               "index.php?action=show&object=level");
           echo "</td>\n";
        
@@ -783,7 +783,7 @@ _END;
    echo "</td></tr>\n";
    echo '<tr><th>Description</th>';
    echo '<td><input type="text" name="description"  size=' . DAF_LEVEL_DESCRIPTION_LEN . '" maxlength="' . DAF_LEVEL_DESCRIPTION_LEN . '" ' .
-        'dojoType="dijit.form.ValidationTextBox" style="width:100%" regExp=".{1,' . DAF_LEVEL_DESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Level description" ' . 
+        'dojoType="dijit.form.ValidationTextBox" style="width:50em" regExp=".{1,' . DAF_LEVEL_DESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Level description" ' . 
         'invalidMessage="Invalid Test Level description (must be 1 to ' . DAF_LEVEL_DESCRIPTION_LEN . ' characters)"/>';
    echo "</td></tr>\n";
    echo "<tr><th>Associated Object Type</th><td><select name=\"objecttypeid\"/>\n";
@@ -955,7 +955,7 @@ _END;
       } else if ($fieldname == "Description") {
          echo '<th>Description</th>';
          echo '<td><input type="text" name="description" value="' . $row[$i] . '" size=' . DAF_LEVEL_DESCRIPTION_LEN . '" maxlength="' . DAF_LEVEL_DESCRIPTION_LEN . '" ' .
-              'dojoType="dijit.form.ValidationTextBox" style="width:100%" regExp=".{1,' . DAF_LEVEL_DESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Level description" ' . 
+              'dojoType="dijit.form.ValidationTextBox" style="width:50em" regExp=".{1,' . DAF_LEVEL_DESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Level description" ' . 
               'invalidMessage="Invalid Test Level description (must be 1 to ' . DAF_LEVEL_DESCRIPTION_LEN . ' characters)"/>';
       }
       echo '</tr>';
@@ -1004,9 +1004,9 @@ function levelinstance($gp) {
    
       if ($gp['operation'] === "create") {
    
-         if (count_rows("daf.levelinstance", "Name = '" . $gp['name'] . "'") > 0) {
+         if (count_rows("daf.levelinstance", "LevelID = '" . $gp['levelid'] . "' and Value = '" . $gp['value'] . "'") > 0) {
           
-            add_error_message("DAFE0071: Cannot create levelinstance " . $gp['name'] . " because a levelinstance of that name already exists");
+            add_error_message("DAFE0071: Cannot create levelinstance  for level id" . $gp['leveli'] . " because a levelinstance with that value already exists");
              
          } else {
    
@@ -1134,7 +1134,7 @@ function show_levelinstances() {
           echo "</td>\n";
           echo "<td class=td_smd>";
           // cellbutton(null, "levelinstance_delete_$j", "delete", "index.php?action=show&operation=delete&object=levelinstance&ID=$ID");
-          button_with_confirm("levelinstance_delete_$j", "delete", "delete", "index.php?action=show&operation=delete&object=levelinstance&ID=$ID", 
+          button_with_confirm("levelinstance_delete_$j", "Delete", "delete", "index.php?action=show&operation=delete&object=levelinstance&ID=$ID", 
                               "index.php?action=show&object=level&ID=$ID");
           echo "</td>\n";
 
@@ -1523,7 +1523,7 @@ function show_objecttypes() {
        echo "</td>\n";
        echo "<td class=td_smd>";
        // cellbutton(null, "object_delete_$j", "delete", "index.php?action=show&operation=delete&object=objecttype&ID=$ID&name=$name");
-       button_with_confirm("object_delete_$j", "delete", "delete", "index.php?action=show&operation=delete&object=objecttype&ID=$ID&name=$name", 
+       button_with_confirm("object_delete_$j", "Delete", "delete", "index.php?action=show&operation=delete&object=objecttype&ID=$ID&name=$name", 
                            "index.php?action=show&object=object");
        echo "</td>\n";
        echo "<td class=td_smd>";
@@ -1587,7 +1587,7 @@ _END;
    echo "</td></tr>\n";
    echo '<tr><th>Description</th>';
    echo '<td><input type="text" name="description" size=' . DAF_OBJECTTYPE_DESCRIPTION_LEN . '" maxlength="' . DAF_OBJECTTYPE_DESCRIPTION_LEN . '" ' .
-        'dojoType="dijit.form.ValidationTextBox" style="width:100%" regExp=".{1,' . DAF_OBJECTTYPE_DESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter Object Type description" ' . 
+        'dojoType="dijit.form.ValidationTextBox" style="width:50em" regExp=".{1,' . DAF_OBJECTTYPE_DESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter Object Type description" ' . 
         'invalidMessage="Invalid Object Type description (must be 1 to ' . DAF_OBJECTTYPE_DESCRIPTION_LEN . ' characters)"/>';  
    echo "</td></tr>\n";
    echo "<tr><th>Parent Object Type</th><td><select name=\"parentid\"/>\n";
@@ -1734,6 +1734,7 @@ _END;
          selectorID("daf.objecttype", "Name", $row[$i]);
          echo "</select></td>";  
       } else if ($fieldname == "Name") {
+      	 $originalname = $row[$i];
          echo '<th>Name</th>';
          echo '<td><input type="text" name="name" value="' . $row[$i] . '" size="' . DAF_OBJECTTYPE_LEN . '" maxlength="' . DAF_OBJECTTYPE_LEN . '" ' .
               'dojoType="dijit.form.ValidationTextBox" style="width: ' . DAF_OBJECTTYPE_LEN . 'em;" regExp="[A-Za-z0-9_]{1,' . DAF_OBJECTTYPE_LEN . '}" required="true" trim="true" promptMessage="Enter name of Object Type" ' . 
@@ -1741,7 +1742,7 @@ _END;
       } else if ($fieldname == "Description") {
          echo '<th>Description</th>';
          echo '<td><input type="text" name="description" value="' . $row[$i] . '" size=' . DAF_OBJECTTYPE_DESCRIPTION_LEN . '" maxlength="' . DAF_OBJECTTYPE_DESCRIPTION_LEN . '" ' .
-              'dojoType="dijit.form.ValidationTextBox" style="width:100%" regExp=".{1,' . DAF_OBJECTTYPE_DESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter Object Type description" ' . 
+              'dojoType="dijit.form.ValidationTextBox" style="width:50em" regExp=".{1,' . DAF_OBJECTTYPE_DESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter Object Type description" ' . 
               'invalidMessage="Invalid Object Type description (must be 1 to ' . DAF_OBJECTTYPE_DESCRIPTION_LEN . ' characters)"/>';  
       }
       echo "</tr>\n";
@@ -1981,7 +1982,7 @@ function show_objects($objecttype) {
           echo "</td>\n";
           echo "<td class=td_smd>";
           // cellbutton(null, "objecttype_delete_$j", "delete", "index.php?action=show&operation=delete&object=object&objecttype=" . $objecttype . "&ID=$ID&name=$name");
-          button_with_confirm("objecttype_delete_$j", "delete", "index.php?action=show&operation=delete&object=object&objecttype=" . $objecttype . "&ID=$ID&name=$name", 
+          button_with_confirm("objecttype_delete_$j", "Delete", "delete", "index.php?action=show&operation=delete&object=object&objecttype=" . $objecttype . "&ID=$ID&name=$name", 
                               "index.php?action=show&object=object&objecttype=" . $objecttype);
           echo "</td>\n";
        
@@ -2067,7 +2068,7 @@ _END;
         'invalidMessage="Invalid Objec Type (must be 1 to ' . DAF_OBJECT_LEN . ' alphanumeric characters)"/>';
    echo "</td></tr>\n";
    echo '<tr><th>Comments</th><td><input type="text" name="comments" size=' . DAF_OBJECT_COMMENTS_LEN . '" maxlength="' . DAF_OBJECT_COMMENTS_LEN . '" ' .
-        'dojoType="dijit.form.ValidationTextBox" style="width:100%;" regExp=".{1,' . DAF_OBJECT_COMMENTS_LEN . '}" required="true" trim="true" promptMessage="Enter Object comments" ' . 
+        'dojoType="dijit.form.ValidationTextBox" style="width:50em;" regExp=".{1,' . DAF_OBJECT_COMMENTS_LEN . '}" required="true" trim="true" promptMessage="Enter Object comments" ' . 
         'invalidMessage="Invalid Object comments (must be 1 to ' . DAF_OBJECT_COMMENTS_LEN . ' characters)"/>';
    echo "<td></tr>\n";
    echo "<tr><th>Object Type</th><td>" . $objecttype . "<td></tr>\n";
@@ -2253,7 +2254,7 @@ _END;
       } else if ($fieldname == "Comments") {
          echo "<th>Comments</th>";
          echo '<td><input type="text" value="' . $row[$i] . '" name="' . strtolower($fieldname) . '" ' .
-              'dojoType="dijit.form.ValidationTextBox" style="width:100%;" regExp=".{1,' . DAF_OBJECT_COMMENTS_LEN . '}" required="true" trim="true" promptMessage="Enter Object comments" ' . 
+              'dojoType="dijit.form.ValidationTextBox" style="width:50em;" regExp=".{1,' . DAF_OBJECT_COMMENTS_LEN . '}" required="true" trim="true" promptMessage="Enter Object comments" ' . 
               'invalidMessage="Invalid Object comments (must be 1 to ' . DAF_OBJECT_COMMENTS_LEN . ' characters)"/></td>';
       } else if ($objectattribute_types[$fieldname]['Type'] == "varchar") {
          $vw = $objectattribute_types[$fieldname]['Varcharwidth'];
@@ -2307,15 +2308,15 @@ _END;
  
 function query_object() {
 
-echo <<<_END
-   <script>
-      dojo.ready(function() {    
-         selectObjectAttributes('objecttypesel')        
-       });
-   </script>
-_END;
+// echo <<<_END
+//    <script>
+//       dojo.ready(function() {    
+//          selectObjectAttributes('objecttypesel')        
+//        });
+//    </script>
+// _END;
 
-   $objecttype = "cluster";  /* <<<<<<<<<<<< */
+//    $objecttype = "cluster";  /* <<<<<<<<<<<< */
 
    $fieldnames = get_object_field_names($objecttype);    /* this returns  Array = ("ID", "ParentID", "Name", "Comments, ....); */
                                                          /* all objects have ID, ParentID, Name and Comments as attributes, and may */
@@ -2534,6 +2535,14 @@ function objectattributetype($gp) {
             add_error_message("DAFE0078: Cannot create object attribute type " . $gp['name'] . " because an object attribute type of that name already exists");
              
          } else {
+         	
+         	if (! isset($gp['varcharwidth'])) {
+         		$gp['varcharwidth'] = 10;
+         	}
+         	
+         	if (! isset($gp['enumvalues'])) {
+         		$gp['enumvalues'] = 'none';
+         	}
 
             $query = "INSERT INTO daf.objectattributetype (Name, ObjecttypeID, Type, Varcharwidth, Enumvalues) " .
                      "VALUES('" . ucfirst(strtolower($gp['name'])) . "','" . $gp['objecttypeid'] . "','" . $gp['type'] . "','" . $gp['varcharwidth'] . "','" . $gp['enumvalues'] . "')";              
@@ -2562,7 +2571,7 @@ function objectattributetype($gp) {
       } else if ($gp['operation'] === "modify") {
       
             
-         if ((count_rows("daf." . $gp['objectattributetype'], "Name = '" . $gp['name'] . "'") > 0) && ($gp['name'] != $gp['originalname'])) {
+         if ((count_rows("daf.objectattributetype", "Name = '" . $gp['name'] . "'") > 0) && ($gp['name'] != $gp['originalname'])) {
           
             add_error_message("DAFE0080: Cannot modify Object name to " . $gp['name'] . " because an Object with that name already exists");
       
@@ -2730,7 +2739,7 @@ function show_objectattributetypes() {
           echo "</td>\n";
           echo "<td class=td_smd>";
           // cellbutton(null, "objectattributetypes_delete_$j", "delete", "index.php?action=show&operation=delete&object=objectattributetype&ID=$ID&name=$name&objecttypename=$objecttypename");
-          button_with_confirm("objectattributetypes_delete_$j", "delete", "index.php?action=show&operation=delete&object=objectattributetype&ID=$ID&name=$name&objecttypename=$objecttypename", 
+          button_with_confirm("objectattributetypes_delete_$j", "Delete", "delete", "index.php?action=show&operation=delete&object=objectattributetype&ID=$ID&name=$name&objecttypename=$objecttypename", 
                               "index.php?action=show&objectattribytetype");
           echo "</td>\n";
        
@@ -2805,10 +2814,10 @@ _END;
    echo "<caption class=\"cap1\"><div>Create an Object Attribute Type</div></caption>\n";
 
    echo '<tr><th>Name</th>';
-   echo '<td><input type="text" name="name" size=' . DAF_OBJECTATTRIBUTETYPE_LEN . '" maxlength="' . DAF_OBJECTATTRIBUTETYPE_LEN . '" ' .
+   echo '<td><input type="text" name="name" size="' . DAF_OBJECTATTRIBUTETYPE_LEN . '" maxlength="' . DAF_OBJECTATTRIBUTETYPE_LEN . '" ' .
         'dojoType="dijit.form.ValidationTextBox" style="width: ' . DAF_OBJECTATTRIBUTETYPE_LEN . 'em;" regExp="[A-Za-z0-9_]{1,' . DAF_OBJECTATTRIBUTETYPE_LEN . '}" required="true" trim="true" promptMessage="Enter name of Object Attribute Type" ' . 
         'invalidMessage="Invalid Attribute Object Type (must be 1 to ' . DAF_OBJECTATTRIBUTETYPE_LEN . ' alphanumeric characters)"/></td>';
-   echo "</td></tr>\n";
+   echo "</tr>\n";
    echo "<tr><th>Object Type</th><td><select name=\"objecttypeid\"/>\n";
    selectorID("daf.objecttype", "Name", $objecttypeID);
    echo "</select></td></tr>\n";
@@ -2817,9 +2826,10 @@ _END;
    echo "<option          value=\"enum\">enum</option>\n";
    echo "</select></td></tr>\n";
    echo '<tr><th id="val1">Varchar width</th>';
-   echo '<td id="td1"><input id="inp1" type="text" name="varcharwidth" /></td>';
- //  echo '<td><input id="inp1" type="text" name="varcharwidth" ' .
-  //      'dojoType="dijit.form.ValidationTextBox" regExp="\d+" required="true" trim="true" promptMessage="Enter varchar field with for Object Attribute Type" ' . 
+   echo '<td><input id="inp1" type="text" name="varcharwidth" /></td>';
+    
+   //echo '<td><input id="inp1" type="text" name="varcharwidth" ' .
+   //     'dojoType="dijit.form.ValidationTextBox" regExp="\d+" required="true" trim="true" promptMessage="Enter varchar field with for Object Attribute Type" ' . 
    //     'invalidMessage="Invalid Object Attribute Varchar width (must be a decimal number)"/></td>';
    echo "</tr>\n";
 
@@ -2981,7 +2991,7 @@ _END;
          $originalname = $row[$i];
          echo '<th>Name</th>';
          echo '<td><input type="text" name="name" value="' . $row[$i] . '" size=' . DAF_OBJECTATTRIBUTETYPE_LEN . '" maxlength="' . DAF_OBJECTATTRIBUTETYPE_LEN . '" ' .
-              'dojoType="dijit.form.ValidationTextBox" style="width: ' . DAF_OBJECTATTRIBUTETYPE_LEN . 'em;" regExp="[A-Za-z0-9_]{1,' . DAF_OBJECTATTRIBUTETYPE_LEN . '}" required="true" trim="true" promptMessage="Enter the Object Attribute Type name" ' . 
+              'dojoType="dijit.form.ValidationTextBox" style="width: 50em;" regExp="[A-Za-z0-9_]{1,' . DAF_OBJECTATTRIBUTETYPE_LEN . '}" required="true" trim="true" promptMessage="Enter the Object Attribute Type name" ' . 
               'invalidMessage="Invalid Attribute Object Type (must be a 1 to ' . DAF_OBJECTATTRIBUTETYPE_LEN . ' alphanumeric characters)"/></td>';
       } else if ($i == $objecttypeIDindex) {
          echo '<th>Object Type</th>';
@@ -2995,12 +3005,12 @@ _END;
          if ($row[$i] == "varchar") {
             echo "<tr><th>Varchar width</th>";
             echo '<td><input type="text" name="varcharwidth" value="' . $row[$varcharwidthindex] . '" size="10" maxlength="10" ' .
-                 'dojoType="dijit.form.ValidationTextBox" style="width: ' . DAF_OBJECTATTRIBUTETYPE_VARCHARWIDTH_LEN . 'em;" regExp="\d{1,' . DAF_OBJECTATTRIBUTETYPE_VARCHARWIDTH_LEN . '}" required="true" trim="true" promptMessage="Enter character width of Object Attribute Type" ' . 
+                 'dojoType="dijit.form.ValidationTextBox" style="width: 50em;" regExp="\d{1,' . DAF_OBJECTATTRIBUTETYPE_VARCHARWIDTH_LEN . '}" required="true" trim="true" promptMessage="Enter character width of Object Attribute Type" ' . 
                  'invalidMessage="Invalid Attribute Object Type (must be a decimal number greater than 0)"/></td>' . "\n";
          } else {         
             echo "<tr><th>Enum values</th>";
-            echo '<td><input type="text" name="enumvalues" value="' . $row[$ienumvaluesindex] . '" size=' . DAF_OBJECTATTRIBUTETYPE_ENUMVALUES_LEN . '" maxlength="' . DAF_OBJECTATTRIBUTETYPE_ENUMVALUES_LEN . '" ' .
-                 'dojoType="dijit.form.ValidationTextBox" style="width: ' . DAF_OBJECTATTRIBUTETYPE_ENUMVALUES_LEN . 'em;" regExp="(\'.+\',)*\'.+\'?" required="true" trim="true" promptMessage="Enter list of comma separated, quote delimited values, eg \'red\',\'green\',\'blue\'" ' . 
+            echo '<td><input type="text" name="enumvalues" value="' . $row[$enumvaluesindex] . '" size=' . DAF_OBJECTATTRIBUTETYPE_ENUMVALUES_LEN . '" maxlength="' . DAF_OBJECTATTRIBUTETYPE_ENUMVALUES_LEN . '" ' .
+                 'dojoType="dijit.form.ValidationTextBox" style="width: 53em;" regExp="(\'.+\',)*\'.+\'?" required="true" trim="true" promptMessage="Enter list of comma separated, quote delimited values, eg \'red\',\'green\',\'blue\'" ' . 
                  'invalidMessage="Invalid Attribute Object Type (must be 1 to ' . DAF_OBJECTATTRIBUTETYPE_ENUMVALUES_LEN . ' characters in a list of comma separated, quote delimited values, eg \'red\',\'green\',\'blue\')"/></td>' . "\n";
          }
       }
@@ -3015,6 +3025,7 @@ _END;
    echo '<input type="hidden" name="operation" value="modify" />' . "\n";
    echo '<input type="hidden" name="ID"        value="' . $ID .'" />' . "\n";
    echo '<input type="hidden" name="originalname" value="' . $originalname .'" />' . "\n";
+   echo '<input type="hidden" name="type"    value="' . $type . '" />' . "\n";
    cellbutton(null, "objectattributetype_cancel", "Cancel", "index.php?object=objectattributetype&action=show&ID=$ID", null);
 
    echo "</div>\n";

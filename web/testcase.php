@@ -222,7 +222,7 @@ _END;
    echo "</td></tr>\n";
    echo '<tr><th>Description</th>';
    echo '<td><input type="text" name="description" size=' . DAF_TESTCASE_DESCRIPTION_LEN . '" maxlength="' . DAF_TESTCASE_DESCRIPTION_LEN . '" ' .
-        'dojoType="dijit.form.ValidationTextBox" style="width:100%" regExp=".{1,' . DAF_TESTCASE_DESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Testcase description" ' . 
+        'dojoType="dijit.form.ValidationTextBox" style="width:50em" regExp=".{1,' . DAF_TESTCASE_DESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Testcase description" ' . 
         'invalidMessage="Invalid Testcase description (must be 1 to ' . DAF_TESTCASE_DESCRIPTION_LEN . ' characters)"/>';
    echo "</td></tr>\n";
    echo "</table>\n";
@@ -397,7 +397,7 @@ _END;
       } else if ($fieldname == "Description") {
          echo '<th>Description</th>';
          echo '<td><input type="text" name="description" value="' . $row[$i] . '" size=' . DAF_TESTCASE_DESCRIPTION_LEN . '" maxlength="' . DAF_TESTCASE_DESCRIPTION_LEN . '" ' .
-              'dojoType="dijit.form.ValidationTextBox" style="width:100%" regExp=".{1,' . DAF_TESTCASE_DESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Testcase description" ' . 
+              'dojoType="dijit.form.ValidationTextBox" style="width:50em" regExp=".{1,' . DAF_TESTCASE_DESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Testcase description" ' . 
               'invalidMessage="Invalid Testcase description (must be 1 to ' . DAF_TESTCASE_DESCRIPTION_LEN . ' characters)"/></td>';
       }
       echo '</tr>';

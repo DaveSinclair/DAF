@@ -50,8 +50,8 @@ typedef struct thread_return_code
 typedef struct thread_workitem
 {
     char    signature[sizeof(THREAD_WORK_ITEM_SIGNATURE)];
-    BOOL    active;
-    BOOL    terminated;
+    bool_t    active;
+    bool_t    terminated;
     HTHREAD thread;                            // the thread handle, as created in the
     // create_thread() routine
     int threadnum;                             // a tag, identifying this thread - each new
@@ -80,7 +80,7 @@ typedef struct response_monitor_wrk
 typedef struct background_cmd_wrk
 {
     char cmd[MAX_SYSTEM_CMD_LEN];
-    BOOL quiet;
+    bool_t quiet;
     thread_workitem_t *pthread_workitem;
     int this_tag;
 } background_cmd_wrk_t;
@@ -102,10 +102,10 @@ float time_sub_secs(time_control_t *ptimer1, float seconds, time_control_t *ptim
 
 int run_system_cmd_and_print_all_output(char *cmd);
 int run_system_cmd_and_print_single_line_output(char *cmd, char *output, int max_output_line_length);
-int run_system_cmd(char *cmd, BOOL quiet);
+int run_system_cmd(char *cmd, bool_t quiet);
 int run_system_cmd_in_background(char *cmd);
 
-void initialise_thread_workitem( thread_workitem_t *thread_workitem, int threadnum, int num_trace_entries, BOOL reinitialise);
+void initialise_thread_workitem( thread_workitem_t *thread_workitem, int threadnum, int num_trace_entries, bool_t reinitialise);
 void deinitialise_thread_workitem( thread_workitem_t *pthread_workitem);
 void check_thread_workitem( thread_workitem_t *thread_workitem, char *msg );
 
@@ -129,9 +129,9 @@ TID  thread_ID           (void );
 
 DWORD init_thread_environment( void );
 
-void sleep_for_seconds( int seconds, volatile BOOL *pexiting_flag);
-void sleep_for_milliseconds( int milliseconds, volatile BOOL *pexiting_flag);
-void sleep_for_microseconds(int microseconds, volatile BOOL *pexiting_flag);
+void sleep_for_seconds( int seconds, volatile bool_t *pexiting_flag);
+void sleep_for_milliseconds( int milliseconds, volatile bool_t *pexiting_flag);
+void sleep_for_microseconds(int microseconds, volatile bool_t *pexiting_flag);
 
 Iu32 get_timestamp( void );
 

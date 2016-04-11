@@ -23,9 +23,9 @@ void print_string_to_console(char *text);
 void print_msg_to_console(char *text);
 void print_msg_to_console_log(char *text);
 void print_errmsg_to_console(char *text);
-int open_consolelog(char *console_log_filename);
+int open_consolelog(char *console_log_filename, bool_t quiet);
 int close_consolelog(void);
-int log_msg_to_scenario_console_log(char *agent_log_pathname, char *prefix, char *msg, BOOL add_newline);
+int log_msg_to_scenario_console_log(char *agent_log_pathname, char *prefix, char *msg, bool_t add_newline);
 
 
 int ensure_directory_path_exists(char *pathname);
@@ -41,13 +41,19 @@ int run_system_cmd_and_print_all_output(char *cmd);
 int run_system_cmd_and_capture_single_line_output(char *cmd,
         char *output,
         int max_output_line_length);
-int run_system_cmd(char *cmd, BOOL quiet);
+int run_system_cmd(char *cmd, bool_t quiet);
 int run_system_cmd_in_background(char *cmd);
 
 
 pid_t get_process_pid();
 void chomp(char *mystring);
 int set_ulimit_c_unlimited(char *errmsg, int max_errmsg_len);
+
+void split_namevalue_parameter(char *namevalue,
+		                       char *name,
+							   int name_len,
+							   char *value,
+							   int value_len);
 
 
 #endif

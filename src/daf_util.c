@@ -405,7 +405,7 @@ void print_string_to_console(char *text)
            stream and re-open it */
 
         close_consolelog();
-        open_consolelog(NULL);
+        open_consolelog(NULL, FALSE);
     }
 
     printf("%s", text );
@@ -455,7 +455,7 @@ void print_msg_to_console(char *text)
            stream and re-open it */
 
         close_consolelog();
-        open_consolelog(NULL);
+        open_consolelog(NULL, FALSE);
     }
 
     time_msg(time_string, sizeof(time_string));
@@ -506,7 +506,7 @@ void print_msg_to_console_log(char *text)
            stream and re-open it */
 
         close_consolelog();
-        open_consolelog(NULL);
+        open_consolelog(NULL, FALSE);
     }
 
     time_msg(time_string, sizeof(time_string));
@@ -534,6 +534,8 @@ void print_msg_to_console_log(char *text)
 /*              will also be written to this file too                   */
 /*                                                                      */
 /* PARAMS IN:   console_log_filename   the name of the file to be opened*/
+/*              quiet                  if TRUE, informational messages  */
+/*                                     are not printed to stdout        */
 /*                                                                      */
 /* PARAMS OUT:  none                                                    */
 /*                                                                      */
@@ -543,7 +545,7 @@ void print_msg_to_console_log(char *text)
 /*                                                                      */
 /*----------------------------------------------------------------------*/
 
-int open_consolelog(char *console_log_filename)
+int open_consolelog(char *console_log_filename, bool_t quiet)
 {
     char msg[MAX_MSG_LEN];
 
@@ -560,10 +562,12 @@ int open_consolelog(char *console_log_filename)
         return(1);
     }
 
-    fprintf(console_log_fptr, "%s console log file opened\n", saved_console_log_filename );
-    sprintf(msg, "console log filename successfully opened: %s\n",
-            saved_console_log_filename);
-    print_msg_to_console(msg);
+    if (! quiet) {
+       fprintf(console_log_fptr, "%s console log file opened\n", saved_console_log_filename );
+       sprintf(msg, "console log filename successfully opened: %s\n",
+               saved_console_log_filename);
+       print_msg_to_console(msg);
+    }
     return(0);
 
 }
@@ -601,7 +605,7 @@ int close_consolelog(void)
 
 
 
-int log_msg_to_scenario_console_log(char *agent_log_pathname, char *prefix, char *msg, BOOL add_newline)
+int log_msg_to_scenario_console_log(char *agent_log_pathname, char *prefix, char *msg, bool_t add_newline)
 {
 
     FILE *agent_console_log_fptr;
@@ -1145,7 +1149,7 @@ int run_system_cmd_and_capture_single_line_output(char *cmd,
 /*              system command.                                           */
 /**************************************************************************/
 
-int run_system_cmd(char *cmd, BOOL quiet)
+int run_system_cmd(char *cmd, bool_t quiet)
 {
     int rc;
     int signal = 0;
@@ -1510,5 +1514,43 @@ int set_ulimit_c_unlimited(char *errmsg, int max_errmsg_len)
 #else
 #error Cannot compile, unknown target OS - define AIX, LINUX, MACOSX, LINUX_PPC64, SOLARIS, HPUX, WIN32
 #endif
+
+}
+
+void split_namevalue_parameter(char *namevalue,
+		                       char *name,
+							   int name_len,
+							   char *value,
+							   int value_len) {
+
+   int i = 0;
+   int j = 0;
+   int k = 0;
+
+   char separater = '=';
+
+   bool_t inName = TRUE;
+
+   while (i < strlen(namevalue)) {
+
+	   if (namevalue[i] == separater) {
+		   inName = FALSE;
+	   } else {
+		   if (inName) {
+			   if (j<(name_len-1)) {
+				 name[j++] = namevalue[i];
+			   }
+		   } else {
+			   if (k<(value_len-1)) {
+				  value[k++] = namevalue[i];
+			   }
+		   }
+	   }
+	   i++;
+
+   }
+
+   name[j] = 0;
+   value[k] = 0;
 
 }

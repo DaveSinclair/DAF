@@ -400,8 +400,8 @@ int add_cmd_log_entry(cmd_log_object_t *cmd_log_object,
     int           i = 0;
     int           j = 0;
     Iu32          oldest_completed_time = 0xffffffff;
-    BOOL          found = FALSE;
-    BOOL          foundcompleted = FALSE;
+    bool_t          found = FALSE;
+    bool_t          foundcompleted = FALSE;
     int           rc = 0;
 
     lock_cmd_log(cmd_log_object, SUBNAME);
@@ -1726,9 +1726,6 @@ bool_t client_remote_client_execute_cmd_1_svc(remote_client_execute_cmd_args  *a
                p = p->next;
             }
 
-            snprintf(msg, sizeof(msg), "%s: Running %s with shell \n", SUBNAME, args->cmdstring);
-            printf(msg);
-
             rc = system(args->cmdstring);
 
             snprintf(prefix, sizeof(prefix), "Completed: tag=%u, ", args->tag);
@@ -1780,9 +1777,6 @@ bool_t client_remote_client_execute_cmd_1_svc(remote_client_execute_cmd_args  *a
             }
 
             testcasename[i] = 0;
-
-            snprintf(msg, sizeof(msg), "%s: Running %s with /bin/sh \n", SUBNAME, args->cmdstring);
-            printf(msg);
 
             rc = execle("/bin/sh", "sh", "-c", args->cmdstring, NULL, &envp);
 
@@ -2186,6 +2180,238 @@ bool_t client_remote_client_run_cmd_1_svc(remote_client_run_cmd_args  *args,
 
 }
 
+#ifndef DAF_AGENT
+
+/*--------------------------------------------------------------------------------------------------------*/
+/*                                                                                                        */
+/* PROCEDURE:  client_remote_client_start_scenario_1_svc                                                  */
+/*                                                                                                        */
+/*             rqstp                                                                                      */
+/*                                                                                                        */
+/*                                                                                                        */
+/* PARAMS OUT: none                                                                                       */
+/*                                                                                                        */
+/* RETURNS:    remote_client_start_scenario_res                                                           */
+/*                                                                                                        */
+/* FUNCTION:                                                                                              */
+/*                                                                                                        */
+/*                                                                                                        */
+/*                                                                                                        */
+/*                                                                                                        */
+/*                                                                                                        */
+/*--------------------------------------------------------------------------------------------------------*/
+
+bool_t client_remote_client_start_scenario_1_svc(remote_client_start_scenario_args  *args,
+		remote_client_start_scenario_res   *result,
+        struct svc_req                    *rqstp)
+{
+
+#undef  SUBNAME
+#define SUBNAME "client_remote_client_start_scenario_1_svc"
+
+    char   msg[MAX_MSG_LEN];
+    char   errmsg[MAX_MSG_LEN];
+    int    rc = 0;
+
+    char query[2048];
+    int testerID;
+    int scenarioID;
+    int scenarioresultID;
+    int testlevelID;
+    int teststandID;
+    int teststandrecordID;
+    int testlevelrecordID;
+    int num_actions_in_scenario;
+    MYSQL *sql_connection;
+
+    char status_database_name[100]; // TODO
+    char status_table_name[100];   // TODO
+    char loglocation[100];  // TODO
+
+    if (args->msglevel > 2)
+    {
+        snprintf(msg, sizeof(msg), "%s: started:\n", SUBNAME);
+        print_msg_to_console(msg);
+    }
+
+    memset(result, 0, sizeof(*result));   /* implicitly sets result->status = 0;  */
+
+    result->remote_client_start_scenario_res_u.outcome.valid_start_scenario = REMOTE_START_SCENARIO_OK;
+    result->remote_client_start_scenario_res_u.outcome.errmsg = duplicate_string("no error");
+
+    // here we need to kick off the scenario
+    snprintf(msg, sizeof(msg), "-------------------Start scenario requested: Project: %s, Phase: %s, Scenario: %s, loglocation: %s, scenariologfile: %s, teststand: %s, level:%s\n",
+    		 args->project, args->phase, args->jobname, args->loglocation, args->scenariologfile, args->teststand, args->testlevel);
+    print_string_to_console(msg);
+
+    determine_status_database_name(args->project, args->phase, status_database_name, sizeof(status_database_name));
+
+    sql_connection = do_connect(SUBNAME,
+                                sql_server.sql_servername,
+                                sql_server.sql_username,
+                                sql_server.sql_password,
+                                "daf",
+                                sql_server.sql_port,
+								sql_server.sql_socketname,
+                                0,
+							    errmsg,
+							    sizeof(errmsg));
+
+    if (sql_connection != NULL) {
+
+       // need to check return code - TODO
+
+  //     rc = lookupID(sql_connection, "user", args->username, &testerID, errmsg, sizeof(errmsg));
+    	//TODO
+    	testerID = 1;
+
+       if (rc == 0) {
+          if ((rc = lookupID(sql_connection, "scenario", args->jobname, &scenarioID, errmsg, sizeof(errmsg))) != 0) {
+        	  snprintf(msg, sizeof(msg), "lookupID for scenario failed (rc=%d) - %s\n", rc, errmsg);
+        	  print_msg_to_console(msg);
+        	  result->remote_client_start_scenario_res_u.outcome.errmsg = duplicate_string(msg);
+          }
+          if (scenarioID == 0) {
+        	  snprintf(msg, sizeof(msg), "scenario ID not found for scenario %s\n", args->jobname);
+        	  print_msg_to_console(msg);
+        	  result->remote_client_start_scenario_res_u.outcome.errmsg = duplicate_string(msg);
+        	  rc = 1;
+          }
+       }
+       if (rc == 0) {
+    	   if ((rc = lookupID(sql_connection, "testlevel", args->testlevel, &testlevelID, errmsg, sizeof(errmsg))) != 0) {
+         	  snprintf(msg, sizeof(msg), "lookupID for testlevel failed (rc=%d) - %s\n", rc, errmsg);
+         	  print_msg_to_console(msg);
+        	  result->remote_client_start_scenario_res_u.outcome.errmsg = duplicate_string(msg);
+           }
+           if (testlevelID == 0) {
+     	      snprintf(msg, sizeof(msg), "testlevel ID not found for testlevel %s\n", args->testlevel);
+     	      print_msg_to_console(msg);
+        	  result->remote_client_start_scenario_res_u.outcome.errmsg = duplicate_string(msg);
+     	      rc = 1;
+           }
+       }
+       if (rc == 0) {
+    	   if ((rc = lookupID(sql_connection, "teststand", args->teststand, &teststandID, errmsg, sizeof(errmsg))) != 0) {
+         	  snprintf(msg, sizeof(msg), "lookupID for teststand failed (rc=%d) - %s\n", rc, errmsg);
+         	  print_msg_to_console(msg);
+        	  result->remote_client_start_scenario_res_u.outcome.errmsg = duplicate_string(msg);
+           }
+           if (teststandID == 0) {
+     	      snprintf(msg, sizeof(msg), "teststand ID not found for teststand %s\n", args->teststand);
+     	      print_msg_to_console(msg);
+        	  result->remote_client_start_scenario_res_u.outcome.errmsg = duplicate_string(msg);
+     	      rc = 1;
+           }
+       }
+
+       if (rc == 0) {
+		   // TODO Scenario and Jobname both exist - should they be the same ?
+		   determine_status_table_name(status_database_name, "scenarioresult", status_table_name, sizeof(status_table_name));
+		   snprintf(query, sizeof(query), "INSERT INTO %s (Project, Phase, Scenarioname, Jobname, Teststand, Testlevel, Tester, Comments, State, Scenariologfilename) "
+										  "VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')",
+										  status_table_name, args->project, args->phase, args->jobname, args->jobname, args->teststand, args->testlevel, args->username, args->comments, "Initialised",  args->scenariologfile);
+		   if ((scenarioresultID = perform_insert_from_query_string(SUBNAME, sql_connection, query, errmsg, sizeof(errmsg))) == 0) {
+			  snprintf(msg, sizeof(msg), "insert of %s table failed\n", status_table_name);
+			  print_msg_to_console(msg);
+        	  result->remote_client_start_scenario_res_u.outcome.errmsg = duplicate_string(msg);
+			  rc = 1;
+		   }
+       }
+
+       if (rc == 0) {
+		   determine_status_table_name(status_database_name, "testlevelrecord", status_table_name, sizeof(status_table_name));
+		   snprintf(query, sizeof(query), "INSERT INTO %s (ScenarioresultID, Name) "
+										  "VALUES('%d','%s')",
+										  status_table_name, scenarioresultID, args->testlevel);
+		   if ((testlevelrecordID = perform_insert_from_query_string(SUBNAME, sql_connection, query, errmsg, sizeof(errmsg))) == 0) {
+			  snprintf(msg, sizeof(msg), "insert of %s table failed\n", status_table_name);
+			  print_msg_to_console(msg);
+        	  result->remote_client_start_scenario_res_u.outcome.errmsg = duplicate_string(msg);
+			  rc = 1;
+		   }
+       }
+
+       if (rc == 0) {
+		   determine_status_table_name(status_database_name, "teststandrecord", status_table_name, sizeof(status_table_name));
+		   snprintf(query, sizeof(query), "INSERT INTO %s (ScenarioresultID, Name) "
+										  "VALUES('%d','%s')",
+										  status_table_name, scenarioresultID, args->teststand);
+		   if ((teststandrecordID = perform_insert_from_query_string(SUBNAME, sql_connection, query, errmsg, sizeof(errmsg))) == 0) {
+			  snprintf(msg, sizeof(msg), "insert of %s table failed\n", status_table_name);
+			  print_msg_to_console(msg);
+        	  result->remote_client_start_scenario_res_u.outcome.errmsg = duplicate_string(msg);
+			  rc = 1;
+		   }
+       }
+
+       if (rc == 0) {
+		   num_actions_in_scenario = count_actions_in_scenario(sql_connection, scenarioID);
+
+		   snprintf(msg, sizeof(msg), "num_actions_in_scenario = %d, scenarioID = %d\n", num_actions_in_scenario, scenarioID);
+		   print_msg_to_console(msg);
+		//   $logdirectory = $gp['logdirectory'];
+		//       $loglocation = $logdirectory . '/' . 'scenario_' . $scenarioresultID . '_' . make_legal_filename($gp['jobname'], 32);
+		   snprintf(loglocation, sizeof(loglocation), "%s/scenario_%d_%s", args->loglocation, scenarioresultID, args->jobname);               // TODO = what about windows? what about odd chars in args->jobname ?
+	       determine_status_table_name(status_database_name, "scenarioresult", status_table_name, sizeof(status_table_name));
+		   snprintf(query, sizeof(query), "UPDATE %s SET Loglocation = '%s', TeststandrecordID = '%d', "
+										  "TestlevelrecordID = '%d', Actionsinscenario = '%d' WHERE ID='%d'",
+										  status_table_name, loglocation, teststandrecordID, testlevelrecordID, num_actions_in_scenario, scenarioresultID);
+		   if (perform_query(SUBNAME, sql_connection, query) != 0)      // we are not doing an audit log update !
+		   {
+			   snprintf(msg, sizeof(msg), "update of of %s table failed\n", status_table_name);
+			   print_msg_to_console(msg);
+	           result->remote_client_start_scenario_res_u.outcome.errmsg = duplicate_string(msg);
+			   rc = 1;
+		   }
+
+		   // Handle UDP here - assemble a string containing any user supplied parameters
+	        parameterlist p = args->parameters;
+	        char userDefinedParameters[DAF_PARAMETERS_LEN];
+	        safecpy(userDefinedParameters, "", sizeof(userDefinedParameters));
+	        while (p != NULL) {
+	            safecat(userDefinedParameters, p->name, sizeof(userDefinedParameters));
+	            safecat(userDefinedParameters, "=", sizeof(userDefinedParameters));
+	            safecat(userDefinedParameters, p->value, sizeof(userDefinedParameters));
+	            p = p->next;
+	            if (p !=NULL) {
+	               safecat(userDefinedParameters, " ", sizeof(userDefinedParameters));
+	            }
+	        }
+
+	       if (rc == 0) {
+	    	   snprintf(query, sizeof(query), "INSERT INTO daf.workrequest(Project, Phase, RequestType, TesterID, Tablename1, ObjectID1, Tablename2, ObjectID2, Tablename3, ObjectID3, Tablename4, ObjectID4, Description1, Description1Type, Logdirectory, Scenariologfilename) "
+	           	    	                      "VALUES('%s','%s','Scenario','%d','scenario','%d','scenarioresult','%d','testlevel','%d','teststand','%d','%s','UserDefinedParameters', '%s','%s')",
+				    					      args->project, args->phase, testerID, scenarioID, scenarioresultID, testlevelID, teststandID, userDefinedParameters, args->loglocation, args->scenariologfile);
+	           if (perform_insert_from_query_string(SUBNAME, sql_connection, query, errmsg, sizeof(errmsg)) == 0) {
+	        	   rc = 1;
+	           }
+	       }
+       }
+
+       do_disconnect(SUBNAME, sql_connection);
+
+    } else {
+
+	   snprintf(msg, sizeof(msg), "could not connect to SQL datbase\n");
+	   print_msg_to_console(msg);
+ 	   result->remote_client_start_scenario_res_u.outcome.errmsg = duplicate_string(msg);
+	   rc = 1;
+
+    }
+
+	snprintf(msg, sizeof(msg), "client_remote_client_start_scenario_1_svc completed (rc= %d)\n", rc);
+	print_msg_to_console(msg);
+
+	if (rc != 0) {
+	   result->remote_client_start_scenario_res_u.outcome.valid_start_scenario = REMOTE_START_SCENARIO_FAILED;
+	}
+    result->status = REMOTE_CLIENT_OK;
+    return (TRUE);
+
+}
+
+#endif
 
 /*--------------------------------------------------------------------------------------------------------*/
 /*                                                                                                        */
@@ -3848,7 +4074,7 @@ void *zombie_reaper(void *p)
     int                     statuslocation;
     int                     rc;
     af_daemon_thread_data_t *p_af_daemon_thread_data;
-    BOOL                    complete_this;
+    bool_t                    complete_this;
 
     typedef struct completion_request
     {

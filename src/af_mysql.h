@@ -42,6 +42,8 @@ int perform_update(char *caller,
                    char  *errmsg,
                    int   max_msg_len);
 
+int perform_insert_from_query_string(char *caller, MYSQL *conn, char *query, char *errmsg, int max_msg_len);
+
 int perform_insert(char *caller,
                    MYSQL *conn,
                    char  *table,

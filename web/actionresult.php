@@ -249,7 +249,7 @@ _END;
    echo "</td></tr>\n";
    echo '<tr><th>Comments</th>';
    echo '<td><input type="text" name="comments" size = "' . DAF_ACTIONRESULT_COMMENTS_LEN . '" maxlength="' . DAF_ACTIONRESULT_COMMENTS_LEN . '" ' . 
-        'dojoType="dijit.form.ValidationTextBox" style="width:100%;" promptMessage="Enter a comment"/>';  
+        'dojoType="dijit.form.ValidationTextBox" style="width:50em;" promptMessage="Enter a comment"/>';  
    echo "</td></tr>\n";
    echo "</table>\n";
  

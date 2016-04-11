@@ -456,6 +456,8 @@ echo <<<_END
 		                                 {name:"ObjectID3", field:"ObjectID3", width:"6em", styles:"text-align:center;"},
 		                                 {name:"Tablename4", field:"Tablename4", width:"8em"},
 		                                 {name:"ObjectID4", field:"ObjectID4", width:"6em", styles:"text-align:center;"},
+				                         {name:"Description1", field:"Description1", width:"8em"},
+		                                 {name:"Description1Type", field:"Description1Type", width:"6em", styles:"text-align:center;"},
 		                                 {name:"Start", field:"Start", width:"6em", styles:"text-align:center;"},
 		                                 {name:"End", field:"End", width:"6em", styles:"text-align:center;"},
 		                                 {name:"Log directory", field:"Logdirectory", width:"8em"},
@@ -553,10 +555,12 @@ function show_active_workrequest1($current_project = NULL, $current_phase = NULL
       $where = "WHERE Project='" . $project . "'";
    }
 
-   $fieldnames = array("ID", "Project", "Phase", "Requesttype", "TesterID", "State", "Tablename1", "ObjectID1", "Tablename2", "ObjectID2", "Tablename3", "ObjectID3",   
-                       "Tablename4", "ObjectID4", "Start", "End", "Logdirectory", "Scenariologfilename");
+   $fieldnames = array("ID", "Project", "Phase", "Requesttype", "TesterID", "State", "Tablename1", "ObjectID1", 
+   		               "Tablename2", "ObjectID2", "Tablename3", "ObjectID3",   
+                       "Tablename4", "ObjectID4", "Description1", "Description1Type",
+   		               "Start", "End", "Logdirectory", "Scenariologfilename");
    $query = "SELECT ID, Project, Phase, Requesttype, TesterID, State, Tablename1, ObjectID1, Tablename2, ObjectID2, Tablename3, ObjectID3, Tablename4, ObjectID4, " .
-            "Start, End, Logdirectory, Scenariologfilename FROM daf.workrequest "  . $where . " ORDER by Project, Phase";
+            "Description1, Description1Type, Start, End, Logdirectory, Scenariologfilename FROM daf.workrequest "  . $where . " ORDER by Project, Phase";
    $result = mysql_query($query);
     
    if (! $result) 
@@ -593,6 +597,7 @@ function show_active_workrequest1($current_project = NULL, $current_phase = NULL
       $scenarioresultIDindex = $fieldindex['ObjectID2'];
       $testlevelIDindex      = $fieldindex['ObjectID3'];
       $teststandIDindex      = $fieldindex['ObjectID4'];
+    
 
       for ($j = 0; $j < $num_rows; $j++) {
           $row = mysql_fetch_row($result);
@@ -834,8 +839,9 @@ function query_active_workrequest($current_project = NULL, $current_phase = NULL
       $where = "WHERE Project='" . $project . "'";
    }
 
-   $fieldnames = array("ID", "Project", "Phase", "Requesttype", "Tester", "State", "Tablename1", "ObjectID1", "Tablename2", "ObjectID2", "Tablename3", "ObjectID3",   
-                       "Tablename4", "ObjectID4", "Start", "End", "Logdirectory", "Scenariologfilename");
+   $fieldnames = array("ID", "Project", "Phase", "Requesttype", "Tester", "State", "Tablename1", "ObjectID1", 
+   		               "Tablename2", "ObjectID2", "Tablename3", "ObjectID3", "Tablename4", "ObjectID4", 
+   		               "Description1", "Description1Type", "Start", "End", "Logdirectory", "Scenariologfilename");
    $query = "SELECT ID, Project, Phase, Requesttype, TesterID, State, Tablename1, ObjectID1, Tablename2, ObjectID2, Tablename3, ObjectID3, Tablename4, ObjectID4, " .
             "Start, End, Logdirectory, Scenariologfilename FROM daf.workrequest "  . $where . " ORDER by Project, Phase";
    $result = mysql_query($query);

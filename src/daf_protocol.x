@@ -39,7 +39,7 @@ const DAF_REQUESTTYPE_LEN = 32;
 const DAF_SCENARIO_LEN = 48;
 const DAF_AUTHOR_LEN = 32;
 const DAF_ACTIONTYPE_LEN  = 32;
-const DAF_LOGFILNAME_LEN = 64;
+const DAF_LOGFILENAME_LEN = 64;
 const DAF_STATE_LEN      = 24;
 const DAF_STATUS_LEN     = 32;
 const DAF_STATEMODIFIER_LEN     = 32;
@@ -47,6 +47,8 @@ const DAF_TESTCASE_LEN   = 64;
 const DAF_TESTCASE_DESCRIPTION_LEN   = 64;
 const DAF_TESTSTAND_LEN  = 32;
 const DAF_TESTSTAND_COMMENTS_LEN = 128;
+const DAF_DESCRIPTOR1_LEN = 256;
+const DAF_DESCRIPTOR1TYPE_LEN = 24;
 
 const DAF_INVOCATION_LEN = 1024;
 const DAF_DURATION_LEN = 24;
@@ -86,6 +88,12 @@ const DAF_LEVEL_LEN = 32;
 const DAF_TESTLEVEL_LEN = 32;
 const DAF_TESTER_LEN = 32;
 
+const DAF_MAX_NUM_PARAMS = 10;
+const DAF_PARAMETER_NAME_LEN = 32;
+const DAF_PARAMETER_DEFAULTVALUE_LEN = 64;
+const DAF_PARAMETER_VALUE_LEN = 64;
+const DAF_PARAMETER_DESCRIPTION_LEN = 64;
+
 const DAF_HOSTSELECTORTYPE_NAME_LEN = 16;
 const DAF_HOSTSELECTORVALUE_NAME_LEN = 32;
 const DAF_ACTIONDESCRIPTION_LEN = 64;
@@ -121,6 +129,7 @@ const DAF_OUTCOMEACTION_LEN = 32;
 
 const DAF_FIRSTNAME_LEN = 32;
 const DAF_LASTNAME_LEN = 32;
+const DAF_USERNAME_LEN = 32;
 const DAF_AREA_LEN = 32;
 const DAF_EMAIL_LEN = 64;
 const DAF_PASSWORD_LEN = 32;
@@ -136,8 +145,6 @@ const DAF_TESTLEVEL_DESCRIPTION_LEN = 128;
 
 const DAF_LICENCE_LEN = 49;
 
-
-typedef bool_t BOOL;
 typedef unsigned hyper Iu64;
 typedef unsigned int Iu32;
 typedef unsigned short Iu16;
@@ -205,7 +212,10 @@ enum remote_client_cmd_error_types { REMOTE_CMD_OK,
 enum remote_client_dirlist_error_types { REMOTE_DIRLIST_OK,
                                          REMOTE_DIRLIST_DIRECTORY_DOES_NOT_EXIST,
                                          REMOTE_DIRLIST_COULD_NOT_OPEN_DIR
+};
 
+enum remote_client_start_scenario_error_types { REMOTE_START_SCENARIO_OK,
+                                                REMOTE_START_SCENARIO_FAILED
 };
 
 struct filehandle {
@@ -345,8 +355,6 @@ default:
 
 struct remote_client_cmd_args {
    string             cmdstring<MAX_CMD_LEN>;       /* only used when run_in_shell = 1 */
-/*   string             cmdname<MAX_CMD_LEN>;   */     /* only used when run_in_shell = 0 <<<<<<<<<<<<<<< */
-/*   stringlist         params;                */       /* only used when run_in_shell = 0 */ 
    stringlist         environment_settings;             /* only used when run_in_shell = 0 */  
    string             identstring<MAX_IDENT_LEN>;
    int                run_in_background;
@@ -356,11 +364,6 @@ struct remote_client_cmd_args {
    bool               workqueueID_flag;
    Iu32               workqueueID;
    Iu32               actionresultID;
-   string             sql_servername<MAX_SQLSERVERNAME_LEN>;
-   string             sql_username<MAX_SQLUSERNAME_LEN>;
-   string             sql_password<MAX_SQLPASSWORD_LEN>;
-   string             sql_databasename<MAX_SQLDATABASENAME_LEN>;
-   short              sql_port;
    int                msglevel;
 };
 
@@ -373,6 +376,46 @@ struct remote_client_cmd_outcome {
 union remote_client_cmd_res switch (int status) {
 case 0:
    remote_client_cmd_outcome outcome;
+default:
+   void;
+};
+
+/* ------ start_scenario  ------------------------------------------------*/
+
+typedef string parametername<DAF_PARAMETER_NAME_LEN>;
+typedef string parametervalue<DAF_PARAMETER_VALUE_LEN>;
+ 
+typedef struct parameternode *parameterlist;
+ 
+struct parameternode {
+   parametername  name;
+   parametervalue value;    
+   parameterlist  next;     /* next entry            */
+};
+
+struct remote_client_start_scenario_args {
+   string             project<DAF_PROJECT_LEN>;    
+   string             phase<DAF_PHASE_LEN>;      
+   string             jobname<DAF_SCENARIO_LEN>; 
+   string             loglocation<DAF_LOGDIRECTORY_LEN>;
+   string             scenariologfile<DAF_LOGFILENAME_LEN>; 
+   string             teststand<DAF_TESTSTAND_LEN>;   
+   string             testlevel<DAF_TESTLEVEL_LEN>;  
+   string             username<DAF_USERNAME_LEN>;        
+   string             comments<DAF_SCENARIORESULT_COMMENTS_LEN>;
+   parameterlist      parameters;           
+   int                msglevel;
+};
+
+#define DAF_ERRMSG_LEN 256
+struct remote_client_start_scenario_outcome {
+   remote_client_start_scenario_error_types valid_start_scenario;
+   string errmsg  <DAF_ERRMSG_LEN>;       
+};
+
+union remote_client_start_scenario_res switch (int status) {
+case 0:
+   remote_client_start_scenario_outcome outcome;
 default:
    void;
 };
@@ -741,10 +784,11 @@ program DAF_PROG {
    version DAF_VERSION {
      remote_client_cntrl_res         CLIENT_REMOTE_CLIENT_CNTRL(remote_client_cntrl_args)                 = 41;
      remote_client_cmd_res           CLIENT_REMOTE_CLIENT_CMD(remote_client_cmd_args)                     = 1;
-     remote_client_prepare_cmd_res   CLIENT_REMOTE_CLIENT_PREPARE_CMD(remote_client_prepare_cmd_args)             = 47;
-     remote_client_execute_cmd_res   CLIENT_REMOTE_CLIENT_EXECUTE_CMD(remote_client_execute_cmd_args)             = 48;
+     remote_client_prepare_cmd_res   CLIENT_REMOTE_CLIENT_PREPARE_CMD(remote_client_prepare_cmd_args)     = 47;
+     remote_client_execute_cmd_res   CLIENT_REMOTE_CLIENT_EXECUTE_CMD(remote_client_execute_cmd_args)     = 48;
      remote_client_run_cmd_res       CLIENT_REMOTE_CLIENT_RUN_CMD(remote_client_run_cmd_args)             = 49;
-     remote_client_query_version_res CLIENT_REMOTE_CLIENT_QUERY_VERSION(remote_client_query_version_args)     = 35;
+     remote_client_start_scenario_res   CLIENT_REMOTE_CLIENT_START_SCENARIO(remote_client_start_scenario_args)  = 50;
+     remote_client_query_version_res CLIENT_REMOTE_CLIENT_QUERY_VERSION(remote_client_query_version_args) = 35;
      remote_client_query_tag_res     CLIENT_REMOTE_CLIENT_QUERY_TAG(remote_client_query_tag_args)         = 2;
      remote_client_query_alltags_res CLIENT_REMOTE_CLIENT_QUERY_ALLTAGS(remote_client_query_alltags_args) = 33;
      remote_client_query_cmdlog_res  CLIENT_REMOTE_CLIENT_QUERY_CMDLOG(remote_client_query_cmdlog_args)   = 3;

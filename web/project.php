@@ -351,7 +351,7 @@ _END;
    echo "</td></tr>\n";
    echo '<tr><th>Description</th>';
    echo '<td><input type="text" name="description" size = "' . DAF_PROJECTDESCRIPTION_LEN . '" maxlength="' . DAF_PROJECTDESCRIPTION_LEN . '" ' .
-        'dojoType="dijit.form.ValidationTextBox" style="width:100%" regExp=".{1,' . DAF_PROJECTDESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Project Description" ' . 
+        'dojoType="dijit.form.ValidationTextBox" style="width:50em" regExp=".{1,' . DAF_PROJECTDESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Project Description" ' . 
         'invalidMessage="Invalid Project Description (must be 1 to ' . DAF_PROJECTDESCRIPTION_LEN . ' characters)"/>';
    // echo   '<td><textarea id="fred1" name="description" dojoType="dijit.form.Textarea" style="width:100%;"></textarea>';
    echo "</td></tr>\n";
@@ -566,7 +566,7 @@ _END;
       } else if ($fieldname == "Description") {
          echo '<th>Description</th>';
          echo '<td><input type="text" name="description" value="' . $row[$i] . '" size = "' . DAF_PROJECTDESCRIPTION_LEN . '" maxlength="' . DAF_PROJECTDESCRIPTION_LEN . '" ' .
-              'dojoType="dijit.form.ValidationTextBox" style="width:100%" regExp=".{1,' . DAF_PROJECTDESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Project Description" ' . 
+              'dojoType="dijit.form.ValidationTextBox" style="width:50em" regExp=".{1,' . DAF_PROJECTDESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Project Description" ' . 
               'invalidMessage="Invalid Project Description (must be 1 to ' . DAF_PROJECTDESCRIPTION_LEN . ' characters)" /></td>';
       }
       echo '</tr>';
@@ -750,7 +750,7 @@ _END;
    echo "</td></tr>\n";
    echo '<tr><th>Description</th>';
    echo '<td><input type="text" name="description" size="' . DAF_PHASEDESCRIPTION_LEN . '" maxlength="' . DAF_PHASEDESCRIPTION_LEN . '" ' . 
-        'dojoType="dijit.form.ValidationTextBox" style="width:100%" regExp=".{1,' . DAF_PHASEDESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Phase Description" ' . 
+        'dojoType="dijit.form.ValidationTextBox" style="width:50em" regExp=".{1,' . DAF_PHASEDESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Phase Description" ' . 
         'invalidMessage="Invalid Phase Description (must be 1 to ' . DAF_PHASEDESCRIPTION_LEN . ' characters)"/>';
    echo "</td></tr>\n";
    echo "<tr><th>Project</th><td><select name=\"projectID\"/>\n";
@@ -999,7 +999,7 @@ _END;
       } else if ($fieldname == "Description") {
          echo '<th>Description</th>';
          echo '<td><input type="text" name="description" value = "' . $row[$i] . '" size="' . DAF_PHASEDESCRIPTION_LEN . '" maxlength="' . DAF_PHASEDESCRIPTION_LEN . '" ' . 
-              'dojoType="dijit.form.ValidationTextBox" style="width:100%" regExp=".{1,' . DAF_PHASEDESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Phase Description" ' . 
+              'dojoType="dijit.form.ValidationTextBox" style="width:50em" regExp=".{1,' . DAF_PHASEDESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Phase Description" ' . 
               'invalidMessage="Invalid Phase Description (must be 1 to ' . DAF_PHASEDESCRIPTION_LEN . ' characters)"/></td>';
       } else if ($fieldname == "Logdirectory") {
          echo '<th>Log directory</th>';
@@ -1141,37 +1141,12 @@ function create_phase_database($project, $phase) {
      `ObjectID4` int(11) NOT NULL,
      `Tablename5` varchar(32) NOT NULL,
      `ObjectID5` int(11) NOT NULL,
+     `Description1` varchar(256) NOT NULL,
+     `Description1Type` enum('None','UserDefinedParameters') NOT NULL,
      `Start` datetime NOT NULL,
      `End` datetime NOT NULL,
      `Logdirectory` varchar(128) NOT NULL,
      `Scenariologfilename` varchar(64) NOT NULL,
-     PRIMARY KEY (`ID`)
-   ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;";
-
-   if (! do_mysql_query($query, null, 1)) {
-      return;
-   }
-
-   $query = "CREATE TABLE $status_db.`clusterrecord` (
-     `ID` int(11) NOT NULL AUTO_INCREMENT,
-     `ScenarioresultID` int(11) NOT NULL,
-     `Name` int(11) NOT NULL,
-     `Teststandname` varchar(32) NOT NULL,
-     PRIMARY KEY (`ID`)
-   ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;";
-
-   if (! do_mysql_query($query, null, 1)) {
-      return;
-   }
-
-   $query = "CREATE TABLE $status_db.`noderecord` (
-     `ID` int(11) NOT NULL AUTO_INCREMENT,
-     `ScenarioresultID` int(11) NOT NULL,
-     `Clustername` varchar(64) NOT NULL,
-     `Name` varchar(32) NOT NULL,
-     `Type` varchar(32) NOT NULL,
-     `Model` varchar(16) NOT NULL,
-     `Serial` varchar(16) NOT NULL,
      PRIMARY KEY (`ID`)
    ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;";
 
@@ -2531,7 +2506,7 @@ _END;
    echo "</td></tr>\n";
    echo '<tr><th>Description</th>';
    echo '<td><input type="text" name="description" size="' . DAF_MAILLIST_DESCRIPTION_LEN . '" maxlength="' . DAF_MAILLIST_DESCRIPTION_LEN . '" ' . 
-        'dojoType="dijit.form.ValidationTextBox" style="width:100%" regExp=".{1,' . DAF_MAILLIST_DESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Mail List description" ' . 
+        'dojoType="dijit.form.ValidationTextBox" style="width:50em" regExp=".{1,' . DAF_MAILLIST_DESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Mail List description" ' . 
         'invalidMessage="Invalid Mail List description (must be 1 to ' . DAF_MAILLIST_DESCRIPTION_LEN . ' characters)"/>';
    echo "</td></tr>\n";
    echo "</table>\n";
@@ -2795,7 +2770,7 @@ _END;
       } else if ($fieldname == "Description") {
          echo '<th>Description</th>';
          echo '<td><input type="text" name="description" value="' . $row[$i] . '" size="' . DAF_MAILLIST_DESCRIPTION_LEN . '" maxlength="' . DAF_MAILLIST_DESCRIPTION_LEN . '" ' . 
-              'dojoType="dijit.form.ValidationTextBox" style="width:100%" regExp=".{1,' . DAF_MAILLIST_DESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Mail List description" ' . 
+              'dojoType="dijit.form.ValidationTextBox" style="width:50em" regExp=".{1,' . DAF_MAILLIST_DESCRIPTION_LEN . '}" required="true" trim="true" promptMessage="Enter a Mail List description" ' . 
               'invalidMessage="Invalid Mail List description (must be 1 to ' . DAF_MAILLIST_DESCRIPTION_LEN . ' characters)"/></td>';
       }      
       echo "</tr>\n";

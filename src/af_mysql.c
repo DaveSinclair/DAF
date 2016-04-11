@@ -608,6 +608,83 @@ int perform_update(char  *caller,
 
 /* ------------------------------------------------------------------------------------------------- */
 /*                                                                                                   */
+/* Function:   perform_insert_from_query_string                                                      */
+/*                                                                                                   */
+/* Inputs:     caller                                                                                */
+/*                                                                                                   */
+/*             conn        An existing connection to the MYSQL database, usually set up by           */
+/*                         do_connect()                                                              */
+/*                                                                                                   */
+/*             query       the MYSQL query that will do the insert                                   */
+/*                                                                                                   */
+/*             max_msg_len the max length (including the terminating 0) allowed in the errmsg        */
+/*                                                                                                   */
+/* Outputs:    errmsg      an error message indicating what went wrong if rc=1                       */
+/*                                                                                                   */
+/* Returns:    row_id      non 0 if the INSERT was successful, 0 if not (when the errmsg string will */
+/*                         contain adescriptive message indicating what went wrong)                  */
+/*                                                                                                   */
+//*                                                                                                  */
+/* Function:                                                                                         */
+/*                                                                                                   */
+/* Inserts a new row in a given table, according to the query string supplied                        */
+/*                                                                                                   */
+/*  row_id = perform_insert(conn,                                                                      */
+/*                        "AddressBook",                                                             */
+/*                        "INSERT AddressBook (FirstName, LastName, Address) VALUES('Jim', 'Smith'," */
+/*                        "'12 Acacia Avenue, Wimbledon');"                                          */
+/*                        errmsg,                                                                    */
+/*                        sizeof(errmsg));                                                           */
+/*                                                                                                   */
+/* would insert a new row in the AddressBook table and the FirstName, LastName and Address fields    */
+/* would have values of Jim, Smith and 12 Acacia Avenune, Wimbledon respectively.      The id of the */
+/* row is returned in row_id.   All DAF tables are guaranteed to autoincrement their IDs from 1      */
+/* so a zero value indicates an error                                                                */
+/* ------------------------------------------------------------------------------------------------- */
+
+int perform_insert_from_query_string(char *caller, MYSQL *conn, char *query, char *errmsg, int max_msg_len) {
+
+	MYSQL_RES *res_set;
+
+printf("DEBUG:  insert string %s\n",  query);
+
+	if (perform_query(caller, conn, query) != 0)
+	{
+		snprintf(errmsg, max_msg_len, "%s: query (%s) failed, mysql_errno = %d (%s)\n",
+				 caller, query, mysql_errno(conn), mysql_error(conn));
+		return 0;
+	}
+
+	/* the query succeeded; determine whether or not it returns data */
+
+	res_set = mysql_store_result(conn);
+
+	if (res_set == NULL)    /* no result set was returned */
+	{
+		/* does the lack of a result set mean that an error  occurred or that no result set was returned? */
+		if (mysql_field_count(conn) > 0)
+		{
+			/* a result set was expected, but mysql_store_result() did not return one; this means an error occurred */
+			snprintf(errmsg, max_msg_len, "%s: no result set returned for query: %s\n", caller, query);
+			return 0;
+		}
+		else
+		{
+			/* no result set was returned; query returned no data (it was an INSERT so this was expected - no action needed) */
+		}
+	}
+	else      /* a result set was returned */
+	{
+		/* free the result set */
+		mysql_free_result(res_set);
+	}
+
+	return mysql_insert_id(conn);
+
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+/*                                                                                                   */
 /* Function:   perform_insert                                                                        */
 /*                                                                                                   */
 /* Inputs:     caller                                                                                */
@@ -665,7 +742,6 @@ int perform_insert(char  *caller,
 #undef  SUBNAME
 #define SUBNAME "perform_insert"
 
-    MYSQL_RES *res_set;
     int i = 0, ll, rc = 0;
 
     char  query[1024];
@@ -768,40 +844,13 @@ int perform_insert(char  *caller,
     }
     else
     {
-        snprintf(errmsg, max_msg_len, "%s: query string length (%d) exceeded maximm allowed length (%d) for query: %s\n",
+        snprintf(errmsg, max_msg_len, "%s: query string length (%d) exceeded maximum allowed length (%d) for query: %s\n",
                  caller, ll, (int) sizeof(query), query);
         return 1;
     }
 
-    if (perform_query(caller, conn, query) != 0)
-    {
-        snprintf(errmsg, max_msg_len, "%s: query (%s) failed, mysql_errno = %d (%s)\n",
-                 caller, query, mysql_errno(conn), mysql_error(conn));
-        return 1;
-    }
-
-    /* the query succeeded; determine whether or not it returns data */
-
-    res_set = mysql_store_result(conn);
-
-    if (res_set == NULL)    /* no result set was returned */
-    {
-        /* does the lack of a result set mean that an error  occurred or that no result set was returned? */
-        if (mysql_field_count(conn) > 0)
-        {
-            /* a result set was expected, but mysql_store_result() did not return one; this means an error occurred */
-            snprintf(errmsg, max_msg_len, "%s: no result set returned for query: %s\n", caller, query);
-            return 1;
-        }
-        else
-        {
-            /* no result set was returned; query returned no data (it was an INSERT so this was expected - no action needed) */
-        }
-    }
-    else      /* a result set was returned */
-    {
-        /* free the result set */
-        mysql_free_result(res_set);
+    if (perform_insert_from_query_string(caller, conn, query, errmsg, max_msg_len) == 0) {
+    	rc = 1;
     }
 
     return rc;

@@ -172,9 +172,7 @@ int remote_client_cntrl(char *remotehostname,
 /* -------------------------------------------------------------------------------- */
 
 int remote_client_cmd(char *remotehostname, int run_in_shell, char *cmdstring, char *identstring,
-                      bool_t run_in_background, bool_t workqueueID_flag, Iu32 workqueueID, Iu32 actionresultID,
-                      char *sql_servername, char *sql_username, char *sql_password,
-                      char *sql_databasename, Iu16 sql_port, char *sql_socketname)
+                      bool_t run_in_background, bool_t workqueueID_flag, Iu32 workqueueID, Iu32 actionresultID)
 {
 
     remote_client_cmd_args  args;
@@ -214,19 +212,14 @@ int remote_client_cmd(char *remotehostname, int run_in_shell, char *cmdstring, c
         args.workqueueID_flag  = workqueueID_flag;
         args.workqueueID       = workqueueID;
         args.workqueueID       = actionresultID;
-        args.sql_servername    = sql_servername;
-        args.sql_username      = sql_username;
-        args.sql_password      = sql_password;
-        args.sql_databasename  = sql_databasename;
-        args.sql_port          = sql_port;
         args.msglevel          = 0;
 
-        /* stringlist x;
+        stringlist x;
 
-        x.item = NULL;
-        x.next = NULL;  */
+        safecpy(x.item, "DAF=DAF", sizeof(x.item));
+        x.next = NULL;
 
-        args.environment_settings.item = NULL;   /* <<<<<<<< temp */
+        args.environment_settings.item = x.item;
         args.environment_settings.next = NULL;
 
         if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_CMD,
@@ -255,6 +248,122 @@ int remote_client_cmd(char *remotehostname, int run_in_shell, char *cmdstring, c
 
     return(return_rc);
 }
+
+/* -------------------------------------------------------------------------------- */
+/*                                                                                  */
+/* remote_client_start_scenario                                                     */
+/*                                                                                  */
+/* Inputs:                                                                          */
+/*                                                                                  */
+/*  remotehostname                                                                  */
+/*  jobname                                                                         */
+/*  project                                                                         */
+/*  phase                                                                           */
+/*  loglocation                                                                     */
+/*  scenariologfile                                                                 */
+/*  teststand                                                                       */
+/*  testlevel                                                                       */
+/*  comments                                                                        */
+/*                                                                                  */
+/* Outputs:                                                                         */
+/*                                                                                  */
+/*  None                                                                            */
+/*                                                                                  */
+/* Returns:                                                                         */
+/*                                                                                  */
+/*  E_OK           if the routine successfully ran the remote operation and it      */
+/*                 completed without error                                          */
+/*  E_NOTOK        An error occurred in trying to run this operation at the         */
+/*                 remote client                                                    */
+/*                                                                                  */
+/* Description:                                                                     */
+/*                                                                                  */
+/*                                                                                  */
+/*  Instructs the remote system to run a scenario.                                  */
+/*                                                                                  */
+/* -------------------------------------------------------------------------------- */
+
+int remote_client_start_scenario(char *remotehostname, char *jobname, char *project, char *phase, char*loglocation, char *scenariologfile,
+		                         char *teststand, char *testlevel, char *comments, char *username, parameterlist parameters) {
+
+
+    remote_client_start_scenario_args  args;
+    remote_client_start_scenario_res   remoteresult;
+    enum clnt_stat          stat;
+    char                    msg[MAX_MSG_LEN];
+    char                    errmsg[MAX_MSG_LEN];
+    int                     return_rc = E_OK;
+    CLIENT                 *remote_client;
+
+#undef  SUBNAME
+#define SUBNAME "remote_client_start_scenario"
+
+    remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");
+
+    if (remote_client == (CLIENT *) NULL)
+    {
+
+        snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
+        snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
+        print_msg_to_console(msg);
+        return_rc = E_NOTOK;
+
+    }
+    else
+    {
+
+        memset(&args,      0, sizeof(args));
+        memset(&remoteresult, 0, sizeof(remoteresult));
+
+        args.jobname           = jobname;
+        args.project           = project;
+        args.phase             = phase;
+        args.loglocation       = loglocation;
+        args.scenariologfile   = scenariologfile;                      /* <<<<<<<<<<<<<< */
+        args.teststand         = teststand;                      /* <<<<<<<<<<<<<< */
+        args.testlevel         = testlevel;
+        args.comments          = comments;
+        args.username          = username;
+        args.msglevel          = 0;
+        args.parameters        = parameters;
+
+        if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_START_SCENARIO,
+                              (xdrproc_t) xdr_remote_client_start_scenario_args, (caddr_t) &args,
+                              (xdrproc_t) xdr_remote_client_start_scenario_res,  (caddr_t) &remoteresult,
+                              TIMEOUT)) != RPC_SUCCESS)
+        {
+            clnt_stat_decode(stat, errmsg, sizeof(errmsg));
+            snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n", SUBNAME, (long) CLIENT_REMOTE_CLIENT_START_SCENARIO, stat, errmsg);
+            print_msg_to_console(msg);
+            return_rc = E_NOTOK;
+        }
+
+        if (remoteresult.remote_client_start_scenario_res_u.outcome.valid_start_scenario == REMOTE_START_SCENARIO_OK) {
+        	snprintf(msg, sizeof(msg), "Scenario started successfully on remote server\n");
+        	print_msg_to_console(msg);
+        } else {
+        	snprintf(msg, sizeof(msg), " %d Failed to start scenario on remote server - %s\n",remoteresult.remote_client_start_scenario_res_u.outcome.valid_start_scenario,
+                     remoteresult.remote_client_start_scenario_res_u.outcome.errmsg);
+        	print_msg_to_console(msg);
+        	return_rc = E_NOTOK;
+        }
+
+        if (remoteresult.remote_client_start_scenario_res_u.outcome.errmsg != NULL) {
+        	free(remoteresult.remote_client_start_scenario_res_u.outcome.errmsg);
+        }
+
+        if (remote_client->cl_auth != NULL)
+        {
+            auth_destroy(remote_client->cl_auth);
+        }
+
+        clnt_destroy(remote_client);
+
+    }
+
+    return(return_rc);
+}
+
 
 /* -------------------------------------------------------------------------------- */
 /*                                                                                  */

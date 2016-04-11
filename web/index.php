@@ -19,6 +19,7 @@ require_once 'scenarioresult.php';
 require_once 'actionresult.php';
 require_once 'project.php';
 require_once 'workqueue.php';
+require_once 'parameter.php';
 
 /* ---------------------------------------------------------------------------------------------------------------------------*/
 /*  main                                                                                                                      */
@@ -253,7 +254,9 @@ _END;
          scenario($gp, $current_project, $current_phase, $current_user_ID);      
          echo "<script src=\"js/scenario.js\"></script>\n";            /*  <<<<<<<< */
       } else if ($gp['object'] === 'testcase') {       
-         testcase($gp);   
+         testcase($gp); 
+      } else if ($gp['object'] === 'parameter') {
+         	parameter($gp);
       } else if ($gp['object'] === 'testlevel') {       
          testlevel($gp); 
       } else if ($gp['object'] === 'level') {       
@@ -319,12 +322,6 @@ _END;
       } else if ($gp['object'] == 'teststandrecord') {
         $tablename = determine_status_table_name($status_db, "teststandrecord");
         show_table($tablename, "Test stand record for scenario result XXXX in project $current_project, phase $current_phase");   /* <<<<<< */
-      } else if ($gp['object'] == 'clusterrecord') {
-        $tablename = determine_status_table_name($status_db, "clusterrecord");
-        show_table($tablename, "Cluster record for scenario result XXXX in project $current_project, phase $current_phase");   /* <<<<<< */
-      } else if ($gp['object'] == 'clusterrecord') {
-        $tablename = determine_status_table_name($status_db, "noderecord");
-        show_table($tablename, "Node record for scenario result XXXX in project $current_project, phase $current_phase");   /* <<<<<< */
       } else if ($gp['object'] == 'testlevelrecord') {
         $tablename = determine_status_table_name($status_db, "testlevelrecord");
         show_table($tablename, "Test level record for scenario result XXXX in project $current_project, phase $current_phase");   /* <<<<<< */
