@@ -654,23 +654,25 @@ int daf_service_install(char *daf_binary_path, char *argv0)
         return(0);
     }
 
-    if (stat(pathname, &fileStat) < 0) {
+    if (stat(pathname, &fileStat) < 0)
+    {
 
-       sprintf(msg, "stat(%s) failed - it seems %s is missing !!!!!!!!!!!!!!!!!!!!! \n", pathname, pathname );
-       print_msg_to_console(msg);
-       return(1);
+        sprintf(msg, "stat(%s) failed - it seems %s is missing !!!!!!!!!!!!!!!!!!!!! \n", pathname, pathname );
+        print_msg_to_console(msg);
+        return(1);
     }
 
     // Later versions of Redhat etc do not use /etc/inittab (but will still honour it if exists - so if the file is empty,
     // we just put a single comment line into so that later code that updates the /etc/inittab file will work
-    if (fileStat.st_size == 0) {
+    if (fileStat.st_size == 0)
+    {
 
-       if (run_system_cmd("cat '* just a comment' >>/etc/inittab", 0) != 0)
-       {
-          safecpy(msg, "cat \"* just a comment\" >>/etc/inittab failed\n", sizeof(msg));
-          print_msg_to_console(msg);
-    	  return(1);
-    	}
+        if (run_system_cmd("cat '* just a comment' >>/etc/inittab", 0) != 0)
+        {
+            safecpy(msg, "cat \"* just a comment\" >>/etc/inittab failed\n", sizeof(msg));
+            print_msg_to_console(msg);
+            return(1);
+        }
     }
 
     //--------------------------------------------------------------------------

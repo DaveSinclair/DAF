@@ -691,7 +691,7 @@ int clear_cmd_array(char *errmsg, int max_msg_length)
 
     /* what about stale processes see above <<<<<<<<<<<<<<<<<<< */
 
-    gethostname(thishostname, sizeof(thishostname));
+    get_short_hostname(thishostname, sizeof(thishostname));
 
 
 

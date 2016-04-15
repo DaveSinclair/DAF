@@ -25,7 +25,7 @@ require_once 'parameter.php';
 /*  main                                                                                                                      */
 /* ---------------------------------------------------------------------------------------------------------------------------*/
 
-$debugflag = 0; 	             /* set this variable to 1 to turn on debugging messages */
+$debugflag = 0;                  /* set this variable to 1 to turn on debugging messages */
 $ignore_passwords = 0;           /* set this variable to 1 if any password is allowed for any userF */
 $userdetailsok = 0;
 $current_user_name = null;
@@ -256,7 +256,7 @@ _END;
       } else if ($gp['object'] === 'testcase') {       
          testcase($gp); 
       } else if ($gp['object'] === 'parameter') {
-         	parameter($gp);
+            parameter($gp);
       } else if ($gp['object'] === 'testlevel') {       
          testlevel($gp); 
       } else if ($gp['object'] === 'level') {       
@@ -347,6 +347,8 @@ _END;
         initialsetup($gp);
       } else if ($gp['object'] === 'licence') {  
         licence($gp);
+      } else if ($gp['object'] === 'mainmenu') {
+        show_main_menu('mainmenu');
       } else {   
         show_table($gp['object'], $gp['object']);     /*  <<<<<< some of these are in daf and some in status */
       }
@@ -542,6 +544,10 @@ _END;
    } else if ($nextstep == 'enterlicence') {
       
       update_licence_info();
+      
+   } else if ($nextstep == 'mainmenu') {
+      
+     // we just want an empty panel with the pull down menus displayed at the top
 
    } else {
    
@@ -842,7 +848,7 @@ function deal_with_current_project_phase_cookies(&$current_project, &$current_ph
    if (isset($_POST['setcurrentprojectphase'])) {
 
       $current_project = lookupfield('project', 'Name', 'ID', $_POST['projectID']);
-      $current_phase   = lookupfield('phase',   'Name', 'ID', $_POST['phase']);
+      $current_phase   = lookupfield('phase',   'Name', 'ID', $_POST['phaseID']);
 
       $project_names = get_names_of_objects("project", NULL);
 

@@ -314,8 +314,8 @@ MYSQL *do_connect (char *caller,
                    unsigned int port_num,
                    char *socket_name,
                    unsigned int flags,
-				   char *errmsg,
-				   int max_errmsg_len)
+                   char *errmsg,
+                   int max_errmsg_len)
 {
 
 #undef  SUBNAME
@@ -629,7 +629,7 @@ int perform_update(char  *caller,
 /*                                                                                                   */
 /* Inserts a new row in a given table, according to the query string supplied                        */
 /*                                                                                                   */
-/*  row_id = perform_insert(conn,                                                                      */
+/*  row_id = perform_insert(conn,                                                                    */
 /*                        "AddressBook",                                                             */
 /*                        "INSERT AddressBook (FirstName, LastName, Address) VALUES('Jim', 'Smith'," */
 /*                        "'12 Acacia Avenue, Wimbledon');"                                          */
@@ -642,44 +642,43 @@ int perform_update(char  *caller,
 /* so a zero value indicates an error                                                                */
 /* ------------------------------------------------------------------------------------------------- */
 
-int perform_insert_from_query_string(char *caller, MYSQL *conn, char *query, char *errmsg, int max_msg_len) {
+int perform_insert_from_query_string(char *caller, MYSQL *conn, char *query, char *errmsg, int max_msg_len)
+{
 
-	MYSQL_RES *res_set;
+    MYSQL_RES *res_set;
 
-printf("DEBUG:  insert string %s\n",  query);
+    if (perform_query(caller, conn, query) != 0)
+    {
+        snprintf(errmsg, max_msg_len, "%s: query (%s) failed, mysql_errno = %d (%s)\n",
+                 caller, query, mysql_errno(conn), mysql_error(conn));
+        return 0;
+    }
 
-	if (perform_query(caller, conn, query) != 0)
-	{
-		snprintf(errmsg, max_msg_len, "%s: query (%s) failed, mysql_errno = %d (%s)\n",
-				 caller, query, mysql_errno(conn), mysql_error(conn));
-		return 0;
-	}
+    /* the query succeeded; determine whether or not it returns data */
 
-	/* the query succeeded; determine whether or not it returns data */
+    res_set = mysql_store_result(conn);
 
-	res_set = mysql_store_result(conn);
+    if (res_set == NULL)    /* no result set was returned */
+    {
+        /* does the lack of a result set mean that an error  occurred or that no result set was returned? */
+        if (mysql_field_count(conn) > 0)
+        {
+            /* a result set was expected, but mysql_store_result() did not return one; this means an error occurred */
+            snprintf(errmsg, max_msg_len, "%s: no result set returned for query: %s\n", caller, query);
+            return 0;
+        }
+        else
+        {
+            /* no result set was returned; query returned no data (it was an INSERT so this was expected - no action needed) */
+        }
+    }
+    else      /* a result set was returned */
+    {
+        /* free the result set */
+        mysql_free_result(res_set);
+    }
 
-	if (res_set == NULL)    /* no result set was returned */
-	{
-		/* does the lack of a result set mean that an error  occurred or that no result set was returned? */
-		if (mysql_field_count(conn) > 0)
-		{
-			/* a result set was expected, but mysql_store_result() did not return one; this means an error occurred */
-			snprintf(errmsg, max_msg_len, "%s: no result set returned for query: %s\n", caller, query);
-			return 0;
-		}
-		else
-		{
-			/* no result set was returned; query returned no data (it was an INSERT so this was expected - no action needed) */
-		}
-	}
-	else      /* a result set was returned */
-	{
-		/* free the result set */
-		mysql_free_result(res_set);
-	}
-
-	return mysql_insert_id(conn);
+    return mysql_insert_id(conn);
 
 }
 
@@ -849,8 +848,9 @@ int perform_insert(char  *caller,
         return 1;
     }
 
-    if (perform_insert_from_query_string(caller, conn, query, errmsg, max_msg_len) == 0) {
-    	rc = 1;
+    if (perform_insert_from_query_string(caller, conn, query, errmsg, max_msg_len) == 0)
+    {
+        rc = 1;
     }
 
     return rc;

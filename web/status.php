@@ -21,7 +21,7 @@ require_once 'actionresult.php';
 require_once 'project.php';
 require_once 'what_is_running.php';
 
-$debugflag = 1; 	             /* set this variable to 1 to turn on debugging messages */
+$debugflag = 1;                  /* set this variable to 1 to turn on debugging messages */
 $ignore_passwords = 0;           /* set this variable to 1 if any password is allowed for any userF */
 $userdetailsok = 0;
 $current_user_name = null;

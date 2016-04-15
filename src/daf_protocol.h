@@ -129,6 +129,7 @@ extern "C" {
 #define DAF_OBJECTNAME_LEN 32
 #define DAF_TESTLEVEL_DESCRIPTION_LEN 128
 #define DAF_LICENCE_LEN 49
+#define DAF_DATETIME_LEN 40
 
 typedef u_quad_t Iu64;
 
@@ -424,6 +425,13 @@ typedef struct remote_client_start_scenario_args remote_client_start_scenario_ar
 
 struct remote_client_start_scenario_outcome {
 	remote_client_start_scenario_error_types valid_start_scenario;
+	int testerID;
+	int scenarioID;
+	int scenarioresultID;
+	int testlevelID;
+	int teststandID;
+	int teststandrecordID;
+	int testlevelrecordID;
 	char *errmsg;
 };
 typedef struct remote_client_start_scenario_outcome remote_client_start_scenario_outcome;
@@ -467,6 +475,49 @@ struct remote_client_query_version_res {
 	} remote_client_query_version_res_u;
 };
 typedef struct remote_client_query_version_res remote_client_query_version_res;
+
+struct remote_client_query_scenarioresult_args {
+	char *project;
+	char *phase;
+	u_int scenarioresultID;
+	int msglevel;
+};
+typedef struct remote_client_query_scenarioresult_args remote_client_query_scenarioresult_args;
+
+struct remote_client_query_scenarioresult_outcome {
+	bool_t valid;
+	char *project;
+	char *phase;
+	char *scenarioname;
+	char *jobname;
+	char *state;
+	int actionsinscenario;
+	int actionsattempted;
+	int actionscompleted;
+	int actionspassed;
+	int actionsfailed;
+	int pass;
+	char *start;
+	char *end;
+	char *teststand;
+	int teststandrecordID;
+	char *testlevel;
+	int testlevelrecordID;
+	char *tester;
+	char *loglocation;
+	char *scenariologfilename;
+	char *comments;
+	char *errmsg;
+};
+typedef struct remote_client_query_scenarioresult_outcome remote_client_query_scenarioresult_outcome;
+
+struct remote_client_query_scenarioresult_res {
+	int status;
+	union {
+		remote_client_query_scenarioresult_outcome outcome;
+	} remote_client_query_scenarioresult_res_u;
+};
+typedef struct remote_client_query_scenarioresult_res remote_client_query_scenarioresult_res;
 
 struct remote_client_query_tag_args {
 	u_int tag;
@@ -828,6 +879,9 @@ extern  bool_t client_remote_client_start_scenario_1_svc(remote_client_start_sce
 #define CLIENT_REMOTE_CLIENT_QUERY_VERSION 35
 extern  enum clnt_stat client_remote_client_query_version_1(remote_client_query_version_args *, remote_client_query_version_res *, CLIENT *);
 extern  bool_t client_remote_client_query_version_1_svc(remote_client_query_version_args *, remote_client_query_version_res *, struct svc_req *);
+#define CLIENT_REMOTE_CLIENT_QUERY_SCENARIORESULT 51
+extern  enum clnt_stat client_remote_client_query_scenarioresult_1(remote_client_query_scenarioresult_args *, remote_client_query_scenarioresult_res *, CLIENT *);
+extern  bool_t client_remote_client_query_scenarioresult_1_svc(remote_client_query_scenarioresult_args *, remote_client_query_scenarioresult_res *, struct svc_req *);
 #define CLIENT_REMOTE_CLIENT_QUERY_TAG 2
 extern  enum clnt_stat client_remote_client_query_tag_1(remote_client_query_tag_args *, remote_client_query_tag_res *, CLIENT *);
 extern  bool_t client_remote_client_query_tag_1_svc(remote_client_query_tag_args *, remote_client_query_tag_res *, struct svc_req *);
@@ -897,6 +951,9 @@ extern  bool_t client_remote_client_start_scenario_1_svc();
 #define CLIENT_REMOTE_CLIENT_QUERY_VERSION 35
 extern  enum clnt_stat client_remote_client_query_version_1();
 extern  bool_t client_remote_client_query_version_1_svc();
+#define CLIENT_REMOTE_CLIENT_QUERY_SCENARIORESULT 51
+extern  enum clnt_stat client_remote_client_query_scenarioresult_1();
+extern  bool_t client_remote_client_query_scenarioresult_1_svc();
 #define CLIENT_REMOTE_CLIENT_QUERY_TAG 2
 extern  enum clnt_stat client_remote_client_query_tag_1();
 extern  bool_t client_remote_client_query_tag_1_svc();
@@ -997,6 +1054,9 @@ extern  bool_t xdr_remote_client_start_scenario_res (XDR *, remote_client_start_
 extern  bool_t xdr_remote_client_query_version_args (XDR *, remote_client_query_version_args*);
 extern  bool_t xdr_remote_client_query_version_outcome (XDR *, remote_client_query_version_outcome*);
 extern  bool_t xdr_remote_client_query_version_res (XDR *, remote_client_query_version_res*);
+extern  bool_t xdr_remote_client_query_scenarioresult_args (XDR *, remote_client_query_scenarioresult_args*);
+extern  bool_t xdr_remote_client_query_scenarioresult_outcome (XDR *, remote_client_query_scenarioresult_outcome*);
+extern  bool_t xdr_remote_client_query_scenarioresult_res (XDR *, remote_client_query_scenarioresult_res*);
 extern  bool_t xdr_remote_client_query_tag_args (XDR *, remote_client_query_tag_args*);
 extern  bool_t xdr_remote_client_query_tag_outcome (XDR *, remote_client_query_tag_outcome*);
 extern  bool_t xdr_remote_client_query_tag_res (XDR *, remote_client_query_tag_res*);
@@ -1097,6 +1157,9 @@ extern bool_t xdr_remote_client_start_scenario_res ();
 extern bool_t xdr_remote_client_query_version_args ();
 extern bool_t xdr_remote_client_query_version_outcome ();
 extern bool_t xdr_remote_client_query_version_res ();
+extern bool_t xdr_remote_client_query_scenarioresult_args ();
+extern bool_t xdr_remote_client_query_scenarioresult_outcome ();
+extern bool_t xdr_remote_client_query_scenarioresult_res ();
 extern bool_t xdr_remote_client_query_tag_args ();
 extern bool_t xdr_remote_client_query_tag_outcome ();
 extern bool_t xdr_remote_client_query_tag_res ();

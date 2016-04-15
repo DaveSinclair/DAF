@@ -25,8 +25,8 @@ MYSQL *do_connect(char *caller,
                   unsigned int port_num,
                   char *socket_name,
                   unsigned int flags,
-				  char *errmsg,
-				  int max_msg_len);
+                  char *errmsg,
+                  int max_msg_len);
 void do_disconnect(char *caller,
                    MYSQL *conn);
 

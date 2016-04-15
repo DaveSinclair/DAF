@@ -19,8 +19,8 @@
 int remote_client_cntrl(char *remotehostname, bool_t clear_shared_memory_flag);
 int remote_client_cmd(char *remotehostname, int run_in_shell, char *cmdstring, char *identstring,
                       bool_t run_in_background, bool_t workqueueID_flag, Iu32 workqueueID, Iu32 actionresultID);
-int remote_client_start_scenario(char *remotehostname, char *jobname, char *project, char *phase, char*loglocation, char *scenariologfile,
-		                         char *teststand, char *testlevel, char *comments, char *username, parameterlist parameters);
+int remote_client_start_scenario(char *remotehostname, char *jobname, char *project, char *phase, char *loglocation, char *scenariologfile,
+                                 char *teststand, char *testlevel, char *comments, char *username, parameterlist parameters);
 int remote_client_query_cmdlog(char *remotehostname, bool_t no_headers, bool_t use_delimiter, char *delimter_string);
 int remote_client_query_auditlog(char *remotehostname, bool_t no_headers, bool_t use_delimiter, char *delimiter_string);
 
@@ -29,6 +29,8 @@ int remote_client_query_version(char *remotehostname,
                                 bool_t reset_zombie_reaper_debug_flag);
 
 int remote_client_ping_agent(char *remotehostname, bool_t quiet);
+int remote_client_query_scenarioresult(char *remotehostname, char *project, char *phase, int ID,
+                                       bool_t no_headers_flag, bool_t delimiter_flag, char *delimiter_string);
 int remote_client_query_tag(char *remotehostname, Iu32 tag, bool_t no_headers, bool_t use_delimiter, char *delimiter_string);
 int remote_client_query_alltags(char *remotehostname, bool_t no_headers, bool_t use_delimiter, char *delimiter_string);
 int remote_client_get_unique_ident(char *remotehostname, bool_t no_headers);
@@ -47,9 +49,9 @@ int remote_client_update_workqueue_status(char *remotehostname, int workqueueID,
 
 int query_slave_tag(char         *remotehostname,
                     Iu32         tag,
-					int          *exit_code,
-					int          *exit_signal,
-					cmd_log_state          *exit_state);
+                    int          *exit_code,
+                    int          *exit_signal,
+                    cmd_log_state          *exit_state);
 
 
 #endif

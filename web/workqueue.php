@@ -70,8 +70,6 @@ function workqueue($gp, $project, $phase) {
       $query = "UPDATE daf.workqueue SET Statemodifier = 'Tobecanceled', State = 'Pendingcompletion' where ID = '" . $gp['ID'] . "'";              
       do_mysql_query($query, $db_server, 1);
 
-  $x = $hhhh;
-
       $gp['action'] = 'show';
       $gp['ID'] = NULL;
 
@@ -152,32 +150,32 @@ echo <<<_END
          xx(objstore);
 
          var grid = new dojox.grid.DataGrid({    // use the adapter to give the grid a Dojo Data compliant interface to the store    
-		                    store: objstore,
-		                    escapeHTMLInData: false,          /* <<<<<<<< is this safe (cross site attacks) */
-		                    columnReordering: true,
-		                    structure: [ {name:"Cancel", field:"Cancelit", width:"6em"},
-		                                 {name:"Elapsed Secs", field:"Elapsedsecs", width:"4em", styles:"text-align:center;"},
+                            store: objstore,
+                            escapeHTMLInData: false,          /* <<<<<<<< is this safe (cross site attacks) */
+                            columnReordering: true,
+                            structure: [ {name:"Cancel", field:"Cancelit", width:"6em"},
+                                         {name:"Elapsed Secs", field:"Elapsedsecs", width:"4em", styles:"text-align:center;"},
                                          {name:"ID", field:"ID", width:"4em", styles:"text-align:center;"},        
-		                                 {name:"Scenario", field:"Scenario", width:"8em"},        
-		                                 {name:"Test Level", field:"Test Level", width:"8em"},  
-		                                 {name:"Scenario Result", field:"Scenario Result", width:"8em"},  
-		                                 {name:"Action Type", field:"Action Type", width:"8em"},  
-		                                 {name:"Action Result", field:"Action Result", width:"8em"},  
-		                                 {name:"Step Number", field:"Stepnumber", width:"4em", styles:"text-align:center;"},  
-		                                 {name:"Host", field:"Hostname", width:"8em"},  
-		                                 {name:"Testcase", field:"Testcase", width:"8em"},  
-		                                 {name:"State", field:"StateModifier", width:"8em"},
-		                                 {name:"Pass", field:"Pass", width:"6em", styles:"text-align:center;"},
-		                                 {name:"Start", field:"Start", width:"6em", styles:"text-align:center;"},
-		                                 {name:"End", field:"End", width:"6em", styles:"text-align:center;"},
-		                                 {name:"Maxduration", field:"Maxduration", width:"6em", styles:"text-align:center;"},
-		                                 {name:"Tag", field:"Tag", width:"4em", styles:"text-align:center;"},
-		                                 {name:"Log Location", field:"Loglocation", width:"8em"}
-		                               ]}, 
-		                    "WhatIsRunningErrorStatus");
-		                    
+                                         {name:"Scenario", field:"Scenario", width:"8em"},        
+                                         {name:"Test Level", field:"Test Level", width:"8em"},  
+                                         {name:"Scenario Result", field:"Scenario Result", width:"8em"},  
+                                         {name:"Action Type", field:"Action Type", width:"8em"},  
+                                         {name:"Action Result", field:"Action Result", width:"8em"},  
+                                         {name:"Step Number", field:"Stepnumber", width:"4em", styles:"text-align:center;"},  
+                                         {name:"Host", field:"Hostname", width:"8em"},  
+                                         {name:"Testcase", field:"Testcase", width:"8em"},  
+                                         {name:"State", field:"StateModifier", width:"8em"},
+                                         {name:"Pass", field:"Pass", width:"6em", styles:"text-align:center;"},
+                                         {name:"Start", field:"Start", width:"6em", styles:"text-align:center;"},
+                                         {name:"End", field:"End", width:"6em", styles:"text-align:center;"},
+                                         {name:"Maxduration", field:"Maxduration", width:"6em", styles:"text-align:center;"},
+                                         {name:"Tag", field:"Tag", width:"4em", styles:"text-align:center;"},
+                                         {name:"Log Location", field:"Loglocation", width:"8em"}
+                                       ]}, 
+                            "WhatIsRunningErrorStatus");
+                            
 
-		 grid.startup();
+         grid.startup();
          setInterval("xx(objstore)", 1000);
          
       });
@@ -187,9 +185,9 @@ echo <<<_END
          dojo.xhrGet({
             url: "index.php?object=workqueue&action=getjson",
             load: function(runningdata, ioArgs) {
-		       // copy the running data into the object store
-		       
-		       function saveDone(){alert("Done saving.");}
+               // copy the running data into the object store
+               
+               function saveDone(){alert("Done saving.");}
                function saveFailed(){alert("Save failed.");}
                
                var gotNames= function(items, request){
@@ -202,18 +200,18 @@ echo <<<_END
                }
                
                var request = objstore.fetch({query: {ID:"*"}, queryOptions: {ignoreCase: true}, onComplete: gotNames});
-		       
-		       for (var i=0; i<runningdata.length; i++) {
+               
+               for (var i=0; i<runningdata.length; i++) {
                   console.log(runningdata[i]);
-		          objstore.newItem(runningdata[i]);
-		          console.log(objstore);
+                  objstore.newItem(runningdata[i]);
+                  console.log(objstore);
 
-		       } 
+               } 
             },
             error: function(errorMessage, ioArgs) {
-		       //Look up the node we'll stick the error text under.
+               //Look up the node we'll stick the error text under.
                var targetNode = dojo.byId("WhatIsRunningErrorStatus");
-		       var message = "";
+               var message = "";
                switch (ioArgs.xhr.status) {
                   case 404:
                      // message = "The requested page was not found"; 
@@ -234,9 +232,9 @@ echo <<<_END
                
                console.log(ioArgs.xhr.status + " " + message + " " + errorMessage);  /* <<<<<<<<< do we need this alert */
             },
-		    handleAs: 'json'
-		 });
-	  }  
+            handleAs: 'json'
+         });
+      }  
    </script>
 _END;
     
@@ -438,34 +436,34 @@ echo <<<_END
          xx(objstore);
 
          var grid = new dojox.grid.DataGrid({    // use the adapter to give the grid a Dojo Data compliant interface to the store    
-		                    store: objstore,
-		                    escapeHTMLInData: false,          /* <<<<<<<< is this safe (cross site attacks) */
-		                    columnReordering: true, 
-		                    structure: [ {name:"Cancel", field:"Cancelit", width:"8em"},
-		                                 {name:"ID", field:"ID", width:"6em", styles:"text-align:center;"},        
-		                                 {name:"Project", field:"Project", width:"8em"},        
-		                                 {name:"Phase", field:"Phase", width:"8em"},  
-		                                 {name:"Request Type", field:"Requesttype", width:"8em"},  
-		                                 {name:"Tester", field:"Tester", width:"8em"},  
-		                                 {name:"State", field:"State", width:"8em"},  
-		                                 {name:"Tablename1", field:"Tablename1", width:"8em"},  
-		                                 {name:"ObjectID1", field:"ObjectID1", width:"6em", styles:"text-align:center;"},  
-		                                 {name:"Tablename2", field:"Tablename2", width:"8em"},  
-		                                 {name:"ObjectID2", field:"ObjectID2", width:"6em", styles:"text-align:center;"},
-		                                 {name:"Tablename3", field:"Tablename3", width:"8em"},
-		                                 {name:"ObjectID3", field:"ObjectID3", width:"6em", styles:"text-align:center;"},
-		                                 {name:"Tablename4", field:"Tablename4", width:"8em"},
-		                                 {name:"ObjectID4", field:"ObjectID4", width:"6em", styles:"text-align:center;"},
-				                         {name:"Description1", field:"Description1", width:"8em"},
-		                                 {name:"Description1Type", field:"Description1Type", width:"6em", styles:"text-align:center;"},
-		                                 {name:"Start", field:"Start", width:"6em", styles:"text-align:center;"},
-		                                 {name:"End", field:"End", width:"6em", styles:"text-align:center;"},
-		                                 {name:"Log directory", field:"Logdirectory", width:"8em"},
-		                                 {name:"Scenario Log Filename", field:"Scenariologfilename", width:"8em"}
-		                               ]}, 
-		                    "WhatIsRunningErrorStatus");
+                            store: objstore,
+                            escapeHTMLInData: false,          /* <<<<<<<< is this safe (cross site attacks) */
+                            columnReordering: true, 
+                            structure: [ {name:"Cancel", field:"Cancelit", width:"8em"},
+                                         {name:"ID", field:"ID", width:"6em", styles:"text-align:center;"},        
+                                         {name:"Project", field:"Project", width:"8em"},        
+                                         {name:"Phase", field:"Phase", width:"8em"},  
+                                         {name:"Request Type", field:"Requesttype", width:"8em"},  
+                                         {name:"Tester", field:"Tester", width:"8em"},  
+                                         {name:"State", field:"State", width:"8em"},  
+                                         {name:"Tablename1", field:"Tablename1", width:"8em"},  
+                                         {name:"ObjectID1", field:"ObjectID1", width:"6em", styles:"text-align:center;"},  
+                                         {name:"Tablename2", field:"Tablename2", width:"8em"},  
+                                         {name:"ObjectID2", field:"ObjectID2", width:"6em", styles:"text-align:center;"},
+                                         {name:"Tablename3", field:"Tablename3", width:"8em"},
+                                         {name:"ObjectID3", field:"ObjectID3", width:"6em", styles:"text-align:center;"},
+                                         {name:"Tablename4", field:"Tablename4", width:"8em"},
+                                         {name:"ObjectID4", field:"ObjectID4", width:"6em", styles:"text-align:center;"},
+                                         {name:"Description1", field:"Description1", width:"8em"},
+                                         {name:"Description1Type", field:"Description1Type", width:"6em", styles:"text-align:center;"},
+                                         {name:"Start", field:"Start", width:"6em", styles:"text-align:center;"},
+                                         {name:"End", field:"End", width:"6em", styles:"text-align:center;"},
+                                         {name:"Log directory", field:"Logdirectory", width:"8em"},
+                                         {name:"Scenario Log Filename", field:"Scenariologfilename", width:"8em"}
+                                       ]}, 
+                            "WhatIsRunningErrorStatus");
 
-		 grid.startup();
+         grid.startup();
 
          setInterval("xx(objstore)", 1000);
       });
@@ -475,7 +473,7 @@ echo <<<_END
          dojo.xhrGet({
             url: "index.php?object=workrequest&action=getjson",
             load: function(runningdata, ioArgs) {
-		       // copy the running data into the object store
+               // copy the running data into the object store
                
                var gotNames= function(items, request){
                   for (var i = 0; i < items.length; i++) {
@@ -487,17 +485,17 @@ echo <<<_END
                
                var request = objstore.fetch({query: {ID:"*"}, queryOptions: {ignoreCase: true}, onComplete: gotNames});
                
-		       for (var i=0; i<runningdata.length; i++) {
+               for (var i=0; i<runningdata.length; i++) {
                   console.log(runningdata[i]);
-		          objstore.newItem(runningdata[i]);
-		          console.log(objstore);
+                  objstore.newItem(runningdata[i]);
+                  console.log(objstore);
 
-		       } 
+               } 
             },
             error: function(errorMessage, ioArgs) {
-		       //Look up the node we'll stick the text under.
+               //Look up the node we'll stick the text under.
                var targetNode = dojo.byId("WhatIsRunningErrorStatus");
-		       var message = "";
+               var message = "";
                switch (ioArgs.xhr.status) {
                   case 404:
                      // message = "The requested page was not found"; 
@@ -515,10 +513,10 @@ echo <<<_END
                }
                targetNode.innerHTML = message + " " + errorMessage;
            },
-		    handleAs: 'json'
-		 });
+            handleAs: 'json'
+         });
 
-	  }  
+      }  
    </script>
 _END;
     
@@ -556,9 +554,9 @@ function show_active_workrequest1($current_project = NULL, $current_phase = NULL
    }
 
    $fieldnames = array("ID", "Project", "Phase", "Requesttype", "TesterID", "State", "Tablename1", "ObjectID1", 
-   		               "Tablename2", "ObjectID2", "Tablename3", "ObjectID3",   
+                       "Tablename2", "ObjectID2", "Tablename3", "ObjectID3",   
                        "Tablename4", "ObjectID4", "Description1", "Description1Type",
-   		               "Start", "End", "Logdirectory", "Scenariologfilename");
+                       "Start", "End", "Logdirectory", "Scenariologfilename");
    $query = "SELECT ID, Project, Phase, Requesttype, TesterID, State, Tablename1, ObjectID1, Tablename2, ObjectID2, Tablename3, ObjectID3, Tablename4, ObjectID4, " .
             "Description1, Description1Type, Start, End, Logdirectory, Scenariologfilename FROM daf.workrequest "  . $where . " ORDER by Project, Phase";
    $result = mysql_query($query);
@@ -840,8 +838,8 @@ function query_active_workrequest($current_project = NULL, $current_phase = NULL
    }
 
    $fieldnames = array("ID", "Project", "Phase", "Requesttype", "Tester", "State", "Tablename1", "ObjectID1", 
-   		               "Tablename2", "ObjectID2", "Tablename3", "ObjectID3", "Tablename4", "ObjectID4", 
-   		               "Description1", "Description1Type", "Start", "End", "Logdirectory", "Scenariologfilename");
+                       "Tablename2", "ObjectID2", "Tablename3", "ObjectID3", "Tablename4", "ObjectID4", 
+                       "Description1", "Description1Type", "Start", "End", "Logdirectory", "Scenariologfilename");
    $query = "SELECT ID, Project, Phase, Requesttype, TesterID, State, Tablename1, ObjectID1, Tablename2, ObjectID2, Tablename3, ObjectID3, Tablename4, ObjectID4, " .
             "Start, End, Logdirectory, Scenariologfilename FROM daf.workrequest "  . $where . " ORDER by Project, Phase";
    $result = mysql_query($query);

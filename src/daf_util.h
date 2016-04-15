@@ -50,10 +50,13 @@ void chomp(char *mystring);
 int set_ulimit_c_unlimited(char *errmsg, int max_errmsg_len);
 
 void split_namevalue_parameter(char *namevalue,
-		                       char *name,
-							   int name_len,
-							   char *value,
-							   int value_len);
+                               char *name,
+                               int name_len,
+                               char *value,
+                               int value_len);
+
+char *get_hostname(char *hostname, int max_hostname_len);
+char *get_short_hostname(char *hostname, int max_hostname_len);
 
 
 #endif

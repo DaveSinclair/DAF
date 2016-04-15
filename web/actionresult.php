@@ -547,28 +547,28 @@ _END;
 echo <<<_END
          
          var grid = new dojox.grid.DataGrid({    // use the adapter to give the grid a Dojo Data compliant interface to the store    
-		                    // store: dataStore = objstore,
+                            // store: dataStore = objstore,
                             store: dataStore = dojo.data.ObjectStore({objectStore: myStore}),
-		                    escapeHTMLInData: false,          /* <<<<<<<< is this safe (cross site attacks) */
-		                    columnReordering: true,
-		                    defaultcell: {width:"8em", styles:"	border-style: solid;border-width: 1px; border-color:red; background-color: #B7DBFF;"},
+                            escapeHTMLInData: false,          /* <<<<<<<< is this safe (cross site attacks) */
+                            columnReordering: true,
+                            defaultcell: {width:"8em", styles:" border-style: solid;border-width: 1px; border-color:red; background-color: #B7DBFF;"},
                             structure: [ {name:"ID", field:"ID", width:"3em", styles:"text-align:center;border-width: 1px; border-color:red;"},        
-		                                 {name:"Scenario Result ID", field:"ScenarioresultID", width:"8em", styles:"text-align:center;"},        
-		                                 {name:"Action Type", field:"Actiontype", width:"8em"},        
-		                                 {name:"Step Number", field:"Stepnumber", width:"5em", styles:"text-align:center;"},        
-		                                 {name:"Status", field:"Status", width:"8em"},  
-		                                 {name:"Hostname", field:"Hostname", width:"8em"},
-		                                 {name:"Testcase", field:"Testcase", width:"8em"},
-		                                 {name:"Invocation", field:"Invocation", width:"32em"},
-		                                 {name:"Pass", field:"Pass", width:"4em", styles:"text-align:center;"},
-		                                 {name:"Start", field:"Start", width:"6em", styles:"text-align:center;"},
-		                                 {name:"End", field:"End", width:"6em", styles:"text-align:center;"},
-		                                 {name:"Comments", field:"Comments", width:"16em"}
-		                               ]}, 
-		                    "ActionresultStatus");
-		                    
+                                         {name:"Scenario Result ID", field:"ScenarioresultID", width:"8em", styles:"text-align:center;"},        
+                                         {name:"Action Type", field:"Actiontype", width:"8em"},        
+                                         {name:"Step Number", field:"Stepnumber", width:"5em", styles:"text-align:center;"},        
+                                         {name:"Status", field:"Status", width:"8em"},  
+                                         {name:"Hostname", field:"Hostname", width:"8em"},
+                                         {name:"Testcase", field:"Testcase", width:"8em"},
+                                         {name:"Invocation", field:"Invocation", width:"32em"},
+                                         {name:"Pass", field:"Pass", width:"4em", styles:"text-align:center;"},
+                                         {name:"Start", field:"Start", width:"6em", styles:"text-align:center;"},
+                                         {name:"End", field:"End", width:"6em", styles:"text-align:center;"},
+                                         {name:"Comments", field:"Comments", width:"16em"}
+                                       ]}, 
+                            "ActionresultStatus");
+                            
 
-		 grid.startup();
+         grid.startup();
          
       });
       

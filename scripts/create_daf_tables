@@ -10,6 +10,25 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 
 USE daf;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `dafconfiguration`
+--
+
+CREATE TABLE IF NOT EXISTS `dafconfiguration` (
+  `ID` INT(11) NOT NULL AUTO_INCREMENT,
+  `Name` VARCHAR(32) NOT NULL ,
+  `Value` VARCHAR(128) NOT NULL ,
+   PRIMARY KEY (`ID`)
+) ENGINE = InnoDB DEFAULT CHARSET=ascii DEFAULT COLLATE=ascii_bin;
+
+INSERT INTO dafconfiguration (Name, Value) VALUES('DAFmajorversion', '1');
+INSERT INTO dafconfiguration (Name, Value) VALUES('DAFminorversion', '0');
+INSERT INTO dafconfiguration (Name, Value) VALUES('Createdon', NOW());
+INSERT INTO dafconfiguration (Name, Value) VALUES('Createdby', USER());
+INSERT INTO dafconfiguration (Name, Value) VALUES('Mariasqlversion', VERSION());
+
 --
 -- Table structure for table `action`
 --
@@ -473,7 +492,7 @@ CREATE TABLE IF NOT EXISTS `workqueue` (
   `Hostname` varchar(64) NOT NULL,
   `State` enum('Notstarted','Tobecanceled','Preparing','Running','Pendingcompletion','Completed') NOT NULL,
   `Statemodifier` enum('None','Canceled_due_to_error_in_step','Completed','No_available_host','No_remote_host_connect','Clnt_call_failed','Prepare_cmd_failed','Execute_cmd_failed') NOT NULL,
-  `Testcase` varchar(32) NOT NULL,
+  `Testcase` varchar(64) NOT NULL,
   `Invocation` varchar(1024) NOT NULL,
   `Duration` enum('Rununtilcomplete','RunforNminutes','TimeoutafterNminutes') NOT NULL,
   `Maxduration` int(11) NOT NULL,

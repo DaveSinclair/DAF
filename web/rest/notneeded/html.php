@@ -92,15 +92,15 @@ class PHPRestSQLRenderer {
             echo '<table>'."\n";
             foreach ($this->PHPRestSQL->output['row'] as $field) {
                 echo '<tr>'."\n";
-				echo '<th>'.htmlspecialchars($field['field']).'</th>'."\n";
-				echo '<td>'."\n";
+                echo '<th>'.htmlspecialchars($field['field']).'</th>'."\n";
+                echo '<td>'."\n";
                 if (isset($field['xlink'])) {
                     echo '<a href="'.htmlspecialchars($field['xlink']).'">'.htmlspecialchars($field['value']).'</a>'."\n";
                 } else {
                     echo htmlspecialchars($field['value'])."\n";
                 }
                 echo '</td>'."\n";
-				echo '</tr>'."\n";
+                echo '</tr>'."\n";
             }
             echo '</table>'."\n";
         }

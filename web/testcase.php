@@ -346,7 +346,7 @@ function show_detailed_testcase($ID) {
 
 function modify_testcase($ID) {
 
-   $query = "SELECT ID,	Name, Description FROM daf.testcase where ID = '" . $ID . "'";
+   $query = "SELECT ID, Name, Description FROM daf.testcase where ID = '" . $ID . "'";
    $testcase = mysql_query($query);
 
    if (! $testcase) 

@@ -658,40 +658,41 @@ void make_legal_filename(char *filename)
 /*                                                                                                   */
 /* ------------------------------------------------------------------------------------------------- */
 
-int lookupID(MYSQL *sql_connection, char *tablename, char *name, int *ID, char *msg, int max_msg_len) {
+int lookupID(MYSQL *sql_connection, char *tablename, char *name, int *ID, char *msg, int max_msg_len)
+{
 
 #undef  SUBNAME
 #define SUBNAME "lookupID"
 
-   char query[1024];
-   int rc = 0;
-   MYSQL_RES  *res_set;
-   MYSQL_ROW  row;
+    char query[1024];
+    int rc = 0;
+    MYSQL_RES  *res_set;
+    MYSQL_ROW  row;
 
-   snprintf(query, sizeof(query), "SELECT ID FROM %s where Name = '%s';", tablename, name);
+    snprintf(query, sizeof(query), "SELECT ID FROM %s where Name = '%s';", tablename, name);
 
-   if (perform_query(SUBNAME, sql_connection, query) == 0)
-   {
-      if ((res_set = check_for_res_set(SUBNAME, sql_connection, query)))
-      {
+    if (perform_query(SUBNAME, sql_connection, query) == 0)
+    {
+        if ((res_set = check_for_res_set(SUBNAME, sql_connection, query)))
+        {
 
-         if ((row = mysql_fetch_row(res_set)) != NULL)
-         {
+            if ((row = mysql_fetch_row(res_set)) != NULL)
+            {
 
-            *ID = strtoll(row[0], NULL, 0);
+                *ID = strtoll(row[0], NULL, 0);
 
-          }
+            }
 
-          mysql_free_result(res_set);
+            mysql_free_result(res_set);
 
-      }
+        }
 
-   }
-   else
-   {
-	   snprintf(msg, max_msg_len, "Could not run %s", query);
-	   rc = 1;
-   }
+    }
+    else
+    {
+        snprintf(msg, max_msg_len, "Could not run %s", query);
+        rc = 1;
+    }
 
     return(rc);
 
@@ -825,7 +826,7 @@ void lookup_actiontype(actiontype_t *actiontypes,
 
     int i;
 
-    safecpy(actiontype, "not found", max_actiontype_len);
+    safecpy(actiontype, "not_found", max_actiontype_len);
 
     for (i=0; i<num_actiontype_records; i++)
     {
@@ -869,7 +870,7 @@ void lookup_testcase(testcase_t *testcases,
 
     int i;
 
-    safecpy(testcase, "not found", max_testcase_len);
+    safecpy(testcase, "not_found", max_testcase_len);
 
     for (i=0; i<num_testcase_records; i++)
     {
@@ -942,9 +943,11 @@ int get_name_from_ID(MYSQL *sql_connection,
 
         }
 
-    } else {
-    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
-        SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+    }
+    else
+    {
+        snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+                 SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
         print_msg_to_console(msg);
     }
 
@@ -1012,9 +1015,11 @@ void get_all_actiontype_records(MYSQL         *sql_connection,
 
         }
 
-    }  else {
-    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
-        SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+    }
+    else
+    {
+        snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+                 SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
         print_msg_to_console(msg);
     }
 
@@ -1078,9 +1083,11 @@ actiontype_t *allocate_and_get_all_actiontype_records(MYSQL  *sql_connection,
 
         }
 
-    } else {
-    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
-        SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+    }
+    else
+    {
+        snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+                 SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
         print_msg_to_console(msg);
     }
 
@@ -1148,9 +1155,11 @@ void get_all_testcase_records(MYSQL       *sql_connection,
 
         }
 
-    } else {
-    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
-        SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+    }
+    else
+    {
+        snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+                 SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
         print_msg_to_console(msg);
     }
 
@@ -1219,9 +1228,11 @@ host_t *allocate_and_get_host_records(MYSQL  *sql_connection,
 
         }
 
-    } else {
+    }
+    else
+    {
         snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
-        SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+                 SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
         print_msg_to_console(msg);
     }
 
@@ -1352,9 +1363,11 @@ hosts_in_use_t *allocate_and_get_host_in_use_records_in_this_scenario_step(MYSQL
 
             mysql_free_result(res_set);
 
-        }  else {
-        	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
-            SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+        }
+        else
+        {
+            snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+                     SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
             print_msg_to_console(msg);
         }
 
@@ -1422,10 +1435,12 @@ testcase_t *allocate_and_get_all_testcase_records(MYSQL  *sql_connection,
 
         }
 
-    }  else {
-    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
-       SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
-       print_msg_to_console(msg);
+    }
+    else
+    {
+        snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+                 SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+        print_msg_to_console(msg);
     }
 
     return(p);
@@ -1470,10 +1485,12 @@ parameter_t *allocate_and_get_all_parameter_records(MYSQL  *sql_connection,
 
         }
 
-    } else {
-    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
-       SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
-       print_msg_to_console(msg);
+    }
+    else
+    {
+        snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+                 SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+        print_msg_to_console(msg);
     }
 
     return(p);
@@ -1542,9 +1559,11 @@ void get_all_workqueue_records(MYSQL         *sql_connection,
 
         }
 
-    } else {
-    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
-        SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+    }
+    else
+    {
+        snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+                 SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
         print_msg_to_console(msg);
     }
 
@@ -1608,9 +1627,11 @@ workqueue_t *allocate_and_get_all_workqueue_records(MYSQL  *sql_connection,
 
         }
 
-    } else {
-    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
-        SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+    }
+    else
+    {
+        snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+                 SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
         print_msg_to_console(msg);
     }
 
@@ -1746,9 +1767,11 @@ void get_collectortype_records(MYSQL            *sql_connection,
 
         }
 
-    } else {
-    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
-        SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+    }
+    else
+    {
+        snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+                 SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
         print_msg_to_console(msg);
     }
 
@@ -1835,9 +1858,11 @@ void get_collectorvalue_records(MYSQL             *sql_connection,
 
         }
 
-    } else {
-    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
-        SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+    }
+    else
+    {
+        snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+                 SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
         print_msg_to_console(msg);
     }
 
@@ -1923,9 +1948,11 @@ void get_environmentvalue_records(MYSQL               *sql_connection,
 
         }
 
-    } else {
-    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
-        SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+    }
+    else
+    {
+        snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+                 SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
         print_msg_to_console(msg);
     }
 
@@ -2014,9 +2041,11 @@ void get_environmentvalue_assignments(MYSQL          *sql_connection,
 
             mysql_free_result(res_set);
 
-        } else {
-        	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
-            SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+        }
+        else
+        {
+            snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+                     SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
             print_msg_to_console(msg);
         }
 
@@ -2104,9 +2133,11 @@ void get_action_records(MYSQL     *sql_connection,
 
         }
 
-    } else {
-    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
-        SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+    }
+    else
+    {
+        snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+                 SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
         print_msg_to_console(msg);
     }
 
@@ -2188,9 +2219,11 @@ action_t *allocate_and_get_action_records(MYSQL     *sql_connection,
 
         }
 
-    } else {
-    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
-        SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+    }
+    else
+    {
+        snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+                 SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
         print_msg_to_console(msg);
     }
 
@@ -2278,9 +2311,11 @@ void get_host_records(MYSQL     *sql_connection,
 
         }
 
-    } else {
-    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
-        SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+    }
+    else
+    {
+        snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+                 SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
         print_msg_to_console(msg);
     }
 
@@ -2366,9 +2401,11 @@ void get_collectorset_records(MYSQL           *sql_connection,
             mysql_free_result(res_set);
         }
 
-    } else {
-    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
-        SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+    }
+    else
+    {
+        snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+                 SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
         print_msg_to_console(msg);
     }
 
@@ -2455,9 +2492,11 @@ void get_collectorsetmembers_records(MYSQL                 *sql_connection,
 
         }
 
-    } else {
-    	snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
-        SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
+    }
+    else
+    {
+        snprintf(msg, sizeof(msg), "%s: query (%s) failed, errono=%u - %s\n",
+                 SUBNAME, query, mysql_errno(sql_connection), mysql_error(sql_connection));
         print_msg_to_console(msg);
     }
 
@@ -2824,8 +2863,8 @@ void get_workqueue_record(MYSQL_RES    *res_set,
             break;
 
         case 1:
-             workqueue->WorkrequestID = (Iu32) strtoull((*row)[i], NULL, 0);
-             break;
+            workqueue->WorkrequestID = (Iu32) strtoull((*row)[i], NULL, 0);
+            break;
 
         case 2:
             safecpy(workqueue->Project, (*row)[i], sizeof(workqueue->Project));
@@ -4054,7 +4093,7 @@ int get_scenario(MYSQL *sql_connection, int scenarioID, scenario_t *scenario)
 
 /*--------------------------------------------------------------------------------------------------------*/
 /*                                                                                                        */
-/* PROCEDURE:    get_scenario                                                                             */
+/* PROCEDURE:    get_scenarioresult                                                                       */
 /*                                                                                                        */
 /* PARAMS IN:                                                                                             */
 /*                                                                                                        */
@@ -5984,51 +6023,64 @@ levelstuff_t *getlevelstuff(MYSQL *sql_connection,
 
 }
 
-void parse_userdefinedparameters(char *parameterstring, userdefinedparameter_t *p_userdefinedparameters, int num_userdefinedparameters) {
+void parse_userdefinedparameters(char *parameterstring, userdefinedparameter_t *p_userdefinedparameters, int num_userdefinedparameters)
+{
 
 
-   char tempstring[128];   // TODO what length should this be??
-   char token[128];
-   int i, j, k;
+    char tempstring[128];   // TODO what length should this be??
+    char token[128];
+    int i, j, k;
 
-   bool_t in_token = FALSE;
-   bool_t token_found = FALSE;
+    bool_t in_token = FALSE;
+    bool_t token_found = FALSE;
 
-   safecpy(tempstring, parameterstring, sizeof(tempstring));
+    safecpy(tempstring, parameterstring, sizeof(tempstring));
 
-   for (i=0, j=0, k=0; i<strlen(tempstring); i++) {
+    for (i=0, j=0, k=0; i<strlen(tempstring); i++)
+    {
 
-	   if (tempstring[i] == ' ') {
-		   if (in_token) {
-			   token_found = TRUE;
-			   in_token = FALSE;
-		   }
-	   } else {
-		   if (! in_token) {
-			   in_token = TRUE;
-		   }
-	   }
+        if (tempstring[i] == ' ')
+        {
+            if (in_token)
+            {
+                token_found = TRUE;
+                in_token = FALSE;
+            }
+        }
+        else
+        {
+            if (! in_token)
+            {
+                in_token = TRUE;
+            }
+        }
 
-	   if (in_token) {
-		   token[j] = tempstring[i];
-		   j++;
-	   }
+        if (in_token)
+        {
+            token[j] = tempstring[i];
+            j++;
+        }
 
-	   if (in_token && (i == (strlen(tempstring)-1))) {
-		   token_found = TRUE;
-	   }
+        if (in_token && (i == (strlen(tempstring)-1)))
+        {
+            token_found = TRUE;
+        }
 
-	   if (token_found) {
-		   token[j] = 0;
-	      if (k < num_userdefinedparameters) {
-	         split_namevalue_parameter(token, p_userdefinedparameters[k].Name, sizeof(p_userdefinedparameters[k].Name),
-			                           p_userdefinedparameters[k].Value, sizeof(p_userdefinedparameters[k].Value));
-	         k++;
-	      }
-	      j = 0;
-	   }
+        if (token_found)
+        {
+            token[j] = 0;
 
-   }
+            if (k < num_userdefinedparameters)
+            {
+                split_namevalue_parameter(token, p_userdefinedparameters[k].Name, sizeof(p_userdefinedparameters[k].Name),
+                                          p_userdefinedparameters[k].Value, sizeof(p_userdefinedparameters[k].Value));
+                k++;
+            }
+
+            j = 0;
+        }
+
+    }
 
 
 
@@ -6066,128 +6118,168 @@ void parse_userdefinedparameters(char *parameterstring, userdefinedparameter_t *
 /*---------------------------------------------------------------------------------------------------*/
 
 void substitute_user_defined_parameters(char *parameters,  parameter_t *pParameters, int num_parameter_records,
-		                                userdefinedparameter_t * p_userdefinedparameters, int num_userdefinedparameters,
-		                                char *substitutedParameters, int max_substitutedParameters_len) {
+                                        userdefinedparameter_t *p_userdefinedparameters, int num_userdefinedparameters,
+                                        char *substitutedParameters, int max_substitutedParameters_len)
+{
 
-	int i;
-	int j = 0;
-	int k;
-	bool_t udpFound = FALSE;
-	bool_t udpMatchedinUserParameters = FALSE;
-	bool_t udpMatchedinDefaultParameters = FALSE;
-	bool_t inStartMarker = FALSE;
-	bool_t startMarkerFound = FALSE;
-	bool_t inEndMarker = FALSE;
-	bool_t endMarkerFound = FALSE;
-	int udpStart;
-	int udpEnd;
-	int udpNameStart;
-	int udpNameEnd;
-	int udpStartInDestination;
-	char updChar = '%';
-	char udp[DAF_PARAMETER_VALUE_LEN];
-	int udpNameLength;
+    int i;
+    int j = 0;
+    int k;
+    bool_t udpFound = FALSE;
+    bool_t udpMatchedinUserParameters = FALSE;
+    bool_t udpMatchedinDefaultParameters = FALSE;
+    bool_t inStartMarker = FALSE;
+    bool_t startMarkerFound = FALSE;
+    bool_t inEndMarker = FALSE;
+    bool_t endMarkerFound = FALSE;
+    int udpStart;
+    int udpEnd;
+    int udpNameStart;
+    int udpNameEnd;
+    int udpStartInDestination;
+    char updChar = '%';
+    char udp[DAF_PARAMETER_VALUE_LEN];
+    int udpNameLength;
 
-	for (i=0; (i<strlen(parameters)) && (j<(max_substitutedParameters_len-1)); i++) {
+    for (i=0; (i<strlen(parameters)) && (j<(max_substitutedParameters_len-1)); i++)
+    {
 
-		if (parameters[i] == updChar) {
-			if (! startMarkerFound) {
-				if (! inStartMarker) {     // found the first % at the start of a udp
-					inStartMarker = TRUE;
- 				    udpStart = i;
- 				    udpStartInDestination= j;
-			    } else {                   // found the second % at the start of a udp
-					inStartMarker = FALSE;
-					startMarkerFound = TRUE;
-			    }
-			} else {
-				if (! inEndMarker) {       // found the second % at the start of a udp
-					inEndMarker = TRUE;
-			    } else {                   // found the second % at the start of a udp
-					inEndMarker = FALSE;
-					endMarkerFound = TRUE;
- 				    udpEnd = i;
-			    }
-			}
-		} else {
-			if (inStartMarker) {        // found a single % only
-				inStartMarker = FALSE;  // since we only found one % we have not found a start marker (%%) for a udp
-			} else if (inEndMarker) {   // found a single % only
-				inEndMarker = FALSE;    // since we only found one % we have not found an end marker (%%) for a udp either
-			}
-		}
+        if (parameters[i] == updChar)
+        {
+            if (! startMarkerFound)
+            {
+                if (! inStartMarker)       // found the first % at the start of a udp
+                {
+                    inStartMarker = TRUE;
+                    udpStart = i;
+                    udpStartInDestination= j;
+                }
+                else                       // found the second % at the start of a udp
+                {
+                    inStartMarker = FALSE;
+                    startMarkerFound = TRUE;
+                }
+            }
+            else
+            {
+                if (! inEndMarker)         // found the second % at the start of a udp
+                {
+                    inEndMarker = TRUE;
+                }
+                else                       // found the second % at the start of a udp
+                {
+                    inEndMarker = FALSE;
+                    endMarkerFound = TRUE;
+                    udpEnd = i;
+                }
+            }
+        }
+        else
+        {
+            if (inStartMarker)          // found a single % only
+            {
+                inStartMarker = FALSE;  // since we only found one % we have not found a start marker (%%) for a udp
+            }
+            else if (inEndMarker)       // found a single % only
+            {
+                inEndMarker = FALSE;    // since we only found one % we have not found an end marker (%%) for a udp either
+            }
+        }
 
-		if (startMarkerFound && endMarkerFound) {
-			// we have found a UDP - its first character is at index udpStart+2 and its last character is at index udpEnd-2
-			udpNameStart = udpStart + 2;
-			udpNameEnd = udpEnd - 2;
-			if (udpNameEnd >= udpNameStart) {     // the length of the name of the udp could be 0  our string contained %%%% so we do not treat this as a UDP after all
-			   udpFound = TRUE;	          // but in fact the length of the upd is > 0, so we really have found a UDP
-			   udpNameLength = udpNameEnd - udpNameStart + 1;
-			   memcpy(udp, parameters+udpNameStart, udpNameLength);
-			   udp[udpNameLength] = 0;
-			}
-		}
+        if (startMarkerFound && endMarkerFound)
+        {
+            // we have found a UDP - its first character is at index udpStart+2 and its last character is at index udpEnd-2
+            udpNameStart = udpStart + 2;
+            udpNameEnd = udpEnd - 2;
+
+            if (udpNameEnd >= udpNameStart)       // the length of the name of the udp could be 0  our string contained %%%% so we do not treat this as a UDP after all
+            {
+                udpFound = TRUE;              // but in fact the length of the upd is > 0, so we really have found a UDP
+                udpNameLength = udpNameEnd - udpNameStart + 1;
+                memcpy(udp, parameters+udpNameStart, udpNameLength);
+                udp[udpNameLength] = 0;
+            }
+        }
 
 
 
-		if (udpFound) {
+        if (udpFound)
+        {
 
-			// did the user provide a value for this parameter?
-			udpMatchedinUserParameters = FALSE;
-			for (k=0; k<num_userdefinedparameters; k++) {
-				if (MATCH(udp, p_userdefinedparameters[k].Name)) {
-					udpMatchedinUserParameters = TRUE;
-					break;
-				}
-
-			}
-			if (udpMatchedinUserParameters) {
-		       udpFound = FALSE;
-			   inStartMarker = FALSE;
-			   startMarkerFound = FALSE;
-			   inEndMarker = FALSE;
-			   endMarkerFound = FALSE;
-			}
-		}
-
-		if (udpFound) {
-
-           // search for the UDP in the parameters_t structure
-
-			udpMatchedinDefaultParameters = FALSE;
-			for (k=0; k<num_parameter_records; k++) {
-				if (MATCH(udp, pParameters[k].Name)) {
-					udpMatchedinDefaultParameters = TRUE;
-					break;
-				}
-			}
-			udpFound = FALSE;
-			inStartMarker = FALSE;
-			startMarkerFound = FALSE;
-			inEndMarker = FALSE;
-			endMarkerFound = FALSE;
-		}
-
-		if (udpMatchedinUserParameters) {
-		    if ((udpStartInDestination+strlen(p_userdefinedparameters[k].Value)) < (max_substitutedParameters_len-1)) {
-		       memcpy(substitutedParameters+udpStartInDestination, p_userdefinedparameters[k].Value, strlen(p_userdefinedparameters[k].Value));
-			   j = udpStartInDestination + strlen(p_userdefinedparameters[k].Value);
-		    }
+            // did the user provide a value for this parameter?
             udpMatchedinUserParameters = FALSE;
-		} else if (udpMatchedinDefaultParameters) {
-		    if ((udpStartInDestination+strlen(pParameters[k].Defaultvalue)) < (max_substitutedParameters_len-1)) {
-		       memcpy(substitutedParameters+udpStartInDestination, pParameters[k].Defaultvalue, strlen(pParameters[k].Defaultvalue));     // TODO what about default value ???????
-			   j = udpStartInDestination + strlen(pParameters[k].Defaultvalue);
-		    }
+
+            for (k=0; k<num_userdefinedparameters; k++)
+            {
+                if (MATCH(udp, p_userdefinedparameters[k].Name))
+                {
+                    udpMatchedinUserParameters = TRUE;
+                    break;
+                }
+
+            }
+
+            if (udpMatchedinUserParameters)
+            {
+                udpFound = FALSE;
+                inStartMarker = FALSE;
+                startMarkerFound = FALSE;
+                inEndMarker = FALSE;
+                endMarkerFound = FALSE;
+            }
+        }
+
+        if (udpFound)
+        {
+
+            // search for the UDP in the parameters_t structure
+
             udpMatchedinDefaultParameters = FALSE;
-		} else {
-		    substitutedParameters[j++] = parameters[i];
-		}
 
-	}
+            for (k=0; k<num_parameter_records; k++)
+            {
+                if (MATCH(udp, pParameters[k].Name))
+                {
+                    udpMatchedinDefaultParameters = TRUE;
+                    break;
+                }
+            }
 
-	substitutedParameters[j] = 0;
+            udpFound = FALSE;
+            inStartMarker = FALSE;
+            startMarkerFound = FALSE;
+            inEndMarker = FALSE;
+            endMarkerFound = FALSE;
+        }
+
+        if (udpMatchedinUserParameters)
+        {
+            if ((udpStartInDestination+strlen(p_userdefinedparameters[k].Value)) < (max_substitutedParameters_len-1))
+            {
+                memcpy(substitutedParameters+udpStartInDestination, p_userdefinedparameters[k].Value, strlen(p_userdefinedparameters[k].Value));
+                j = udpStartInDestination + strlen(p_userdefinedparameters[k].Value);
+            }
+
+            udpMatchedinUserParameters = FALSE;
+        }
+        else if (udpMatchedinDefaultParameters)
+        {
+            if ((udpStartInDestination+strlen(pParameters[k].Defaultvalue)) < (max_substitutedParameters_len-1))
+            {
+                memcpy(substitutedParameters+udpStartInDestination, pParameters[k].Defaultvalue, strlen(pParameters[k].Defaultvalue));     // TODO what about default value ???????
+                j = udpStartInDestination + strlen(pParameters[k].Defaultvalue);
+            }
+
+            udpMatchedinDefaultParameters = FALSE;
+        }
+        else
+        {
+            substitutedParameters[j++] = parameters[i];
+        }
+
+    }
+
+    substitutedParameters[j] = 0;
 
 }
 
@@ -6707,7 +6799,7 @@ int spawn_new_workrequest(MYSQL *sql_connection,
 /*---------------------------------------------------------------------------------------------------*/
 
 int create_new_workqueue_record(MYSQL          *sql_connection,
-		                        int            WorkrequestID,
+                                int            WorkrequestID,
                                 char           *Project,
                                 char           *Phase,
                                 action_t       *actions,
@@ -6716,8 +6808,8 @@ int create_new_workqueue_record(MYSQL          *sql_connection,
                                 int            num_actiontype_records,
                                 testcase_t     *testcases,
                                 int            num_testcase_records,
-								userdefinedparameter_t * p_userdefinedparameters,
-								int            num_userdefinedparameters,
+                                userdefinedparameter_t *p_userdefinedparameters,
+                                int            num_userdefinedparameters,
                                 int            index,
                                 int            ScenarioID,
                                 int            Stepnumber,
@@ -6738,7 +6830,7 @@ int create_new_workqueue_record(MYSQL          *sql_connection,
     char        msg[MAX_MSG_LEN];
     char        errmsg[MAX_MSG_LEN];
     char        actiontype[32];
-    char        testcase[32];
+    char        testcase[64];
 
     char        S_WorkrequestID[16];
     char        S_Project[64];
@@ -6756,7 +6848,7 @@ int create_new_workqueue_record(MYSQL          *sql_connection,
     char        S_Hostname[16];
     char        S_State[24];
     char        S_Statemodifier[32];
-    char        S_Testcase[32];
+    char        S_Testcase[64];
     char        S_Invocation[1024];
     char        S_Duration[24];
     char        S_Maxduration[16];
@@ -6826,9 +6918,9 @@ int create_new_workqueue_record(MYSQL          *sql_connection,
     char substitutedParameters[1024];
     pParameters = allocate_and_get_all_parameter_records(sql_connection, &num_parameter_records);
     substitute_user_defined_parameters((actions+index)->Parameters, pParameters, num_parameter_records,
-    		                           p_userdefinedparameters,
-									   num_userdefinedparameters,
-			                           substitutedParameters, sizeof(substitutedParameters));
+                                       p_userdefinedparameters,
+                                       num_userdefinedparameters,
+                                       substitutedParameters, sizeof(substitutedParameters));
 
     snprintf(S_WorkrequestID,    sizeof(S_WorkrequestID),    "%d", WorkrequestID);
     safecpy(S_Project, Project, sizeof(S_Project));
@@ -6886,7 +6978,7 @@ int create_new_workqueue_record(MYSQL          *sql_connection,
 /*---------------------------------------------------------------------------------------------------*/
 
 int create_actions_for_step(MYSQL           *sql_connection,
-		                    int             WorkrequestID,
+                            int             WorkrequestID,
                             char            *Project,
                             char            *Phase,
                             action_t        *actions,
@@ -6895,8 +6987,8 @@ int create_actions_for_step(MYSQL           *sql_connection,
                             int             num_actiontype_records,
                             testcase_t      *testcases,
                             int             num_testcase_records,
-							userdefinedparameter_t * p_userdefinedparameters,
-							int             num_userdefinedparameters,
+                            userdefinedparameter_t *p_userdefinedparameters,
+                            int             num_userdefinedparameters,
                             int             ScenarioID,
                             int             Stepnumber,
                             int             ScenarioresultID,
@@ -6919,7 +7011,7 @@ int create_actions_for_step(MYSQL           *sql_connection,
     {
 
         rc = rc |  create_new_workqueue_record(sql_connection,
-        		                               WorkrequestID,
+                                               WorkrequestID,
                                                Project,
                                                Phase,
                                                actions,
@@ -6928,8 +7020,8 @@ int create_actions_for_step(MYSQL           *sql_connection,
                                                num_actiontype_records,
                                                testcases,
                                                num_testcase_records,
-											   p_userdefinedparameters,
-											   num_userdefinedparameters,
+                                               p_userdefinedparameters,
+                                               num_userdefinedparameters,
                                                k,
                                                ScenarioID,
                                                Stepnumber,
@@ -6966,24 +7058,34 @@ int create_actions_for_step(MYSQL           *sql_connection,
 
 int email_scenario_completion(user_t *user, char *status_table_name,
                               scenarioresult_t *scenarioresult,
-                              outcomeaction_t *outcomeaction, char *errmsg, int max_errmsg_len)
+                              outcomeaction_t *outcomeaction,
+							  char *server_hostname,
+							  int server_port,
+							  char *errmsg, int max_errmsg_len)
 {
 
 #undef  SUBNAME
 #define SUBNAME "email_scenario_completion"
 
     char subject[128];
-    char reportline[22][64];
+    char reportline[23][64];
+    char scenarioresulturl[64];
     char passfail[16];
     char *userlist[] = {user->Email, NULL};
     char *lines[] = {reportline[0], reportline[1], reportline[2], reportline[3], reportline[4], reportline[5],
                      reportline[6], reportline[7], reportline[8], reportline[9], reportline[10], reportline[11],
                      reportline[12], reportline[13], reportline[14], reportline[15], reportline[16],
-                     reportline[17], reportline[18], reportline[19], reportline[20], reportline[21], NULL
+                     reportline[17], reportline[18], reportline[19], reportline[20], reportline[21],
+					 reportline[22], NULL
                     };
     int rc = 0;
 
     errmsg[0] = 0;
+
+    snprintf(scenarioresulturl,
+    		 sizeof(scenarioresulturl),
+    		 "http://%s:%d/daf/index.php?action=show&object=scenarioresult&ID=%d",
+    		 server_hostname, server_port, scenarioresult->ID);
 
     if (scenarioresult->Pass == 100)
     {
@@ -6996,31 +7098,32 @@ int email_scenario_completion(user_t *user, char *status_table_name,
 
     snprintf(subject, sizeof(subject), "Scenario %s, Scenarioresult %u has %s\n",
              scenarioresult->Scenarioname, scenarioresult->ID, passfail);
-    snprintf(reportline[0],  sizeof(reportline[0]),  "Project:              %s\n",    scenarioresult->Project);
-    snprintf(reportline[1],  sizeof(reportline[1]),  "Phase:                %s\n",    scenarioresult->Phase);
-    snprintf(reportline[2],  sizeof(reportline[2]),  "Scenario:             %s\n",    scenarioresult->Scenarioname);
-    snprintf(reportline[3],  sizeof(reportline[3]),  "Jobname:              %s\n",    scenarioresult->Jobname);
-    snprintf(reportline[4],  sizeof(reportline[4]),  "Teststand:            %s\n",    scenarioresult->Teststand);
-    snprintf(reportline[5],  sizeof(reportline[5]),  "Testlevel:            %s\n",    scenarioresult->Testlevel);
+    snprintf(reportline[0],  sizeof(reportline[0]),  "Project:                 %s\n",    scenarioresult->Project);
+    snprintf(reportline[1],  sizeof(reportline[1]),  "Phase:                   %s\n",    scenarioresult->Phase);
+    snprintf(reportline[2],  sizeof(reportline[2]),  "Scenario:                %s\n",    scenarioresult->Scenarioname);
+    snprintf(reportline[3],  sizeof(reportline[2]),  "ScenarioResult:          %s\n",    scenarioresulturl);
+    snprintf(reportline[4],  sizeof(reportline[3]),  "Jobname:                 %s\n",    scenarioresult->Jobname);
+    snprintf(reportline[5],  sizeof(reportline[4]),  "Teststand:               %s\n",    scenarioresult->Teststand);
+    snprintf(reportline[6],  sizeof(reportline[5]),  "Testlevel:               %s\n",    scenarioresult->Testlevel);
 
-    snprintf(reportline[6],  sizeof(reportline[6]),  "Tester:               %s %s\n", user->Firstname, user->Lastname);
+    snprintf(reportline[7],  sizeof(reportline[6]),  "Tester:                  %s %s\n", user->Firstname, user->Lastname);
 
-    snprintf(reportline[7],  sizeof(reportline[7]),  "Actiononpass:         %s\n",    outcomeaction->Actiononpass);
-    snprintf(reportline[8],  sizeof(reportline[8]),  "Actiononfail:         %s\n",    outcomeaction->Actiononfail);
-    snprintf(reportline[9],  sizeof(reportline[9]),  "Scenariotoberunonpass %u\n",    outcomeaction->Scenariotoberunonpass);
-    snprintf(reportline[10], sizeof(reportline[10]), "Scenariotoberunonfail %u\n",    outcomeaction->Scenariotoberunonfail);
-    snprintf(reportline[11], sizeof(reportline[11]), "Erroraction           %s\n",    outcomeaction->Erroraction);
-    snprintf(reportline[12], sizeof(reportline[12]), "Notificationonpass    %s\n",    outcomeaction->Notificationonpass);
-    snprintf(reportline[13], sizeof(reportline[13]), "Notificationononfail  %s\n",    outcomeaction->Notificationonfail);
-    snprintf(reportline[14], sizeof(reportline[14]), "TesterID:             %u\n",    outcomeaction->TesterID);
-    snprintf(reportline[15], sizeof(reportline[15]), "MaillistID:           %u\n",    outcomeaction->MaillistID);
+    snprintf(reportline[8],  sizeof(reportline[7]),  "Actiononpass:            %s\n",    outcomeaction->Actiononpass);
+    snprintf(reportline[9],  sizeof(reportline[8]),  "Actiononfail:            %s\n",    outcomeaction->Actiononfail);
+    snprintf(reportline[10], sizeof(reportline[9]),  "Scenariotoberunonpass:   %u\n",    outcomeaction->Scenariotoberunonpass);
+    snprintf(reportline[11], sizeof(reportline[10]), "Scenariotoberunonfail:   %u\n",    outcomeaction->Scenariotoberunonfail);
+    snprintf(reportline[12], sizeof(reportline[11]), "Erroraction:             %s\n",    outcomeaction->Erroraction);
+    snprintf(reportline[13], sizeof(reportline[12]), "Notificationonpass:      %s\n",    outcomeaction->Notificationonpass);
+    snprintf(reportline[14], sizeof(reportline[13]), "Notificationononfail:    %s\n",    outcomeaction->Notificationonfail);
+    snprintf(reportline[15], sizeof(reportline[14]), "TesterID:                %u\n",    outcomeaction->TesterID);
+    snprintf(reportline[16], sizeof(reportline[15]), "MaillistID:              %u\n",    outcomeaction->MaillistID);
 
-    snprintf(reportline[16], sizeof(reportline[16]),  "Total     actions:   %d\n",    scenarioresult->Actionsinscenario);
-    snprintf(reportline[17], sizeof(reportline[17]),  "Attempted actions:   %d\n",    scenarioresult->Actionsattempted);
-    snprintf(reportline[18], sizeof(reportline[18]),  "Passed    actions:   %d\n",    scenarioresult->Actionspassed);
-    snprintf(reportline[19], sizeof(reportline[19]),  "Failed    actions:   %d\n",    scenarioresult->Actionsfailed);
-    snprintf(reportline[20], sizeof(reportline[20]),  "Pass Rate:           %d%%\n",  scenarioresult->Pass);
-    snprintf(reportline[21], sizeof(reportline[21]),  "Pass/Fail:           %s\n",    passfail);
+    snprintf(reportline[17], sizeof(reportline[16]), "Total     actions:       %d\n",    scenarioresult->Actionsinscenario);
+    snprintf(reportline[18], sizeof(reportline[17]), "Attempted actions:       %d\n",    scenarioresult->Actionsattempted);
+    snprintf(reportline[19], sizeof(reportline[18]), "Passed    actions:       %d\n",    scenarioresult->Actionspassed);
+    snprintf(reportline[20], sizeof(reportline[19]), "Failed    actions:       %d\n",    scenarioresult->Actionsfailed);
+    snprintf(reportline[21], sizeof(reportline[20]), "Pass Rate:               %d%%\n",  scenarioresult->Pass);
+    snprintf(reportline[22], sizeof(reportline[21]), "Pass/Fail:               %s\n",    passfail);
 
     if (send_email_message(userlist, subject, lines, errmsg, sizeof(errmsg)) != 0)
     {
@@ -7051,6 +7154,7 @@ int email_scenario_completion(user_t *user, char *status_table_name,
 
 int email_scenario_completion_to_maillist(MYSQL *sql_connection, int MaillistID, char *status_table_name,
         scenarioresult_t *scenarioresult, outcomeaction_t *outcomeaction,
+		char *server_name, int server_port,
         char *errmsg, int max_errmsg_len)
 {
 
@@ -7089,7 +7193,8 @@ int email_scenario_completion_to_maillist(MYSQL *sql_connection, int MaillistID,
                 get_user_record(res_set, &row, &user);
 
                 if ((rc = email_scenario_completion(&user, status_table_name, scenarioresult,
-                                                    outcomeaction, errmsg, max_errmsg_len)) != 0)
+                                                    outcomeaction, server_name, server_port,
+													errmsg, max_errmsg_len)) != 0)
                 {
 
                     snprintf(errmsg, max_errmsg_len, "%s: problem sending status email for scenario %s to user %s %s (email=%s)\n",
@@ -7222,7 +7327,7 @@ void archive_step_from_workqueue(MYSQL *sql_connection, char *status_database_na
 /*             routine                                                                               */
 /* ------------------------------------------------------------------------------------------------- */
 
-void process_workqueue(MYSQL *sql_connection)
+void process_workqueue(MYSQL *sql_connection, af_daemon_thread_data_t *p_af_daemon_thread_data)
 {
 
 #undef  SUBNAME
@@ -7232,7 +7337,7 @@ void process_workqueue(MYSQL *sql_connection)
 
     typedef struct step
     {
-    	int WorkrequestID;
+        int WorkrequestID;
         char Project[DAF_PROJECT_LEN];
         char Phase[DAF_PHASE_LEN];
         int ScenarioID;
@@ -7307,7 +7412,7 @@ void process_workqueue(MYSQL *sql_connection)
     int max_allowed_actions;
 
     int num_userdefinedparameters = 0;
-    userdefinedparameter_t * p_userdefinedparameters = NULL;
+    userdefinedparameter_t *p_userdefinedparameters = NULL;
 
     if ((steps = (step_t *) malloc(500 * sizeof(step_t))) == NULL)    /* 5000 ? <<<<<<<<<<<<<<<<<<<<<< */
     {
@@ -7329,98 +7434,104 @@ void process_workqueue(MYSQL *sql_connection)
     /* --------------------------------------------------------------------------------------------- */
     /* Turn this code on if the agent's can't see the server (eg fulla)  POLLING OPTION              */
     /* Examine the workqueue records and see if any slaves have completed a testcase                 */
-	/* When POLLING_SERVER is defined, the corresponding code in the agent is turned off             */
+    /* When POLLING_SERVER is defined, the corresponding code in the agent is turned off             */
     /* --------------------------------------------------------------------------------------------- */
 
     if (num_workqueue_records > 0)
     {
 
-         for (i=0; i<num_workqueue_records; i++) {
+        for (i=0; i<num_workqueue_records; i++)
+        {
 
-			int exit_code;
-			int exit_signal;
-			bool_t complete_this_action = FALSE;
-			bool_t action_passed = FALSE;
-			cmd_log_state exit_state;
+            int exit_code;
+            int exit_signal;
+            bool_t complete_this_action = FALSE;
+            bool_t action_passed = FALSE;
+            cmd_log_state exit_state;
 
-			// 	can return one of CMD_FREE = 0,
-			//CMD_INITIALISED = 1,
-			//CMD_RUNNING = 2,
-			//CMD_BG_RUNNING = 3,
-			//CMD_COMPLETED = 4,
-			//CMD_CANCELED_TIMELIMIT = 5,
-			//CMD_CANCELED_TIMEDOUT = 6,
-			//CMD_COMPLETED_TIMELIMIT = 7,
-			//CMD_COMPLETED_TIMEDOUT = 8,
-			//CMD_COMPLETION_LOST = 9,
+            //     can return one of CMD_FREE = 0,
+            //CMD_INITIALISED = 1,
+            //CMD_RUNNING = 2,
+            //CMD_BG_RUNNING = 3,
+            //CMD_COMPLETED = 4,
+            //CMD_CANCELED_TIMELIMIT = 5,
+            //CMD_CANCELED_TIMEDOUT = 6,
+            //CMD_COMPLETED_TIMELIMIT = 7,
+            //CMD_COMPLETED_TIMEDOUT = 8,
+            //CMD_COMPLETION_LOST = 9,
 
-			if (MATCH(p_workqueues[i].State, "Running")) {     // TODO other states ??
+            if (MATCH(p_workqueues[i].State, "Running"))       // TODO other states ??
+            {
 
-				rc = query_slave_tag(p_workqueues[i].Hostname,
-									 p_workqueues[i].Tag,
-									 &exit_code,
-									 &exit_signal,
-									 &exit_state);
+                rc = query_slave_tag(p_workqueues[i].Hostname,
+                                     p_workqueues[i].Tag,
+                                     &exit_code,
+                                     &exit_signal,
+                                     &exit_state);
 
-				snprintf(msg, sizeof(msg), "Status for Host %s, tag %d: exit code %d, exit_signal %d, exit_state %d\n",
-						p_workqueues[i].Hostname,
-						p_workqueues[i].Tag,
-						exit_code,
-						exit_signal,
-						exit_state);
-				print_scenario_console_log(msg);
+                snprintf(msg, sizeof(msg), "Status for Host %s, tag %d: exit code %d, exit_signal %d, exit_state %d\n",
+                         p_workqueues[i].Hostname,
+                         p_workqueues[i].Tag,
+                         exit_code,
+                         exit_signal,
+                         exit_state);
+                print_scenario_console_log(msg);
 
-				if ((exit_state == CMD_COMPLETION_LOST) || (exit_state == CMD_CANCELED_TIMELIMIT) || (exit_state == CMD_CANCELED_TIMEDOUT )) {
-					complete_this_action = TRUE;
-			        action_passed = FALSE;
-				} else if ((exit_state == CMD_COMPLETED) || (exit_state == CMD_COMPLETED_TIMELIMIT) || (exit_state == CMD_COMPLETED_TIMEDOUT )) {
-					complete_this_action = TRUE;
-			        action_passed = TRUE;
-				}
+                if ((exit_state == CMD_COMPLETION_LOST) || (exit_state == CMD_CANCELED_TIMELIMIT) || (exit_state == CMD_CANCELED_TIMEDOUT ))
+                {
+                    complete_this_action = TRUE;
+                    action_passed = FALSE;
+                }
+                else if ((exit_state == CMD_COMPLETED) || (exit_state == CMD_COMPLETED_TIMELIMIT) || (exit_state == CMD_COMPLETED_TIMEDOUT ))
+                {
+                    complete_this_action = TRUE;
+                    action_passed = TRUE;
+                }
 
-				if (complete_this_action) {
+                if (complete_this_action)
+                {
 
-					 char             query[512];
-					 char             temp[128];
+                    char             query[512];
+                    char             temp[128];
 
-				     snprintf(msg, sizeof(msg), "Completing workqueue element for Host %s, tag %d: pass %d\n",
-								p_workqueues[i].Hostname,
-								p_workqueues[i].Tag,
-								action_passed ? 0 : 100);
-					 print_scenario_console_log(msg);
+                    snprintf(msg, sizeof(msg), "Completing workqueue element for Host %s, tag %d: pass %d\n",
+                             p_workqueues[i].Hostname,
+                             p_workqueues[i].Tag,
+                             action_passed ? 0 : 100);
+                    print_scenario_console_log(msg);
 
-					 safecpy(query, "UPDATE daf.workqueue SET ", sizeof(query));
-					 snprintf(temp, sizeof(temp), "State = '%s'", "Pendingcompletion");
-					 safecat(query, temp, sizeof(query));
-					 safecat(query, ", ", sizeof(query));
-					 snprintf(temp, sizeof(temp), "StateModifier = '%s'", "None");
-					 safecat(query, temp, sizeof(query));
-					 safecat(query, ", ", sizeof(query));
-					 snprintf(temp, sizeof(temp), "Pass = '%u'", (exit_code == 0) ? 100 : 0);
-					 safecat(query, temp, sizeof(query));
-					 safecat(query, ", ", sizeof(query));
-					 safecat(query, "End = NOW()", sizeof(query));
-					 snprintf(temp, sizeof(temp), " WHERE ID = '%u'", p_workqueues[i].ID);
-					 safecat(query, temp, sizeof(query));
+                    safecpy(query, "UPDATE daf.workqueue SET ", sizeof(query));
+                    snprintf(temp, sizeof(temp), "State = '%s'", "Pendingcompletion");
+                    safecat(query, temp, sizeof(query));
+                    safecat(query, ", ", sizeof(query));
+                    snprintf(temp, sizeof(temp), "StateModifier = '%s'", "None");
+                    safecat(query, temp, sizeof(query));
+                    safecat(query, ", ", sizeof(query));
+                    snprintf(temp, sizeof(temp), "Pass = '%u'", (exit_code == 0) ? 100 : 0);
+                    safecat(query, temp, sizeof(query));
+                    safecat(query, ", ", sizeof(query));
+                    safecat(query, "End = NOW()", sizeof(query));
+                    snprintf(temp, sizeof(temp), " WHERE ID = '%u'", p_workqueues[i].ID);
+                    safecat(query, temp, sizeof(query));
 
-					 if (perform_query(SUBNAME, sql_connection, query) != 0)
-					 {
-							   // something bad happened
-						 snprintf(msg, sizeof(msg), "update failed - %s\n", query);
-						 print_scenario_console_log(msg);
-					 }
-					 else
-					 {
+                    if (perform_query(SUBNAME, sql_connection, query) != 0)
+                    {
+                        // something bad happened
+                        snprintf(msg, sizeof(msg), "update failed - %s\n", query);
+                        print_scenario_console_log(msg);
+                    }
+                    else
+                    {
 
-						 safecpy(p_workqueues[i].State, "Pendingcompletion", sizeof(p_workqueues[i].State));
+                        safecpy(p_workqueues[i].State, "Pendingcompletion", sizeof(p_workqueues[i].State));
 
-						 snprintf(msg, sizeof(msg), "update okay - %s\n", query);
-					     print_scenario_console_log(msg);
-						// table update was okay
-					 }
-				}
-			 }
-         }
+                        snprintf(msg, sizeof(msg), "update okay - %s\n", query);
+                        print_scenario_console_log(msg);
+                        // table update was okay
+                    }
+                }
+            }
+        }
 
     }
 
@@ -7466,7 +7577,7 @@ void process_workqueue(MYSQL *sql_connection)
             for (j=0; j<num_known_step; j++)
             {
                 if ((p_workqueues[i].ScenarioresultID == steps[j].ScenarioresultID) &&
-                    (p_workqueues[i].Stepnumber       == steps[j].Stepnumber))
+                        (p_workqueues[i].Stepnumber       == steps[j].Stepnumber))
                 {
                     known_step = TRUE;
                     break;
@@ -7481,17 +7592,15 @@ void process_workqueue(MYSQL *sql_connection)
                 steps[num_known_step].TestlevelID      = p_workqueues[i].TestlevelID;
                 steps[num_known_step].TeststandID      = p_workqueues[i].TeststandID;
                 steps[num_known_step].OutcomeactionID  = p_workqueues[i].OutcomeactionID,
-                steps[num_known_step].MaillistID       = p_workqueues[i].MaillistID,
-                steps[num_known_step].TesterID         = p_workqueues[i].TesterID,
-                steps[num_known_step].Stepnumber       = p_workqueues[i].Stepnumber;
+                                      steps[num_known_step].MaillistID       = p_workqueues[i].MaillistID,
+                                                            steps[num_known_step].TesterID         = p_workqueues[i].TesterID,
+                                                                                  steps[num_known_step].Stepnumber       = p_workqueues[i].Stepnumber;
                 safecpy(steps[num_known_step].Scenariologfilename, p_workqueues[i].Scenariologfilename, sizeof(steps[num_known_step].Scenariologfilename));
                 safecpy(steps[num_known_step].Loglocation,         p_workqueues[i].Loglocation,         sizeof(steps[num_known_step].Loglocation));
                 safecpy(steps[num_known_step].Project,             p_workqueues[i].Project,             sizeof(steps[num_known_step].Project));
                 safecpy(steps[num_known_step].Phase,               p_workqueues[i].Phase,               sizeof(steps[num_known_step].Phase));
 
-     printf("DEBUG DEBUG: xx  i %d  Project %s  Phase %s\n", i, steps[i].Project, steps[i].Phase);
-
-     printf("Copy Phase %s to %s\n", p_workqueues[i].Phase, steps[num_known_step].Phase);
+                printf("Copy Phase %s to %s\n", p_workqueues[i].Phase, steps[num_known_step].Phase);
                 num_known_step++;
             }
 
@@ -7518,10 +7627,10 @@ void process_workqueue(MYSQL *sql_connection)
             {
                 if (p_workqueues[j].Stepnumber == steps[i].Stepnumber)
                 {
-                	snprintf(msg, sizeof(msg), "Workqueue[%d]: ID=%u, Hostname=%s, ScenarioResultID=%u, Stepnumber=%u, State=%s, StateModifier=%s, "
-                			                   "Tag=%u, Pass=%u\n", j,
-											   p_workqueues[j].ID, p_workqueues[j].Hostname, p_workqueues[j].ScenarioresultID, p_workqueues[j].Stepnumber,
-											   p_workqueues[j].State, p_workqueues[j].Statemodifier, p_workqueues[j].Tag, p_workqueues[j].Pass);
+                    snprintf(msg, sizeof(msg), "Workqueue[%d]: ID=%u, Hostname=%s, ScenarioResultID=%u, Stepnumber=%u, State=%s, StateModifier=%s, "
+                             "Tag=%u, Pass=%u\n", j,
+                             p_workqueues[j].ID, p_workqueues[j].Hostname, p_workqueues[j].ScenarioresultID, p_workqueues[j].Stepnumber,
+                             p_workqueues[j].State, p_workqueues[j].Statemodifier, p_workqueues[j].Tag, p_workqueues[j].Pass);
                     print_scenario_console_log(msg);
 
                     snprintf(msg, sizeof(msg), "ID=%u, host=%s, j=%u, ScenarioresultID = %u, Stepnumber = %d, "
@@ -7572,8 +7681,6 @@ void process_workqueue(MYSQL *sql_connection)
             determine_status_database_name(steps[i].Project, steps[i].Phase, status_database_name, sizeof(status_database_name));
             safecpy(Scenariologfilename, steps[i].Scenariologfilename, sizeof(Scenariologfilename));
             safecpy(Loglocation,         steps[i].Loglocation,         sizeof(Loglocation));
-
-            printf("DEBUG DEBUG: yy  i %d Step %d Project %s  Phase %s\n", i, Stepnumber, steps[i].Project, steps[i].Phase);
 
             open_scenario_console_log(Loglocation, Scenariologfilename);
 
@@ -7722,7 +7829,7 @@ void process_workqueue(MYSQL *sql_connection)
                     /* means the scenarioresult State will either be 'Canceled' or 'Completed'                     */
                     /* ------------------------------------------------------------------------------------------- */
 
-          printf("DEBUG DEBUG:  i %d Step %d Project %s  Phase %s\n", i, Stepnumber, steps[i].Project, steps[i].Phase);
+                    //      printf("DEBUG DEBUG:  i %d Step %d Project %s  Phase %s\n", i, Stepnumber, steps[i].Project, steps[i].Phase);
 
                     determine_status_database_name(steps[i].Project, steps[i].Phase, status_database_name, sizeof(status_database_name));
                     determine_status_table_name(status_database_name, "scenarioresult", status_table_name, sizeof(status_table_name));
@@ -7819,7 +7926,8 @@ void process_workqueue(MYSQL *sql_connection)
                         get_user(sql_connection, TesterID, &user);
                         get_scenarioresult(sql_connection, ScenarioresultID, status_table_name, &scenarioresult);
 
-                        if (email_scenario_completion(&user, status_table_name, &scenarioresult, &outcomeaction, errmsg, sizeof(errmsg)) != 0)
+                        if (email_scenario_completion(&user, status_table_name, &scenarioresult, &outcomeaction,
+                        		p_af_daemon_thread_data->sql_servername, p_af_daemon_thread_data->sql_port, errmsg, sizeof(errmsg)) != 0)
                         {
                             print_scenario_console_log(errmsg);
                         }
@@ -7833,7 +7941,7 @@ void process_workqueue(MYSQL *sql_connection)
                         get_scenarioresult(sql_connection, ScenarioresultID, status_table_name, &scenarioresult);
 
                         if (email_scenario_completion_to_maillist(sql_connection, MaillistID, status_table_name,
-                                &scenarioresult, &outcomeaction, errmsg, sizeof(errmsg)) != 0)
+                                &scenarioresult, &outcomeaction, p_af_daemon_thread_data->sql_servername, p_af_daemon_thread_data->sql_port, errmsg, sizeof(errmsg)) != 0)
                         {
                             print_scenario_console_log(errmsg);
                         }
@@ -7889,33 +7997,44 @@ void process_workqueue(MYSQL *sql_connection)
                     if (((num_current_actions + num_action_records_in_next_step) <= max_allowed_actions) || (max_allowed_actions == 0))
                     {
 
-                    	workrequest_t workrequest;
-                    	if (get_workrequest(sql_connection, WorkrequestID, "daf.workrequest", &workrequest) != 0) {
+                        workrequest_t workrequest;
 
-                    		// problem   TODO add error message
+                        if (get_workrequest(sql_connection, WorkrequestID, "daf.workrequest", &workrequest) != 0)
+                        {
 
-                    	}
-						if (MATCH(workrequest.Description1Type, "UserDefinedParameters")) {
-							// build a structure containing all the user defined parameters that have been supplied
-							int i;
-							for (i=0; i<strlen(workrequest.Description1); i++) {
-								if (workrequest.Description1[i] == '=') {
-									num_userdefinedparameters++;
-								}
-							}
-							if (num_userdefinedparameters>0) {
-								p_userdefinedparameters = (userdefinedparameter_t *) malloc(num_userdefinedparameters * sizeof(userdefinedparameter_t));
-								parse_userdefinedparameters(workrequest.Description1, p_userdefinedparameters, num_userdefinedparameters);
-							} else {
-								p_userdefinedparameters = NULL;
-							}
+                            // problem   TODO add error message
 
-						}
+                        }
 
-						printf("DEBUG DEBUG: Step %d Project %s  Phase %s\n", Stepnumber+1, steps[Stepnumber].Project, steps[Stepnumber].Phase);
+                        if (MATCH(workrequest.Description1Type, "UserDefinedParameters"))
+                        {
+                            // build a structure containing all the user defined parameters that have been supplied
+                            int i;
+
+                            for (i=0; i<strlen(workrequest.Description1); i++)
+                            {
+                                if (workrequest.Description1[i] == '=')
+                                {
+                                    num_userdefinedparameters++;
+                                }
+                            }
+
+                            if (num_userdefinedparameters>0)
+                            {
+                                p_userdefinedparameters = (userdefinedparameter_t *) malloc(num_userdefinedparameters * sizeof(userdefinedparameter_t));
+                                parse_userdefinedparameters(workrequest.Description1, p_userdefinedparameters, num_userdefinedparameters);
+                            }
+                            else
+                            {
+                                p_userdefinedparameters = NULL;
+                            }
+
+                        }
+
+                        //            printf("DEBUG DEBUG: Step %d Project %s  Phase %s\n", Stepnumber+1, steps[Stepnumber].Project, steps[Stepnumber].Phase);
 
                         rc =  create_actions_for_step(sql_connection,
-                        		                      WorkrequestID,
+                                                      WorkrequestID,
                                                       steps[i].Project,             // this is the project from the previous step, but that will be the same
                                                       steps[i].Phase,               // this is the phase from the previous step, but it will be the same
                                                       p_actions,
@@ -7924,8 +8043,8 @@ void process_workqueue(MYSQL *sql_connection)
                                                       num_actiontype_records,
                                                       p_testcases,
                                                       num_testcase_records,
-													  p_userdefinedparameters,
-													  num_userdefinedparameters,
+                                                      p_userdefinedparameters,
+                                                      num_userdefinedparameters,
                                                       ScenarioID,
                                                       (Stepnumber+1),
                                                       ScenarioresultID,
@@ -7982,7 +8101,7 @@ void process_workqueue(MYSQL *sql_connection)
 
     if (p_userdefinedparameters != NULL)
     {
-         free(p_userdefinedparameters);
+        free(p_userdefinedparameters);
     }
 
 }
@@ -8037,7 +8156,7 @@ void process_new_workqueue_requests(MYSQL *sql_connection)
     char        S_Status[32];
     char        S_Statemodifier[32];
     char        S_Hostname[32];
-    char        S_Testcase[32];
+    char        S_Testcase[64];
     char        S_Invocation[1024];
     char        S_Pass[8];
     char        S_Start[24];
@@ -8064,8 +8183,8 @@ void process_new_workqueue_requests(MYSQL *sql_connection)
     remote_client_prepare_cmd_res   prepare_result;
     remote_client_execute_cmd_args  execute_args;
     remote_client_execute_cmd_res   execute_result;
-//    remote_client_start_scenario_args  start_scenario_args;
-//    remote_client_start_scenario_res   start_scenario_result;
+    //    remote_client_start_scenario_args  start_scenario_args;
+    //    remote_client_start_scenario_res   start_scenario_result;
     enum clnt_stat          stat;
     char identstring[10] = "";
     CLIENT   *remote_client;            /* the RPC handle to reach the remote test host                 */
@@ -8604,8 +8723,8 @@ void process_new_workqueue_requests(MYSQL *sql_connection)
                                     if (rc == E_OK)
                                     {
                                         snprintf(msg, sizeof(msg), "   Deleted %s on remote test host %s, log directory %s\n",
-                                                  remote_pathname, workqueue.Hostname, remote_pathname);
-                                         print_scenario_console_log(msg);
+                                                 remote_pathname, workqueue.Hostname, remote_pathname);
+                                        print_scenario_console_log(msg);
                                     }
                                     else
                                     {
@@ -8739,7 +8858,7 @@ void process_new_scenario_requests(MYSQL *sql_connection)
     int  num_current_actions;
     int  max_allowed_actions;
     int num_userdefinedparameters = 0;
-    userdefinedparameter_t * p_userdefinedparameters = NULL;
+    userdefinedparameter_t *p_userdefinedparameters = NULL;
     int i;
 
     /* --------------------------------------------------------------------------------------------- */
@@ -8788,20 +8907,27 @@ void process_new_scenario_requests(MYSQL *sql_connection)
                     TeststandID      = workrequest.ObjectID4;
                     TesterID         = workrequest.TesterID;
 
-                    if (MATCH(workrequest.Description1Type, "UserDefinedParameters")) {
-                    	// build a structure containing all the user defined parameters that have been supplied
+                    if (MATCH(workrequest.Description1Type, "UserDefinedParameters"))
+                    {
+                        // build a structure containing all the user defined parameters that have been supplied
 
-                    	for (i=0; i<strlen(workrequest.Description1); i++) {
-                    		if (workrequest.Description1[i] == '=') {
-                    			num_userdefinedparameters++;
-                    		}
-                    	}
-                    	if (num_userdefinedparameters>0) {
-                    		p_userdefinedparameters = (userdefinedparameter_t *) malloc(num_userdefinedparameters * sizeof(userdefinedparameter_t));
-                    		parse_userdefinedparameters(workrequest.Description1, p_userdefinedparameters, num_userdefinedparameters);
-                    	} else {
-                    		p_userdefinedparameters = NULL;
-                    	}
+                        for (i=0; i<strlen(workrequest.Description1); i++)
+                        {
+                            if (workrequest.Description1[i] == '=')
+                            {
+                                num_userdefinedparameters++;
+                            }
+                        }
+
+                        if (num_userdefinedparameters>0)
+                        {
+                            p_userdefinedparameters = (userdefinedparameter_t *) malloc(num_userdefinedparameters * sizeof(userdefinedparameter_t));
+                            parse_userdefinedparameters(workrequest.Description1, p_userdefinedparameters, num_userdefinedparameters);
+                        }
+                        else
+                        {
+                            p_userdefinedparameters = NULL;
+                        }
 
                     }
 
@@ -8949,7 +9075,7 @@ void process_new_scenario_requests(MYSQL *sql_connection)
                         max_allowed_actions = get_licence_max_actions("/opt/daf/daf_licence_file", errmsg, sizeof(errmsg)); /* <<<< hardcoded */
 
                         snprintf(msg, sizeof(msg), "num_current_actions %d, num_action_records %d max_allowed_actions %d\n",
-                        		                   num_current_actions, num_action_records, max_allowed_actions);
+                                 num_current_actions, num_action_records, max_allowed_actions);
                         print_scenario_console_log(msg);
 
                         if (max_allowed_actions == 0)
@@ -9002,7 +9128,7 @@ void process_new_scenario_requests(MYSQL *sql_connection)
                             print_scenario_console_log(msg);
 
                             rc = create_actions_for_step(sql_connection,
-                            		                     WorkrequestID,
+                                                         WorkrequestID,
                                                          workrequest.Project,
                                                          workrequest.Phase,
                                                          p_actions,
@@ -9011,8 +9137,8 @@ void process_new_scenario_requests(MYSQL *sql_connection)
                                                          num_actiontype_records,
                                                          p_testcases,
                                                          num_testcase_records,
-														 p_userdefinedparameters,
-														 num_userdefinedparameters,
+                                                         p_userdefinedparameters,
+                                                         num_userdefinedparameters,
                                                          ScenarioID,
                                                          Stepnumber,
                                                          ScenarioresultID,
@@ -9054,7 +9180,7 @@ void process_new_scenario_requests(MYSQL *sql_connection)
 
             if (p_userdefinedparameters != NULL)
             {
-                 free(p_userdefinedparameters);
+                free(p_userdefinedparameters);
             }
 
             mysql_free_result(res_set);
@@ -9159,10 +9285,10 @@ void *af_work_daemon(void *p)
                                     p_af_daemon_thread_data->sql_password,
                                     p_af_daemon_thread_data->sql_databasename,
                                     p_af_daemon_thread_data->sql_port,
-									p_af_daemon_thread_data->sql_socketname,
+                                    p_af_daemon_thread_data->sql_socketname,
                                     0,
-									errmsg1,
-									sizeof(errmsg1));
+                                    errmsg1,
+                                    sizeof(errmsg1));
 
         if (sql_connection != NULL)
         {
@@ -9170,7 +9296,7 @@ void *af_work_daemon(void *p)
             process_new_scenario_requests(sql_connection);
             process_new_workqueue_requests(sql_connection);
 
-            process_workqueue(sql_connection);
+            process_workqueue(sql_connection, p_af_daemon_thread_data);
             do_disconnect(SUBNAME, sql_connection);
 
         }
@@ -9183,8 +9309,8 @@ void *af_work_daemon(void *p)
                      p_af_daemon_thread_data->sql_password,
                      p_af_daemon_thread_data->sql_databasename,
                      p_af_daemon_thread_data->sql_port,
-					 p_af_daemon_thread_data->sql_socketname,
-					 errmsg1);             // TODO - remove password in clear text ?
+                     p_af_daemon_thread_data->sql_socketname,
+                     errmsg1);             // TODO - remove password in clear text ?
             print_msg_to_console(msg);
 
         }
@@ -9324,10 +9450,10 @@ void *af_collector_daemon(void *p)
                                     p_af_collector_thread_data->sql_password,
                                     p_af_collector_thread_data->sql_databasename,
                                     p_af_collector_thread_data->sql_port,
-									p_af_collector_thread_data->sql_socketname,
+                                    p_af_collector_thread_data->sql_socketname,
                                     0,
-									errmsg1,
-									sizeof(errmsg1));
+                                    errmsg1,
+                                    sizeof(errmsg1));
 
         if (sql_connection != NULL)
         {
@@ -9506,7 +9632,7 @@ void *af_collector_daemon(void *p)
 
                                                 if (rc != 0)
                                                 {
-                                                   print_scenario_console_log(errmsg1);
+                                                    print_scenario_console_log(errmsg1);
                                                 }
                                             }
 
@@ -9748,20 +9874,20 @@ void *af_collector_daemon(void *p)
             do_disconnect(SUBNAME, sql_connection);
 
         }
-		else
-		{
+        else
+        {
 
-			snprintf(msg, sizeof(msg), "af_collector: could not connect to mysql database: %s %s %s %s %d %s: %s\n",
+            snprintf(msg, sizeof(msg), "af_collector: could not connect to mysql database: %s %s %s %s %d %s: %s\n",
                      p_af_collector_thread_data->sql_servername,
                      p_af_collector_thread_data->sql_username,
                      p_af_collector_thread_data->sql_password,
                      p_af_collector_thread_data->sql_databasename,
                      p_af_collector_thread_data->sql_port,
-					 p_af_collector_thread_data->sql_socketname,
-					 errmsg1);             // TODO - remove password in clear text ?
-			print_msg_to_console(msg);
+                     p_af_collector_thread_data->sql_socketname,
+                     errmsg1);             // TODO - remove password in clear text ?
+            print_msg_to_console(msg);
 
-		}
+        }
 
 
         sleep(3600);   /* <<<<<<<<<<<<<< what value should we really use ??? */
@@ -9834,10 +9960,10 @@ void *af_agent_status_daemon(void *p)
                                     p_af_agent_status_daemon_thread_data->sql_password,
                                     p_af_agent_status_daemon_thread_data->sql_databasename,
                                     p_af_agent_status_daemon_thread_data->sql_port,
-									p_af_agent_status_daemon_thread_data->sql_socketname,
+                                    p_af_agent_status_daemon_thread_data->sql_socketname,
                                     0,
-									errmsg1,
-									MAX_MSG_LEN);
+                                    errmsg1,
+                                    MAX_MSG_LEN);
 
 
         if (sql_connection != NULL)
@@ -9883,13 +10009,13 @@ void *af_agent_status_daemon(void *p)
         else
         {
             snprintf(errmsg, sizeof(errmsg), "could not connect to SQL:  %s %s %s %s %d %s: %s\n",
-                    p_af_agent_status_daemon_thread_data->sql_servername,
-                    p_af_agent_status_daemon_thread_data->sql_username,
-                    p_af_agent_status_daemon_thread_data->sql_password,
-                    p_af_agent_status_daemon_thread_data->sql_databasename,
-                    p_af_agent_status_daemon_thread_data->sql_port,
-					p_af_agent_status_daemon_thread_data->sql_socketname,
-					errmsg1);
+                     p_af_agent_status_daemon_thread_data->sql_servername,
+                     p_af_agent_status_daemon_thread_data->sql_username,
+                     p_af_agent_status_daemon_thread_data->sql_password,
+                     p_af_agent_status_daemon_thread_data->sql_databasename,
+                     p_af_agent_status_daemon_thread_data->sql_port,
+                     p_af_agent_status_daemon_thread_data->sql_socketname,
+                     errmsg1);
             print_scenario_console_log(errmsg);
         }
 

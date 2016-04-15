@@ -1,24 +1,24 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" dir="ltr">
 
-	<head>
-	    <style type="text/css">
+    <head>
+        <style type="text/css">
             body, html { font-family:helvetica,arial,sans-serif; font-size:90%; }
         </style>
 
-		<title>DAF Test Automation</title>
-	    <link rel="stylesheet" type="text/css" href="../dojo/dijit/themes/claro/claro.css" />
+        <title>DAF Test Automation</title>
+        <link rel="stylesheet" type="text/css" href="../dojo/dijit/themes/claro/claro.css" />
 
-		<!-- load dojo and provide config via data attribute -->
-		<script src="../dojo/dojo/dojo.js" type="text/javascript" djConfig="parseOnLoad: true"></script>
-		<script>
-			 dojo.require("dijit.MenuBar");
+        <!-- load dojo and provide config via data attribute -->
+        <script src="../dojo/dojo/dojo.js" type="text/javascript" djConfig="parseOnLoad: true"></script>
+        <script>
+             dojo.require("dijit.MenuBar");
              dojo.require("dijit.PopupMenuBarItem");
              dojo.require("dijit.Menu");
              dojo.require("dijit.MenuItem");
              dojo.require("dijit.PopupMenuItem");
-		</script>
-	</head>
+        </script>
+    </head>
     <body class="claro">
         <div dojoType="dijit.MenuBar" id="navMenu">
             <div dojoType="dijit.PopupMenuBarItem">

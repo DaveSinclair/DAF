@@ -46,7 +46,7 @@ function selectPhases1(projectSelector, phaseselectortdID) {
 		         dojo.empty(phaseselectortdID);
 		         var sel = '';
 		         var sid = dojo.byId(phaseselectortdID);
-		         dojo.create("select", {innerHTML: "", id: "phaseselectorId", name: "phase"}, sid);
+		         dojo.create("select", {innerHTML: "", id: "phaseselectorId", name: "phaseID"}, sid);
 		         for (var i=0; i<data.length; i++) {
 		            if (data[i]["ProjectID"] == selectedProjectID) {
 		               dojo.create("option", {innerHTML: data[i]["Name"], value: data[i]["Name"]}, "phaseselectorId");

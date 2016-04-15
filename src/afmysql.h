@@ -122,6 +122,7 @@ void get_workqueue_record(MYSQL_RES    *res_set,
 void get_workrequest_record(MYSQL_RES      *res_set,
                             MYSQL_ROW      *row,
                             workrequest_t  *workrequest);
+
 void get_host_record(MYSQL_RES   *res_set,
                      MYSQL_ROW   *row,
                      host_t      *host);
@@ -144,7 +145,10 @@ void get_environmentvalue_record(MYSQL_RES      *res_set,
                                  MYSQL_ROW      *row,
                                  environmentvalue_t  *environmentvalue);
 
-void process_workqueue(MYSQL *sql_connection);
+int get_scenario(MYSQL *sql_connection, int scenarioID, scenario_t *scenario);
+int get_scenarioresult(MYSQL *sql_connection, int scenarioresultID, char *tablename, scenarioresult_t *scenarioresult);
+
+void process_workqueue(MYSQL *sql_connection, af_daemon_thread_data_t *af_daemon_thread_data);
 void process_new_workqueue_requests(MYSQL *sql_connection);
 void process_new_scenario_requests(MYSQL *sql_connection);
 

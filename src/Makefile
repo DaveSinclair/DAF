@@ -9,6 +9,7 @@ ifeq ($(OS),Linux)
      CFLAGS = -Wall -g 
      CFLAGS1 = -g
      LIBS = -L /opt/lampp/lib -lpthread -lmysqlclient -lz
+     LDFLAGS = -Xlinker -rpath -Xlinker /opt/lampp/lib
      LIBS_AGENT = -lpthread
      INCLUDES = -I/usr/include/mysql
      DEFINES = -DUNAME="\"$(shell uname -a)\"" -DBUILDMACHINE="\"$(HOSTNAME)\""  -D_GNU_SOURCE -D_THREAD_SAFE -DLINUX -DPOLLING_SERVER
@@ -19,7 +20,8 @@ ifeq ($(OS),SunOS)
      OS = SOLARIS
      CFLAGS = -Wall -DPORTMAP -DSOLARIS -g
      CFLAGS1 = -g
-     LIBS = -lpthread -lsocket -lnsl  -lmysqlclient -lz
+     LIBS = -L /opt/lampp/lib -lpthread -lsocket -lnsl  -lmysqlclient -lz
+     LDFLAGS = -Xlinker -rpath -Xlinker /opt/lampp/lib
      INCLUDES = -I/usr/include/mysql
      DEFINES = -DUNAME="\"$(shell uname -a)\"" -DBUILDMACHINE="\"$(HOSTNAME)\"" -DSOLARIS -DPOLLING_SERVER
 endif
@@ -58,16 +60,16 @@ CC = gcc
 all: $(GEN) $(OBJS) $(BINS)
 
 daf: $(DAFOBJ)
-	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) -o $@ $(DAFOBJ) ${LIBS}
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) -o $@ $(DAFOBJ) ${LIBS} ${LDFLAGS}
 
 daf_agent: $(DAFAGENTOBJ)
-	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) -o $@ $(DAFAGENTOBJ) ${LIBS_AGENT}
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) -o $@ $(DAFAGENTOBJ) ${LIBS_AGENT} 
 
 daf_generate_licence: $(DAFGENERATELICENCEOBJ)
-	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) -o $@ $(DAFGENERATELICENCEOBJ) ${LIBS}
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) -o $@ $(DAFGENERATELICENCEOBJ) ${LIBS} 
 
 daf_licence: $(DAFLICENCEOBJ)
-	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) -o $@ $(DAFLICENCEOBJ) ${LIBS}
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) -o $@ $(DAFLICENCEOBJ) ${LIBS} 
 
 daf.o: daf.c 
 	gcc $(CFLAGS) $(DEFINES) $(INCLUDES) daf.c -c

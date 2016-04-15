@@ -3,7 +3,7 @@
 
 #include "daf_protocol.h"
 
-typedef char datetime[40];
+typedef char datetime[DAF_DATETIME_LEN];
 
 #define WORKREQUEST_FIELDS "ID, Project, Phase, RequestType, TesterID, State, Tablename1, ObjectID1, Tablename2, ObjectID2, Tablename3, ObjectID3, Tablename4, ObjectID4, Tablename5, ObjectID5, description1, Description1Type, Logdirectory, Scenariologfilename"
 typedef struct workrequest

@@ -1734,7 +1734,7 @@ _END;
          selectorID("daf.objecttype", "Name", $row[$i]);
          echo "</select></td>";  
       } else if ($fieldname == "Name") {
-      	 $originalname = $row[$i];
+         $originalname = $row[$i];
          echo '<th>Name</th>';
          echo '<td><input type="text" name="name" value="' . $row[$i] . '" size="' . DAF_OBJECTTYPE_LEN . '" maxlength="' . DAF_OBJECTTYPE_LEN . '" ' .
               'dojoType="dijit.form.ValidationTextBox" style="width: ' . DAF_OBJECTTYPE_LEN . 'em;" regExp="[A-Za-z0-9_]{1,' . DAF_OBJECTTYPE_LEN . '}" required="true" trim="true" promptMessage="Enter name of Object Type" ' . 
@@ -2535,14 +2535,14 @@ function objectattributetype($gp) {
             add_error_message("DAFE0078: Cannot create object attribute type " . $gp['name'] . " because an object attribute type of that name already exists");
              
          } else {
-         	
-         	if (! isset($gp['varcharwidth'])) {
-         		$gp['varcharwidth'] = 10;
-         	}
-         	
-         	if (! isset($gp['enumvalues'])) {
-         		$gp['enumvalues'] = 'none';
-         	}
+            
+            if (! isset($gp['varcharwidth'])) {
+                $gp['varcharwidth'] = 10;
+            }
+            
+            if (! isset($gp['enumvalues'])) {
+                $gp['enumvalues'] = 'none';
+            }
 
             $query = "INSERT INTO daf.objectattributetype (Name, ObjecttypeID, Type, Varcharwidth, Enumvalues) " .
                      "VALUES('" . ucfirst(strtolower($gp['name'])) . "','" . $gp['objecttypeid'] . "','" . $gp['type'] . "','" . $gp['varcharwidth'] . "','" . $gp['enumvalues'] . "')";              

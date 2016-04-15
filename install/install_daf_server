@@ -223,6 +223,7 @@ cd xampp
 echo "Stopping Xampp" | tee -a $LOGFILE
 /opt/lampp/lampp stopapache | tee -a $LOGFILE
 /opt/lampp/lampp stopmysql | tee -a $LOGFILE
+/opt/lampp/lampp stopftp | tee -a $LOGFILE
 
 cd $thisdir
 
@@ -461,10 +462,11 @@ echo
 echo "Note: to deinstall the DAF server, run     /opt/uninstall_daf_server" | tee -a $LOGFILE
 echo 
 echo
-echo "REMINDER: you will have to patch in the threaded MYSQL library into LAMPP by hand"
-echo "  cp /usr/lib64/mysql/libmysqlclient_r.so.16 /opt/lampp/lib"
-echo "  cd /opt/lampp/lib"
-echo "  ln -sf libmysqlclient_r.so.16.0.0 libmysqlclient_r.so"
+# Do not think we need the following after all
+#echo "REMINDER: you will have to patch in the threaded MYSQL library into LAMPP by hand"
+#echo "  cp /usr/lib64/mysql/libmysqlclient_r.so.16 /opt/lampp/lib"
+#echo "  cd /opt/lampp/lib"
+#echo "  ln -sf libmysqlclient_r.so.16.0.0 libmysqlclient_r.so"
 
 echo
 

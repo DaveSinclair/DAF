@@ -691,7 +691,88 @@ xdr_remote_client_start_scenario_outcome (XDR *xdrs, remote_client_start_scenari
 {
 	register int32_t *buf;
 
+
+	if (xdrs->x_op == XDR_ENCODE) {
+		 if (!xdr_remote_client_start_scenario_error_types (xdrs, &objp->valid_start_scenario))
+			 return FALSE;
+		buf = XDR_INLINE (xdrs, 7 * BYTES_PER_XDR_UNIT);
+		if (buf == NULL) {
+			 if (!xdr_int (xdrs, &objp->testerID))
+				 return FALSE;
+			 if (!xdr_int (xdrs, &objp->scenarioID))
+				 return FALSE;
+			 if (!xdr_int (xdrs, &objp->scenarioresultID))
+				 return FALSE;
+			 if (!xdr_int (xdrs, &objp->testlevelID))
+				 return FALSE;
+			 if (!xdr_int (xdrs, &objp->teststandID))
+				 return FALSE;
+			 if (!xdr_int (xdrs, &objp->teststandrecordID))
+				 return FALSE;
+			 if (!xdr_int (xdrs, &objp->testlevelrecordID))
+				 return FALSE;
+
+		} else {
+		IXDR_PUT_LONG(buf, objp->testerID);
+		IXDR_PUT_LONG(buf, objp->scenarioID);
+		IXDR_PUT_LONG(buf, objp->scenarioresultID);
+		IXDR_PUT_LONG(buf, objp->testlevelID);
+		IXDR_PUT_LONG(buf, objp->teststandID);
+		IXDR_PUT_LONG(buf, objp->teststandrecordID);
+		IXDR_PUT_LONG(buf, objp->testlevelrecordID);
+		}
+		 if (!xdr_string (xdrs, &objp->errmsg, 256))
+			 return FALSE;
+		return TRUE;
+	} else if (xdrs->x_op == XDR_DECODE) {
+		 if (!xdr_remote_client_start_scenario_error_types (xdrs, &objp->valid_start_scenario))
+			 return FALSE;
+		buf = XDR_INLINE (xdrs, 7 * BYTES_PER_XDR_UNIT);
+		if (buf == NULL) {
+			 if (!xdr_int (xdrs, &objp->testerID))
+				 return FALSE;
+			 if (!xdr_int (xdrs, &objp->scenarioID))
+				 return FALSE;
+			 if (!xdr_int (xdrs, &objp->scenarioresultID))
+				 return FALSE;
+			 if (!xdr_int (xdrs, &objp->testlevelID))
+				 return FALSE;
+			 if (!xdr_int (xdrs, &objp->teststandID))
+				 return FALSE;
+			 if (!xdr_int (xdrs, &objp->teststandrecordID))
+				 return FALSE;
+			 if (!xdr_int (xdrs, &objp->testlevelrecordID))
+				 return FALSE;
+
+		} else {
+		objp->testerID = IXDR_GET_LONG(buf);
+		objp->scenarioID = IXDR_GET_LONG(buf);
+		objp->scenarioresultID = IXDR_GET_LONG(buf);
+		objp->testlevelID = IXDR_GET_LONG(buf);
+		objp->teststandID = IXDR_GET_LONG(buf);
+		objp->teststandrecordID = IXDR_GET_LONG(buf);
+		objp->testlevelrecordID = IXDR_GET_LONG(buf);
+		}
+		 if (!xdr_string (xdrs, &objp->errmsg, 256))
+			 return FALSE;
+	 return TRUE;
+	}
+
 	 if (!xdr_remote_client_start_scenario_error_types (xdrs, &objp->valid_start_scenario))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->testerID))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->scenarioID))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->scenarioresultID))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->testlevelID))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->teststandID))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->teststandrecordID))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->testlevelrecordID))
 		 return FALSE;
 	 if (!xdr_string (xdrs, &objp->errmsg, 256))
 		 return FALSE;
@@ -774,6 +855,215 @@ xdr_remote_client_query_version_res (XDR *xdrs, remote_client_query_version_res 
 	switch (objp->status) {
 	case 0:
 		 if (!xdr_remote_client_query_version_outcome (xdrs, &objp->remote_client_query_version_res_u.outcome))
+			 return FALSE;
+		break;
+	default:
+		break;
+	}
+	return TRUE;
+}
+
+bool_t
+xdr_remote_client_query_scenarioresult_args (XDR *xdrs, remote_client_query_scenarioresult_args *objp)
+{
+	register int32_t *buf;
+
+	 if (!xdr_string (xdrs, &objp->project, DAF_PROJECT_LEN))
+		 return FALSE;
+	 if (!xdr_string (xdrs, &objp->phase, DAF_PHASE_LEN))
+		 return FALSE;
+	 if (!xdr_u_int (xdrs, &objp->scenarioresultID))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->msglevel))
+		 return FALSE;
+	return TRUE;
+}
+
+bool_t
+xdr_remote_client_query_scenarioresult_outcome (XDR *xdrs, remote_client_query_scenarioresult_outcome *objp)
+{
+	register int32_t *buf;
+
+
+	if (xdrs->x_op == XDR_ENCODE) {
+		 if (!xdr_bool (xdrs, &objp->valid))
+			 return FALSE;
+		 if (!xdr_string (xdrs, &objp->project, DAF_PROJECT_LEN))
+			 return FALSE;
+		 if (!xdr_string (xdrs, &objp->phase, DAF_PHASE_LEN))
+			 return FALSE;
+		 if (!xdr_string (xdrs, &objp->scenarioname, DAF_SCENARIO_LEN))
+			 return FALSE;
+		 if (!xdr_string (xdrs, &objp->jobname, DAF_JOBNAME_LEN))
+			 return FALSE;
+		 if (!xdr_string (xdrs, &objp->state, DAF_STATE_LEN))
+			 return FALSE;
+		buf = XDR_INLINE (xdrs, 6 * BYTES_PER_XDR_UNIT);
+		if (buf == NULL) {
+			 if (!xdr_int (xdrs, &objp->actionsinscenario))
+				 return FALSE;
+			 if (!xdr_int (xdrs, &objp->actionsattempted))
+				 return FALSE;
+			 if (!xdr_int (xdrs, &objp->actionscompleted))
+				 return FALSE;
+			 if (!xdr_int (xdrs, &objp->actionspassed))
+				 return FALSE;
+			 if (!xdr_int (xdrs, &objp->actionsfailed))
+				 return FALSE;
+			 if (!xdr_int (xdrs, &objp->pass))
+				 return FALSE;
+
+		} else {
+		IXDR_PUT_LONG(buf, objp->actionsinscenario);
+		IXDR_PUT_LONG(buf, objp->actionsattempted);
+		IXDR_PUT_LONG(buf, objp->actionscompleted);
+		IXDR_PUT_LONG(buf, objp->actionspassed);
+		IXDR_PUT_LONG(buf, objp->actionsfailed);
+		IXDR_PUT_LONG(buf, objp->pass);
+		}
+		 if (!xdr_string (xdrs, &objp->start, DAF_DATETIME_LEN))
+			 return FALSE;
+		 if (!xdr_string (xdrs, &objp->end, DAF_DATETIME_LEN))
+			 return FALSE;
+		 if (!xdr_string (xdrs, &objp->teststand, DAF_TESTSTAND_LEN))
+			 return FALSE;
+		 if (!xdr_int (xdrs, &objp->teststandrecordID))
+			 return FALSE;
+		 if (!xdr_string (xdrs, &objp->testlevel, DAF_LEVEL_LEN))
+			 return FALSE;
+		 if (!xdr_int (xdrs, &objp->testlevelrecordID))
+			 return FALSE;
+		 if (!xdr_string (xdrs, &objp->tester, DAF_TESTER_LEN))
+			 return FALSE;
+		 if (!xdr_string (xdrs, &objp->loglocation, DAF_LOGLOCATION_LEN))
+			 return FALSE;
+		 if (!xdr_string (xdrs, &objp->scenariologfilename, DAF_FILENAME_LEN))
+			 return FALSE;
+		 if (!xdr_string (xdrs, &objp->comments, DAF_COMMENTS_LEN))
+			 return FALSE;
+		 if (!xdr_string (xdrs, &objp->errmsg, 256))
+			 return FALSE;
+		return TRUE;
+	} else if (xdrs->x_op == XDR_DECODE) {
+		 if (!xdr_bool (xdrs, &objp->valid))
+			 return FALSE;
+		 if (!xdr_string (xdrs, &objp->project, DAF_PROJECT_LEN))
+			 return FALSE;
+		 if (!xdr_string (xdrs, &objp->phase, DAF_PHASE_LEN))
+			 return FALSE;
+		 if (!xdr_string (xdrs, &objp->scenarioname, DAF_SCENARIO_LEN))
+			 return FALSE;
+		 if (!xdr_string (xdrs, &objp->jobname, DAF_JOBNAME_LEN))
+			 return FALSE;
+		 if (!xdr_string (xdrs, &objp->state, DAF_STATE_LEN))
+			 return FALSE;
+		buf = XDR_INLINE (xdrs, 6 * BYTES_PER_XDR_UNIT);
+		if (buf == NULL) {
+			 if (!xdr_int (xdrs, &objp->actionsinscenario))
+				 return FALSE;
+			 if (!xdr_int (xdrs, &objp->actionsattempted))
+				 return FALSE;
+			 if (!xdr_int (xdrs, &objp->actionscompleted))
+				 return FALSE;
+			 if (!xdr_int (xdrs, &objp->actionspassed))
+				 return FALSE;
+			 if (!xdr_int (xdrs, &objp->actionsfailed))
+				 return FALSE;
+			 if (!xdr_int (xdrs, &objp->pass))
+				 return FALSE;
+
+		} else {
+		objp->actionsinscenario = IXDR_GET_LONG(buf);
+		objp->actionsattempted = IXDR_GET_LONG(buf);
+		objp->actionscompleted = IXDR_GET_LONG(buf);
+		objp->actionspassed = IXDR_GET_LONG(buf);
+		objp->actionsfailed = IXDR_GET_LONG(buf);
+		objp->pass = IXDR_GET_LONG(buf);
+		}
+		 if (!xdr_string (xdrs, &objp->start, DAF_DATETIME_LEN))
+			 return FALSE;
+		 if (!xdr_string (xdrs, &objp->end, DAF_DATETIME_LEN))
+			 return FALSE;
+		 if (!xdr_string (xdrs, &objp->teststand, DAF_TESTSTAND_LEN))
+			 return FALSE;
+		 if (!xdr_int (xdrs, &objp->teststandrecordID))
+			 return FALSE;
+		 if (!xdr_string (xdrs, &objp->testlevel, DAF_LEVEL_LEN))
+			 return FALSE;
+		 if (!xdr_int (xdrs, &objp->testlevelrecordID))
+			 return FALSE;
+		 if (!xdr_string (xdrs, &objp->tester, DAF_TESTER_LEN))
+			 return FALSE;
+		 if (!xdr_string (xdrs, &objp->loglocation, DAF_LOGLOCATION_LEN))
+			 return FALSE;
+		 if (!xdr_string (xdrs, &objp->scenariologfilename, DAF_FILENAME_LEN))
+			 return FALSE;
+		 if (!xdr_string (xdrs, &objp->comments, DAF_COMMENTS_LEN))
+			 return FALSE;
+		 if (!xdr_string (xdrs, &objp->errmsg, 256))
+			 return FALSE;
+	 return TRUE;
+	}
+
+	 if (!xdr_bool (xdrs, &objp->valid))
+		 return FALSE;
+	 if (!xdr_string (xdrs, &objp->project, DAF_PROJECT_LEN))
+		 return FALSE;
+	 if (!xdr_string (xdrs, &objp->phase, DAF_PHASE_LEN))
+		 return FALSE;
+	 if (!xdr_string (xdrs, &objp->scenarioname, DAF_SCENARIO_LEN))
+		 return FALSE;
+	 if (!xdr_string (xdrs, &objp->jobname, DAF_JOBNAME_LEN))
+		 return FALSE;
+	 if (!xdr_string (xdrs, &objp->state, DAF_STATE_LEN))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->actionsinscenario))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->actionsattempted))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->actionscompleted))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->actionspassed))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->actionsfailed))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->pass))
+		 return FALSE;
+	 if (!xdr_string (xdrs, &objp->start, DAF_DATETIME_LEN))
+		 return FALSE;
+	 if (!xdr_string (xdrs, &objp->end, DAF_DATETIME_LEN))
+		 return FALSE;
+	 if (!xdr_string (xdrs, &objp->teststand, DAF_TESTSTAND_LEN))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->teststandrecordID))
+		 return FALSE;
+	 if (!xdr_string (xdrs, &objp->testlevel, DAF_LEVEL_LEN))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->testlevelrecordID))
+		 return FALSE;
+	 if (!xdr_string (xdrs, &objp->tester, DAF_TESTER_LEN))
+		 return FALSE;
+	 if (!xdr_string (xdrs, &objp->loglocation, DAF_LOGLOCATION_LEN))
+		 return FALSE;
+	 if (!xdr_string (xdrs, &objp->scenariologfilename, DAF_FILENAME_LEN))
+		 return FALSE;
+	 if (!xdr_string (xdrs, &objp->comments, DAF_COMMENTS_LEN))
+		 return FALSE;
+	 if (!xdr_string (xdrs, &objp->errmsg, 256))
+		 return FALSE;
+	return TRUE;
+}
+
+bool_t
+xdr_remote_client_query_scenarioresult_res (XDR *xdrs, remote_client_query_scenarioresult_res *objp)
+{
+	register int32_t *buf;
+
+	 if (!xdr_int (xdrs, &objp->status))
+		 return FALSE;
+	switch (objp->status) {
+	case 0:
+		 if (!xdr_remote_client_query_scenarioresult_outcome (xdrs, &objp->remote_client_query_scenarioresult_res_u.outcome))
 			 return FALSE;
 		break;
 	default:

@@ -128,21 +128,21 @@ class RestfulSQL {
             }            
             
             $urlString = substr($uristring, strlen($this->baseURL));
-   	        $urlParts = explode('/', $urlString);
-			
-	        if (isset($urlParts[0]) && $urlParts[0] == '') {   // strip effect of leading '/'
+            $urlParts = explode('/', $urlString);
+            
+            if (isset($urlParts[0]) && $urlParts[0] == '') {   // strip effect of leading '/'
                array_shift($urlParts);
-	        }
-	        
-	        if (isset($urlParts[0])) {
+            }
+            
+            if (isset($urlParts[0])) {
                $this->db_database = $urlParts[0];  // save database if it exists
             }  
-			
+            
             if (isset($urlParts[1])) {
                $this->tablename = $urlParts[1];    // save tablename if it exists
             }  
 
-	        // extract primary key(s) from the URL
+            // extract primary key(s) from the URL
              
             if (count($urlParts) > 2 && $urlParts[2] != '') {
                 array_shift($urlParts);  array_shift($urlParts);      // get rid of the database/tablename and treat rest as primary keys
@@ -233,7 +233,7 @@ class RestfulSQL {
 
     function getPrimaryKeys() {
     
-    	return $this->db->getPrimaryKeys($this->tablename);
+        return $this->db->getPrimaryKeys($this->tablename);
 
     }
 
@@ -399,7 +399,7 @@ class RestfulSQL {
                 $resource = $this->db->insertRow($this->tablename, $names, $values);
                 if ($resource) {
                     if ($this->db->numAffected() > 0) {
-			$this->created($this->baseURL . '/' . $this->tablename . '/' . $this->db->lastInsertId() . '/');
+            $this->created($this->baseURL . '/' . $this->tablename . '/' . $this->db->lastInsertId() . '/');
                     } else {
                         $this->badRequest();
                     }
@@ -551,7 +551,7 @@ class RestfulSQL {
     // ---------------------------------------------------------------------------------------------------------------------------------------
 
     function generateResponseData() {
-	   $renderer = new RestfulSQLRenderer($this);
+       $renderer = new RestfulSQLRenderer($this);
     }
         
     // ---------------------------------------------------------------------------------------------------------------------------------------

@@ -145,6 +145,8 @@ const DAF_TESTLEVEL_DESCRIPTION_LEN = 128;
 
 const DAF_LICENCE_LEN = 49;
 
+const DAF_DATETIME_LEN = 40;
+
 typedef unsigned hyper Iu64;
 typedef unsigned int Iu32;
 typedef unsigned short Iu16;
@@ -410,6 +412,13 @@ struct remote_client_start_scenario_args {
 #define DAF_ERRMSG_LEN 256
 struct remote_client_start_scenario_outcome {
    remote_client_start_scenario_error_types valid_start_scenario;
+   int testerID;
+   int scenarioID;
+   int scenarioresultID;
+   int testlevelID;
+   int teststandID;
+   int teststandrecordID;
+   int testlevelrecordID;
    string errmsg  <DAF_ERRMSG_LEN>;       
 };
 
@@ -455,6 +464,48 @@ struct remote_client_query_version_outcome {
 union remote_client_query_version_res switch (int status) {
 case 0:
    remote_client_query_version_outcome outcome;
+default:
+   void;
+};
+
+/* ------ query_scenarioresult  -----------------------------------------*/
+
+struct remote_client_query_scenarioresult_args {
+   string       project<DAF_PROJECT_LEN>;    
+   string       phase<DAF_PHASE_LEN>;      
+   unsigned int scenarioresultID;
+   int          msglevel;
+};
+
+struct remote_client_query_scenarioresult_outcome {
+   bool      valid;
+   string    project<DAF_PROJECT_LEN>;
+   string    phase<DAF_PHASE_LEN>;
+   string    scenarioname<DAF_SCENARIO_LEN>;
+   string    jobname<DAF_JOBNAME_LEN>;
+   string    state<DAF_STATE_LEN>;
+   int       actionsinscenario;
+   int       actionsattempted;
+   int       actionscompleted;
+   int       actionspassed;
+   int       actionsfailed;
+   int       pass;
+   string    start<DAF_DATETIME_LEN>;
+   string    end<DAF_DATETIME_LEN>;
+   string    teststand<DAF_TESTSTAND_LEN>;
+   int       teststandrecordID;
+   string    testlevel<DAF_LEVEL_LEN>;
+   int       testlevelrecordID;
+   string    tester<DAF_TESTER_LEN>;
+   string    loglocation<DAF_LOGLOCATION_LEN>;
+   string    scenariologfilename<DAF_FILENAME_LEN>;
+   string    comments<DAF_COMMENTS_LEN>;
+   string    errmsg<DAF_ERRMSG_LEN>;  
+};
+
+union remote_client_query_scenarioresult_res switch (int status) {
+case 0:
+   remote_client_query_scenarioresult_outcome outcome;
 default:
    void;
 };
@@ -779,7 +830,6 @@ default:
    void;
 };
 
-
 program DAF_PROG {
    version DAF_VERSION {
      remote_client_cntrl_res         CLIENT_REMOTE_CLIENT_CNTRL(remote_client_cntrl_args)                 = 41;
@@ -789,6 +839,7 @@ program DAF_PROG {
      remote_client_run_cmd_res       CLIENT_REMOTE_CLIENT_RUN_CMD(remote_client_run_cmd_args)             = 49;
      remote_client_start_scenario_res   CLIENT_REMOTE_CLIENT_START_SCENARIO(remote_client_start_scenario_args)  = 50;
      remote_client_query_version_res CLIENT_REMOTE_CLIENT_QUERY_VERSION(remote_client_query_version_args) = 35;
+     remote_client_query_scenarioresult_res     CLIENT_REMOTE_CLIENT_QUERY_SCENARIORESULT(remote_client_query_scenarioresult_args) = 51;
      remote_client_query_tag_res     CLIENT_REMOTE_CLIENT_QUERY_TAG(remote_client_query_tag_args)         = 2;
      remote_client_query_alltags_res CLIENT_REMOTE_CLIENT_QUERY_ALLTAGS(remote_client_query_alltags_args) = 33;
      remote_client_query_cmdlog_res  CLIENT_REMOTE_CLIENT_QUERY_CMDLOG(remote_client_query_cmdlog_args)   = 3;

@@ -697,35 +697,35 @@ _END;
 echo <<<_END
          
          var grid = new dojox.grid.DataGrid({    // use the adapter to give the grid a Dojo Data compliant interface to the store    
-		                    // store: dataStore = objstore,
+                            // store: dataStore = objstore,
                             store: dataStore = dojo.data.ObjectStore({objectStore: myStore}),
-		                    escapeHTMLInData: false,          /* <<<<<<<< is this safe (cross site attacks) */
-		                    columnReordering: true,
+                            escapeHTMLInData: false,          /* <<<<<<<< is this safe (cross site attacks) */
+                            columnReordering: true,
                             structure: [ {name:"ID", field:"ID", width:"3em", styles:"text-align:center;"},        
-		                              /*   {name:"Project", field:"Project"},        
-		                                 {name:"Phase", field:"Phase"}, */  
-		                                 {name:"Scenario Name", field:"Scenarioname", width:"8em"},        
-		                                 {name:"Job Name", field:"Jobname", width:"8em"},        
-		                                 {name:"State", field:"State", width:"6em"},  
-		                                 {name:"Actions in Scenario", field:"Actionsinscenario", width:"6em", styles:"text-align:center;"},  
-		                                 {name:"Actions Attempted", field:"Actionsattempted", width:"6em", styles:"text-align:center;"},  
-		                                 {name:"Actions Passed", field:"Actionspassed", width:"5em", styles:"text-align:center;"},  
-		                                 {name:"Actions Failed", field:"Actionsfailed", width:"5em", styles:"text-align:center;"},  
-		                                 {name:"Action Type", field:"Actiontype", width:"8em", styles:"text-align:center;"},  
-		                                 {name:"Pass", field:"Pass", width:"6em", styles:"text-align:center;"},
-		                                 {name:"Start", field:"Start", width:"6em", styles:"text-align:center;"},
-		                                 {name:"End", field:"End", width:"6em", styles:"text-align:center;"},
-		                                 {name:"Test Stand", field:"Teststand", width:"8em"},
-		                                 {name:"Test Level", field:"Testlevel", width:"8em"},
-		                                 {name:"Tester", field:"Tester", width:"8em"},
-		                                 {name:"Log Location", field:"Loglocation", width:"8em"},
-		                                 {name:"Scenario Log Filename", field:"Scenariologfilename", width:"8em"},
-		                                 {name:"Comments", field:"Comments", width:"8em"}
-		                               ]}, 
-		                    "ScenarioresultStatus");
-		                    
+                                      /*   {name:"Project", field:"Project"},        
+                                         {name:"Phase", field:"Phase"}, */  
+                                         {name:"Scenario Name", field:"Scenarioname", width:"8em"},        
+                                         {name:"Job Name", field:"Jobname", width:"8em"},        
+                                         {name:"State", field:"State", width:"6em"},  
+                                         {name:"Actions in Scenario", field:"Actionsinscenario", width:"6em", styles:"text-align:center;"},  
+                                         {name:"Actions Attempted", field:"Actionsattempted", width:"6em", styles:"text-align:center;"},  
+                                         {name:"Actions Passed", field:"Actionspassed", width:"5em", styles:"text-align:center;"},  
+                                         {name:"Actions Failed", field:"Actionsfailed", width:"5em", styles:"text-align:center;"},  
+                                         {name:"Action Type", field:"Actiontype", width:"8em", styles:"text-align:center;"},  
+                                         {name:"Pass", field:"Pass", width:"6em", styles:"text-align:center;"},
+                                         {name:"Start", field:"Start", width:"6em", styles:"text-align:center;"},
+                                         {name:"End", field:"End", width:"6em", styles:"text-align:center;"},
+                                         {name:"Test Stand", field:"Teststand", width:"8em"},
+                                         {name:"Test Level", field:"Testlevel", width:"8em"},
+                                         {name:"Tester", field:"Tester", width:"8em"},
+                                         {name:"Log Location", field:"Loglocation", width:"8em"},
+                                         {name:"Scenario Log Filename", field:"Scenariologfilename", width:"8em"},
+                                         {name:"Comments", field:"Comments", width:"8em"}
+                                       ]}, 
+                            "ScenarioresultStatus");
+                            
 
-		 grid.startup();
+         grid.startup();
          
       });
       
@@ -1560,9 +1560,9 @@ _END;
 //
 //  Recalculates the 
 //
-//     Actions in Scenario	Actions attempted	Actions completed	Actions passed	Actions failed	Pass
+//     Actions in Scenario  Actions attempted   Actions completed   Actions passed  Actions failed  Pass
 //
-//  based on the current actionresults that belong to this scenarioresult	
+//  based on the current actionresults that belong to this scenarioresult   
 //
 //----------------------------------------------------------------------------------------------------------------------
 

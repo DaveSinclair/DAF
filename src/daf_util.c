@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <errno.h>
 #include <sys/types.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -24,14 +26,14 @@ int  is_console_log_file_open   = FALSE;
 FILE *console_log_fptr          = NULL;
 static char saved_console_log_filename[MAX_PATHNAME_LEN] = "/tmp/dafconsole.log";
 
-static const struct cmd_log_state_entry cmd_log_state_array[] =
-{
-    { CMD_FREE,        "CMD_FREE"},
-    { CMD_INITIALISED, "CMD_INIT"},
-    { CMD_RUNNING,     "CMD_RUNNING"},
-    { CMD_BG_RUNNING,  "CMD_BG_RUNNING"},
-    { CMD_COMPLETED,   "CMD_COMPLETED"}
-};
+//static const struct cmd_log_state_entry cmd_log_state_array[] =
+//{
+//    { CMD_FREE,        "CMD_FREE"},
+//    { CMD_INITIALISED, "CMD_INIT"},
+//    { CMD_RUNNING,     "CMD_RUNNING"},
+//    { CMD_BG_RUNNING,  "CMD_BG_RUNNING"},
+//    { CMD_COMPLETED,   "CMD_COMPLETED"}
+//};
 
 struct remote_client_request_entry
 {
@@ -39,26 +41,26 @@ struct remote_client_request_entry
     const char *request_name;
 };
 
-static const struct remote_client_request_entry remote_client_request_array[] =
-{
-
-    {CLIENT_REMOTE_CLIENT_CNTRL, "CLIENT_REMOTE_CLIENT_CNTRL"},
-    {CLIENT_REMOTE_CLIENT_CMD,   "CLIENT_REMOTE_CLIENT_CMD"},
-    {CLIENT_REMOTE_CLIENT_PREPARE_CMD,   "CLIENT_REMOTE_CLIENT_PREPARE_CMD"},
-    {CLIENT_REMOTE_CLIENT_EXECUTE_CMD,   "CLIENT_REMOTE_CLIENT_EXECUTE_CMD"},
-    {CLIENT_REMOTE_CLIENT_QUERY_VERSION, "CLIENT_REMOTE_CLIENT_QUERY_VERSION"},
-    {CLIENT_REMOTE_CLIENT_QUERY_TAG, "CLIENT_REMOTE_CLIENT_QUERY_TAG"},
-    {CLIENT_REMOTE_CLIENT_QUERY_ALLTAGS, "CLIENT_REMOTE_CLIENT_QUERY_ALLTAGS"},
-    {CLIENT_REMOTE_CLIENT_QUERY_CMDLOG, "CLIENT_REMOTE_CLIENT_QUERY_CMDLOG"},
-    {CLIENT_REMOTE_CLIENT_QUERY_IDENT, "CLIENT_REMOTE_CLIENT_QUERY_IDENT"},
-    {CLIENT_REMOTE_CLIENT_QUERY_CMDS, "CLIENT_REMOTE_CLIENT_QUERY_CMDS"},
-    {CLIENT_REMOTE_CLIENT_CLEAR_TAG, "CLIENT_REMOTE_CLIENT_CLEAR_TAG"},
-    {CLIENT_REMOTE_CLIENT_CLEAR_IDENT, "CLIENT_REMOTE_CLIENT_CLEAR_IDENT"},
-    {CLIENT_REMOTE_CLIENT_CLEAR_ALLTAGS, "CLIENT_REMOTE_CLIENT_CLEAR_ALLTAGS"},
-    {CLIENT_REMOTE_CLIENT_CANCEL_TAG, "CLIENT_REMOTE_CLIENT_CANCEL_TAG",},
-    {CLIENT_REMOTE_CLIENT_CANCEL_TAG, "CLIENT_REMOTE_CLIENT_CANCEL_IDENT",},
-    {CLIENT_REMOTE_CLIENT_COPYFILE, "CLIENT_REMOTE_CLIENT_COPYFILE",},
-};
+//static const struct remote_client_request_entry remote_client_request_array[] =
+//{
+//
+//    {CLIENT_REMOTE_CLIENT_CNTRL, "CLIENT_REMOTE_CLIENT_CNTRL"},
+//    {CLIENT_REMOTE_CLIENT_CMD,   "CLIENT_REMOTE_CLIENT_CMD"},
+//    {CLIENT_REMOTE_CLIENT_PREPARE_CMD,   "CLIENT_REMOTE_CLIENT_PREPARE_CMD"},
+//    {CLIENT_REMOTE_CLIENT_EXECUTE_CMD,   "CLIENT_REMOTE_CLIENT_EXECUTE_CMD"},
+//    {CLIENT_REMOTE_CLIENT_QUERY_VERSION, "CLIENT_REMOTE_CLIENT_QUERY_VERSION"},
+//    {CLIENT_REMOTE_CLIENT_QUERY_TAG, "CLIENT_REMOTE_CLIENT_QUERY_TAG"},
+//    {CLIENT_REMOTE_CLIENT_QUERY_ALLTAGS, "CLIENT_REMOTE_CLIENT_QUERY_ALLTAGS"},
+//    {CLIENT_REMOTE_CLIENT_QUERY_CMDLOG, "CLIENT_REMOTE_CLIENT_QUERY_CMDLOG"},
+//    {CLIENT_REMOTE_CLIENT_QUERY_IDENT, "CLIENT_REMOTE_CLIENT_QUERY_IDENT"},
+//    {CLIENT_REMOTE_CLIENT_QUERY_CMDS, "CLIENT_REMOTE_CLIENT_QUERY_CMDS"},
+//    {CLIENT_REMOTE_CLIENT_CLEAR_TAG, "CLIENT_REMOTE_CLIENT_CLEAR_TAG"},
+//    {CLIENT_REMOTE_CLIENT_CLEAR_IDENT, "CLIENT_REMOTE_CLIENT_CLEAR_IDENT"},
+//    {CLIENT_REMOTE_CLIENT_CLEAR_ALLTAGS, "CLIENT_REMOTE_CLIENT_CLEAR_ALLTAGS"},
+//    {CLIENT_REMOTE_CLIENT_CANCEL_TAG, "CLIENT_REMOTE_CLIENT_CANCEL_TAG",},
+//    {CLIENT_REMOTE_CLIENT_CANCEL_TAG, "CLIENT_REMOTE_CLIENT_CANCEL_IDENT",},
+//    {CLIENT_REMOTE_CLIENT_COPYFILE, "CLIENT_REMOTE_CLIENT_COPYFILE",},
+//};
 
 
 struct clnt_stat_entry
@@ -112,9 +114,9 @@ shm_daf_t               *p_shared_memory_base_pointer;
 /*  External Globals (in daf.c)                                                                           */
 /*--------------------------------------------------------------------------------------------------------*/
 
-extern int  daf_major_version;
-extern int  daf_minor_version;
-extern char *daf_version_string;
+//extern int  daf_major_version;
+//extern int  daf_minor_version;
+//extern char *daf_version_string;
 
 /*--------------------------------------------------------------------------------------------------------*/
 /*                                                                                                        */
@@ -562,12 +564,14 @@ int open_consolelog(char *console_log_filename, bool_t quiet)
         return(1);
     }
 
-    if (! quiet) {
-       fprintf(console_log_fptr, "%s console log file opened\n", saved_console_log_filename );
-       sprintf(msg, "console log filename successfully opened: %s\n",
-               saved_console_log_filename);
-       print_msg_to_console(msg);
+    if (! quiet)
+    {
+        fprintf(console_log_fptr, "%s console log file opened\n", saved_console_log_filename );
+        sprintf(msg, "console log filename successfully opened: %s\n",
+                saved_console_log_filename);
+        print_msg_to_console(msg);
     }
+
     return(0);
 
 }
@@ -1517,40 +1521,154 @@ int set_ulimit_c_unlimited(char *errmsg, int max_errmsg_len)
 
 }
 
+/************************************************************************/
+/*                                                                      */
+/* NAME:        split_namevalue_parameter                               */
+/*                                                                      */
+/* FUNCTION:    Splits a string of the form 'name=value' into its       */
+/*              two separate parts                                      */
+/*                                                                      */
+/* PARAMS IN:   namevalue    the string that is to be split up          */
+/*                                                                      */
+/*              name        pointer to the string that will contain the */
+/*                          name part of the input string               */
+/*                                                                      */
+/*              name_len    max number of bytes in the name string      */
+/*                          including the terminating \0                */
+/*                                                                      */
+/*              value       pointer to the string that will contain the */
+/*                          value part of the input string              */
+/*                                                                      */
+/*              value_len   max number of bytes in the value string     */
+/*                          including the terminating \0                */
+/*                                                                      */
+/* PARAMS OUT:  name        the name part of the input string           */
+/*                                                                      */
+/*              value       the value part of the input string          */
+/*                                                                      */
+/* RETURNS:                 void                                        */
+/*                                                                      */
+/* DESCRIPTION                                                          */
+/*                                                                      */
+/************************************************************************/
+
 void split_namevalue_parameter(char *namevalue,
-		                       char *name,
-							   int name_len,
-							   char *value,
-							   int value_len) {
+                               char *name,
+                               int name_len,
+                               char *value,
+                               int value_len)
+{
 
-   int i = 0;
-   int j = 0;
-   int k = 0;
+    int i = 0;
+    int j = 0;
+    int k = 0;
 
-   char separater = '=';
+    char separater = '=';
 
-   bool_t inName = TRUE;
+    bool_t inName = TRUE;
 
-   while (i < strlen(namevalue)) {
+    while (i < strlen(namevalue))
+    {
 
-	   if (namevalue[i] == separater) {
-		   inName = FALSE;
-	   } else {
-		   if (inName) {
-			   if (j<(name_len-1)) {
-				 name[j++] = namevalue[i];
-			   }
-		   } else {
-			   if (k<(value_len-1)) {
-				  value[k++] = namevalue[i];
-			   }
-		   }
-	   }
-	   i++;
+        if (namevalue[i] == separater)
+        {
+            inName = FALSE;
+        }
+        else
+        {
+            if (inName)
+            {
+                if (j<(name_len-1))
+                {
+                    name[j++] = namevalue[i];
+                }
+            }
+            else
+            {
+                if (k<(value_len-1))
+                {
+                    value[k++] = namevalue[i];
+                }
+            }
+        }
 
-   }
+        i++;
 
-   name[j] = 0;
-   value[k] = 0;
+    }
 
+    name[j] = 0;
+    value[k] = 0;
+
+}
+
+/************************************************************************/
+/*                                                                      */
+/* NAME:        get_hostname                                            */
+/*                                                                      */
+/* FUNCTION:    Perform the equivalent of hostname, determing the       */
+/*              name of the current host excludig its domain name       */
+/*                                                                      */
+/* PARAMS IN:   hostname    pointer to the char string that will        */
+/*                          contain the full host name                  */
+/*              max_hostname_len   max number of bytes in the hostname  */
+/*                                 including the terminating \0         */
+/*                                                                      */
+/* PARAMS OUT:  hostname    pointer to the char string that will        */
+/*                          contain the host name                       */
+/*                                                                      */
+/* RETURNS:                 pointer to the char string that will        */
+/*                          contain the host name                       */
+/*                                                                      */
+/* DESCRIPTION                                                          */
+/*                                                                      */
+/************************************************************************/
+
+char *get_hostname(char *hostname, int max_hostname_len)
+{
+
+    gethostname(hostname, max_hostname_len);
+
+    return hostname;
+}
+
+
+/************************************************************************/
+/*                                                                      */
+/* NAME:        get_short_hostname                                      */
+/*                                                                      */
+/* FUNCTION:    Perform the equivalent of hostname -s, determing the    */
+/*              name of the current host excludig its domain name       */
+/*                                                                      */
+/* PARAMS IN:   hostname    pointer to the char string that will        */
+/*                          contain the host name                       */
+/*              max_hostname_len   max number of bytes in the hostname  */
+/*                                 including the terminating \0         */
+/*                                                                      */
+/* PARAMS OUT:  hostname    pointer to the char string that will        */
+/*                          contain the host name                       */
+/*                                                                      */
+/* RETURNS:                 pointer to the char string that will        */
+/*                          contain the host name                       */
+/*                                                                      */
+/* DESCRIPTION                                                          */
+/*                                                                      */
+/************************************************************************/
+
+char *get_short_hostname(char *hostname, int max_hostname_len)
+{
+
+    int i;
+
+    gethostname(hostname, max_hostname_len);
+
+    for (i=0; i<strlen(hostname); i++)
+    {
+        if (hostname[i] == '.')
+        {
+            hostname[i] = 0;
+            break;
+        }
+    }
+
+    return hostname;
 }

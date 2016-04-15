@@ -3,6 +3,7 @@
 #include <string.h>
 #include <errno.h>
 #include <sys/wait.h>
+#include "daf_util.h"
 
 /*--------------------------------------------------------------------------------------------------------*/
 /*                                                                                                        */
@@ -39,12 +40,25 @@ int send_email_message(char *destinations[], char *subject, char *message_lines[
     FILE *fp;
     int email_exit_status;
     int email_exit_signal;
+    char mailx[20] = "/bin/mailx";
 
     errmsg[0] = 0;
 
+    // the mailx program can be in /usr/bin or just in /bin so find out which
+
+    if (! does_file_exist("/bin/mailx")) {
+    	if (does_file_exist("/usr/bin/mailx")) {
+    	   safecpy(mailx, "/usr/bin/mailx", sizeof(mailx));
+    	} else {
+           rc = 1;
+           snprintf(errmsg, max_errmsg_len, "%s: cannot find mailx at /bin/mailx or /usr/bin/mailx - not sending mail", SUBNAME);
+           return rc;
+    	}
+    }
+
     while (*destinations != NULL)
     {
-        snprintf(cmd, sizeof(cmd), "/usr/bin/mailx -s '%s' '%s'", subject, *destinations);
+        snprintf(cmd, sizeof(cmd), "%s -s '%s' '%s'", mailx, subject, *destinations);
         fp = popen(cmd, "w");
 
         if (fp == NULL)
@@ -183,6 +197,8 @@ int send_file_as_email_attachment(char *destinations[], char *pathname, char *su
 }
 
 /*
+ *
+ * How to test this code
 
 int main(int argc, char **argv) {
   char  *addr[] = {"davesinclair1066@gmail.com", "davesinclair1066@googlemail.com", NULL};

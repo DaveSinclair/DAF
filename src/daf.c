@@ -4,7 +4,7 @@
 /*                                                                                                                      */
 /* daf.c                                                                                                                */
 /*                                                                                                                      */
-/* This file is part of the daf test automation programme.                                                             */
+/* This file is part of the daf test automation programme.                                                              */
 /*                                                                                                                      */
 /*   Compile with DAF_AGENT set to get the agent code only                                                              */
 /*                                                                                                                      */
@@ -88,6 +88,7 @@ typedef struct params
     bool_t                 query_alltags_flag;
     bool_t                 query_ident_flag;
     bool_t                 query_cmds_flag;
+    bool_t                 query_scenarioresult_flag;
     bool_t                 clear_flag;
     bool_t                 cancel_flag;
     bool_t                 clear_tag_flag;
@@ -105,6 +106,7 @@ typedef struct params
     bool_t                 buffersize_flag;
     Iu32                   buffersize;
     Iu32                   tag;
+    Iu32                   ID;
     int                    timeout;
     bool_t                 set_sql_debug_flag;
     bool_t                 reset_sql_debug_flag;
@@ -135,14 +137,14 @@ typedef struct params
     Iu64                   workqueueID;
     char                   project[DAF_PROJECT_LEN];
     char                   phase[DAF_PHASE_LEN];
-	char                   jobname[DAF_SCENARIO_LEN];
-	char                   loglocation[DAF_LOGDIRECTORY_LEN];
-	char                   scenariologfile[DAF_LOGFILENAME_LEN];
-	char                   teststand[DAF_TESTSTAND_LEN];
-	char                   testlevel[DAF_TESTLEVEL_LEN];
-	char                   comments[DAF_SCENARIORESULT_COMMENTS_LEN];
-	char                   username[DAF_USERNAME_LEN];
-	parameterlist          parameters;
+    char                   jobname[DAF_SCENARIO_LEN];
+    char                   loglocation[DAF_LOGDIRECTORY_LEN];
+    char                   scenariologfile[DAF_LOGFILENAME_LEN];
+    char                   teststand[DAF_TESTSTAND_LEN];
+    char                   testlevel[DAF_TESTLEVEL_LEN];
+    char                   comments[DAF_SCENARIORESULT_COMMENTS_LEN];
+    char                   username[DAF_USERNAME_LEN];
+    parameterlist          parameters;
 
 } parameters_t;
 
@@ -264,7 +266,7 @@ void print_usage()
 #ifdef DAF_AGENT
     printf("   daf_agent  -service | multiprocess_service [-msglevel N]\n");
     printf("              -query version\n");
-    printf("	          -remote hostname -start_scenario jobname -project project -phase phase [-loglocation pathtodir] [-scenariologfile filename] -teststand stand -testlevel level -comments string -username ussername\n");
+    printf("              -remote hostname -start_scenario jobname -project project -phase phase [-loglocation pathtodir] [-scenariologfile filename] -teststand stand -testlevel level -comments string -username ussername\n");
 #else
     printf("   daf  -help | -detailedhelp\n");
     printf("   or\n");
@@ -272,8 +274,9 @@ void print_usage()
     printf("          [-msglevel N] [-timeout N] [-consolelog pathname] [-quiet]\n");
     printf("           -query version  -debug sql|nosql|zombie_reaper|nozombie_reaper\n");
     printf("           -execute cmdstring [-run_in_background] [-ident identstring [-workqueueID N]\n");
-    printf("	       -start_scenario jobname -project project -phase phase -loglocation pathtodir -scenariologfile filename -teststand stand\n");
     printf("              -testlevel level -comments string -parameters name=value name=value...\n");
+    printf("           -start_scenario jobname -project project -phase phase -loglocation pathtodir -scenariologfile filename -teststand stand\n");
+    printf("           -query  scenarioresult -project project -phase phase -ID N [-nohdr] [-delim C]\n");
     printf("           -report cmds\n");
     printf("           -query  cmds [-nohdr] [-delim C]\n");
     printf("           -query  tag -tag N [-nohdr] [-delim C]\n");
@@ -292,9 +295,9 @@ void print_usage()
     printf("           -write_licence licencepathname -licence NNNNN\n");
     printf("   or\n");
     printf("   daf  -service|-multiprocess_service|-threaded_service install|start|stop|delete|run\n");
-    printf("		[-msglevel N]\n");
-    printf("	    [-consolelog pathname]\n");
-    printf("	    [-simulator_mode]\n");
+    printf("        [-msglevel N]\n");
+    printf("        [-consolelog pathname]\n");
+    printf("        [-simulator_mode]\n");
     printf("        [-sqlserver hostname] [-sqluser username] [-sqlpassword password] [-sqldatabase databasename] [-sqlport N] [-sqlsocketname N]\n");
     printf("   or\n");
     printf("   daf -help | -detailedhelp\n");
@@ -342,6 +345,7 @@ void print_detailed_usage()
 void initialise_args(parameters_t *parameters)
 {
 
+    memset(parameters, 0, sizeof(parameters_t));
 
 #ifndef DAF_AGENT
     safecpy(parameters->delimiter_string,  ":", sizeof(parameters->delimiter_string));
@@ -435,7 +439,7 @@ void print_parameters(parameters_t *parameters)
 
     char          msg[MAX_MSG_LEN];
 #ifndef DAF_AGENT
-	parameterlist p = parameters->parameters;
+    parameterlist p = parameters->parameters;
 #endif
 
     print_msg_to_console("\n");
@@ -482,11 +486,13 @@ void print_parameters(parameters_t *parameters)
         print_msg_to_console(msg);
         sprintf(msg, "-username:         %s\n", parameters->username);
         print_msg_to_console(msg);
-	    while (p != NULL) {
-	       sprintf(msg, "-parameter:        %s = %s\n", p->name, p->value);
-	       print_msg_to_console(msg);
-	       p = p->next;
-	    }
+
+        while (p != NULL)
+        {
+            sprintf(msg, "-parameter:        %s = %s\n", p->name, p->value);
+            print_msg_to_console(msg);
+            p = p->next;
+        }
     }
 
     sprintf(msg, "-buffersize:       %d\n", parameters->buffersize);
@@ -497,11 +503,13 @@ void print_parameters(parameters_t *parameters)
     print_msg_to_console(msg);
     sprintf(msg, "-nohdr:            %d\n", parameters->no_headers_flag);
     print_msg_to_console(msg);
+
     if (parameters->delimiter_flag)
     {
-       sprintf(msg, "-delim:            %s\n", parameters->delimiter_string);
-       print_msg_to_console(msg);
+        sprintf(msg, "-delim:            %s\n", parameters->delimiter_string);
+        print_msg_to_console(msg);
     }
+
     sprintf(msg, "-msglevel:         %d\n", parameters->msglevel);
     print_msg_to_console(msg);
     sprintf(msg, "-timeout:          %d\n", parameters->timeout);
@@ -582,12 +590,12 @@ int parse_args(int argc, char **argv, parameters_t *parameters )
     int i;
     char  thishostname[MAX_HOSTNAME_LEN];
     char  temp[64];
-	bool_t end_of_params;
-	int        num_daf_params;
-	char       parameter_name[DAF_PARAMETER_NAME_LEN];
-	char       parameter_value[DAF_PARAMETER_VALUE_LEN];
-	parameterlist p;
-	parameterlist *q = &(parameters->parameters);
+    bool_t end_of_params;
+    int        num_daf_params;
+    char       parameter_name[DAF_PARAMETER_NAME_LEN];
+    char       parameter_value[DAF_PARAMETER_VALUE_LEN];
+    parameterlist p;
+    parameterlist *q = &(parameters->parameters);
 
     if (argc == 1)
     {
@@ -624,7 +632,7 @@ int parse_args(int argc, char **argv, parameters_t *parameters )
 
     /* Open the console log */
 
-    gethostname(thishostname, sizeof(thishostname));
+    get_short_hostname(thishostname, sizeof(thishostname));
 
     if (strlen(parameters->consolelog_pathname) == 0)
     {
@@ -727,186 +735,192 @@ int parse_args(int argc, char **argv, parameters_t *parameters )
                 i++;
             }
         }
-		else if (strcmp(argv[i], "-remote") == 0)
-		{
-			i++;
+        else if (strcmp(argv[i], "-remote") == 0)
+        {
+            i++;
 
-			if (i < argc)
-			{
-				safecpy(parameters->remotehostname, argv[i], sizeof(parameters->remotehostname));
-			}
-			else
-			{
-				printf("daf: missing value for -remote parameter\n");
-				return E_NOTOK;
-			}
+            if (i < argc)
+            {
+                safecpy(parameters->remotehostname, argv[i], sizeof(parameters->remotehostname));
+            }
+            else
+            {
+                printf("daf: missing value for -remote parameter\n");
+                return E_NOTOK;
+            }
 
-			parameters->remote_flag = TRUE;
-		}
-		else if (strcmp(argv[i], "-start_scenario") == 0)
-		{
-			parameters->start_scenario_flag = TRUE;
-			i++;
+            parameters->remote_flag = TRUE;
+        }
+        else if (strcmp(argv[i], "-start_scenario") == 0)
+        {
+            parameters->start_scenario_flag = TRUE;
+            i++;
 
-			if (i < argc)
-			{
-				safecpy(parameters->jobname, argv[i], sizeof(parameters->jobname));
-			}
-			else
-			{
-				printf("daf: missing value for -start_scenario parameter\n");
-				return E_NOTOK;
-			}
-		}
-		else if (strcmp(argv[i], "-phase") == 0)
-		{
-			i++;
+            if (i < argc)
+            {
+                safecpy(parameters->jobname, argv[i], sizeof(parameters->jobname));
+            }
+            else
+            {
+                printf("daf: missing value for -start_scenario parameter\n");
+                return E_NOTOK;
+            }
+        }
+        else if (strcmp(argv[i], "-phase") == 0)
+        {
+            i++;
 
-			if (i < argc)
-			{
-				safecpy(parameters->phase, argv[i], sizeof(parameters->phase));
-			}
-			else
-			{
-				printf("daf: missing value for -phase parameter\n");
-				return E_NOTOK;
-			}
-		}
-		else if (strcmp(argv[i], "-loglocation") == 0)
-		{
-			i++;
+            if (i < argc)
+            {
+                safecpy(parameters->phase, argv[i], sizeof(parameters->phase));
+            }
+            else
+            {
+                printf("daf: missing value for -phase parameter\n");
+                return E_NOTOK;
+            }
+        }
+        else if (strcmp(argv[i], "-loglocation") == 0)
+        {
+            i++;
 
-			if (i < argc)
-			{
-				safecpy(parameters->loglocation, argv[i], sizeof(parameters->loglocation));
-			}
-			else
-			{
-				printf("daf: missing value for -loglocation parameter\n");
-				return E_NOTOK;
-			}
-		}
-		else if (strcmp(argv[i], "-scenariologfile") == 0)
-		{
-			i++;
+            if (i < argc)
+            {
+                safecpy(parameters->loglocation, argv[i], sizeof(parameters->loglocation));
+            }
+            else
+            {
+                printf("daf: missing value for -loglocation parameter\n");
+                return E_NOTOK;
+            }
+        }
+        else if (strcmp(argv[i], "-scenariologfile") == 0)
+        {
+            i++;
 
-			if (i < argc)
-			{
-				safecpy(parameters->scenariologfile, argv[i], sizeof(parameters->scenariologfile));
-			}
-			else
-			{
-				printf("daf: missing value for -scenariologfile parameter\n");
-			return E_NOTOK;
-			}
-		}
-		else if (strcmp(argv[i], "-teststand") == 0)
-		{
-			i++;
+            if (i < argc)
+            {
+                safecpy(parameters->scenariologfile, argv[i], sizeof(parameters->scenariologfile));
+            }
+            else
+            {
+                printf("daf: missing value for -scenariologfile parameter\n");
+                return E_NOTOK;
+            }
+        }
+        else if (strcmp(argv[i], "-teststand") == 0)
+        {
+            i++;
 
-			if (i < argc)
-			{
-				safecpy(parameters->teststand, argv[i], sizeof(parameters->teststand));
-			}
-			else
-			{
-				printf("daf: missing value for -teststand parameter\n");
-				return E_NOTOK;
-			}
-		}
-		else if (strcmp(argv[i], "-testlevel") == 0)
-		{
-			i++;
+            if (i < argc)
+            {
+                safecpy(parameters->teststand, argv[i], sizeof(parameters->teststand));
+            }
+            else
+            {
+                printf("daf: missing value for -teststand parameter\n");
+                return E_NOTOK;
+            }
+        }
+        else if (strcmp(argv[i], "-testlevel") == 0)
+        {
+            i++;
 
-			if (i < argc)
-			{
-				safecpy(parameters->testlevel, argv[i], sizeof(parameters->testlevel));
-			}
-			else
-			{
-				printf("daf: missing value for -testlevel parameter\n");
-				return E_NOTOK;
-			}
-		}
-		else if (strcmp(argv[i], "-comments") == 0)
-		{
-			i++;
+            if (i < argc)
+            {
+                safecpy(parameters->testlevel, argv[i], sizeof(parameters->testlevel));
+            }
+            else
+            {
+                printf("daf: missing value for -testlevel parameter\n");
+                return E_NOTOK;
+            }
+        }
+        else if (strcmp(argv[i], "-comments") == 0)
+        {
+            i++;
 
-			if (i < argc)
-			{
-				safecpy(parameters->comments, argv[i], sizeof(parameters->comments));
-			}
-			else
-			{
-				printf("daf: missing value for -comments parameter\n");
-				return E_NOTOK;
-			}
-		}
-		else if (strcmp(argv[i], "-parameters") == 0)
-		{
+            if (i < argc)
+            {
+                safecpy(parameters->comments, argv[i], sizeof(parameters->comments));
+            }
+            else
+            {
+                printf("daf: missing value for -comments parameter\n");
+                return E_NOTOK;
+            }
+        }
+        else if (strcmp(argv[i], "-parameters") == 0)
+        {
 
-			end_of_params = FALSE;
+            end_of_params = FALSE;
 
-			while (! end_of_params)
-			{
-				if ((i+1) >= argc)
-				{
-					break;
-				}
+            while (! end_of_params)
+            {
+                if ((i+1) >= argc)
+                {
+                    break;
+                }
 
-				if (argv[i+1][0] != '-')
-				{
-					i++;
-					if (num_daf_params >= DAF_MAX_NUM_PARAMS)
-					{
-						end_of_params = TRUE;
-						printf("daf: Too many name=value parameters specified at -parameters parameter, %s\n", argv[i]);
-						return E_NOTOK;
-					}
-					else
-					{
-						p = (parameterlist) malloc(sizeof(struct parameternode));
-						split_namevalue_parameter(argv[i],
-								                  parameter_name,
-												  DAF_PARAMETER_NAME_LEN,
-								                  parameter_value,
-												  DAF_PARAMETER_VALUE_LEN);
-						p->name = parameter_name;
-						p->value = parameter_value;
-						p->next = NULL;
-						if (*q == NULL) {
-							*q = p;
-						} else {
-							(*q)->next = p;
-						}
-						num_daf_params++;
-					}
-				}
-				else
-				{
-					end_of_params = TRUE;
-				}
-			}
+                if (argv[i+1][0] != '-')
+                {
+                    i++;
 
-			if (num_daf_params == 0)
-			{
-				printf("daf: name=value(s) missing from -parameters parameter\n");
-				return E_NOTOK;
-			}
-		}
-		else if (strcmp(argv[i], "-username") == 0)
-		{
-			i++;
+                    if (num_daf_params >= DAF_MAX_NUM_PARAMS)
+                    {
+                        end_of_params = TRUE;
+                        printf("daf: Too many name=value parameters specified at -parameters parameter, %s\n", argv[i]);
+                        return E_NOTOK;
+                    }
+                    else
+                    {
+                        p = (parameterlist) malloc(sizeof(struct parameternode));
+                        split_namevalue_parameter(argv[i],
+                                                  parameter_name,
+                                                  DAF_PARAMETER_NAME_LEN,
+                                                  parameter_value,
+                                                  DAF_PARAMETER_VALUE_LEN);
+                        p->name  = duplicate_string(parameter_name);             // TODO where does this get freed ?
+                        p->value = duplicate_string(parameter_value);
+                        p->next = NULL;
 
-			if (i < argc)
-			{
-				safecpy(parameters->username, argv[i], sizeof(parameters->username));
-			}
-			else
-			{
-				printf("daf: missing value for -username parameter\n");
-				return E_NOTOK;
-			}
+                        if (*q == NULL)
+                        {
+                            *q = p;
+                        }
+                        else
+                        {
+                            (*q)->next = p;
+                        }
+
+                        num_daf_params++;
+                    }
+                }
+                else
+                {
+                    end_of_params = TRUE;
+                }
+            }
+
+            if (num_daf_params == 0)
+            {
+                printf("daf: name=value(s) missing from -parameters parameter\n");
+                return E_NOTOK;
+            }
+        }
+        else if (strcmp(argv[i], "-username") == 0)
+        {
+            i++;
+
+            if (i < argc)
+            {
+                safecpy(parameters->username, argv[i], sizeof(parameters->username));
+            }
+            else
+            {
+                printf("daf: missing value for -username parameter\n");
+                return E_NOTOK;
+            }
 
 #ifndef DAF_AGENT
         }
@@ -921,6 +935,7 @@ int parse_args(int argc, char **argv, parameters_t *parameters )
             if (i < argc)
             {
                 safecpy(parameters->delimiter_string, argv[i], sizeof(parameters->delimiter_string));
+                parameters->delimiter_flag = TRUE;
             }
             else
             {
@@ -1056,6 +1071,22 @@ int parse_args(int argc, char **argv, parameters_t *parameters )
 
             parameters->tag_flag = TRUE;
         }
+        else if (strcmp(argv[i], "-ID") == 0)
+        {
+            i++;
+
+            if (i < argc)
+            {
+                parameters->ID = strtoul(argv[i], NULL, 0);
+            }
+            else
+            {
+                printf("daf: missing value for -ID parameter\n");
+                return E_NOTOK;
+            }
+
+            parameters->tag_flag = TRUE;
+        }
         else if (strcmp(argv[i], "-get") == 0)
         {
             parameters->get_flag = TRUE;
@@ -1118,15 +1149,20 @@ int parse_args(int argc, char **argv, parameters_t *parameters )
                 {
                     parameters->query_version_flag = TRUE;
                 }
+                else if (strcmp(argv[i], "scenarioresult") == 0)
+                {
+                    parameters->query_scenarioresult_flag = TRUE;
+                }
                 else
                 {
                     printf("daf: %s is not a valid option for -query\n", argv[i]);
                     return E_NOTOK;
                 }
-            } else if ((strcmp(argv[i], "-quiet") == 0))
-             {
-                 // we have already dealt with this - so nothing to do
-             }
+            }
+            else if ((strcmp(argv[i], "-quiet") == 0))
+            {
+                // we have already dealt with this - so nothing to do
+            }
             else
             {
                 printf("daf: missing option for -query\n");
@@ -1480,6 +1516,12 @@ int parse_args(int argc, char **argv, parameters_t *parameters )
 
 #endif
         }
+        else if (strcmp(argv[i], "-quiet") == 0)
+        {
+
+            /* we have already dealt with the quiet parameter so do nothing */
+
+        }
         else
         {
             printf("daf: unrecognised argument: %s\n", argv[i]);
@@ -1495,15 +1537,17 @@ int parse_args(int argc, char **argv, parameters_t *parameters )
     sql_server.sql_port = parameters->sql_port;
     safecpy(sql_server.sql_socketname,     parameters->sql_socketname,     sizeof(sql_server.sql_socketname));
 
-    if (MATCH(parameters->loglocation, "")) {
-    	safecpy(parameters->loglocation, "/tmp/", sizeof(parameters->loglocation));
-    	safecat(parameters->loglocation, parameters->project, sizeof(parameters->loglocation));
+    if (MATCH(parameters->loglocation, ""))
+    {
+        safecpy(parameters->loglocation, "/tmp/", sizeof(parameters->loglocation));
+        safecat(parameters->loglocation, parameters->project, sizeof(parameters->loglocation));
     }
 
-    if (MATCH(parameters->scenariologfile, "")) {
-    	safecpy(parameters->scenariologfile, "console_", sizeof(parameters->scenariologfile));
-    	safecat(parameters->scenariologfile, parameters->jobname, sizeof(parameters->scenariologfile));
-       	safecat(parameters->scenariologfile, ".out", sizeof(parameters->scenariologfile));
+    if (MATCH(parameters->scenariologfile, ""))
+    {
+        safecpy(parameters->scenariologfile, "console_", sizeof(parameters->scenariologfile));
+        safecat(parameters->scenariologfile, parameters->jobname, sizeof(parameters->scenariologfile));
+        safecat(parameters->scenariologfile, ".out", sizeof(parameters->scenariologfile));
     }
 
     return E_OK;
@@ -1796,6 +1840,7 @@ void *daf_prog_dispatcher_1(void *data)
         remote_client_run_cmd_args           client_remote_client_run_cmd_1_arg;
         remote_client_start_scenario_args    client_remote_client_start_scenario_1_arg;
         remote_client_query_version_args     client_remote_client_query_version_1_arg;
+        remote_client_query_scenarioresult_args         client_remote_client_query_scenarioresult_1_arg;
         remote_client_query_tag_args         client_remote_client_query_tag_1_arg;
         remote_client_query_cmdlog_args      client_remote_client_query_cmdlog_1_arg;
         remote_client_query_ident_args       client_remote_client_query_ident_1_arg;
@@ -1823,6 +1868,7 @@ void *daf_prog_dispatcher_1(void *data)
         remote_client_run_cmd_res          client_remote_client_run_cmd_1_res;
         remote_client_start_scenario_res   client_remote_client_start_scenario_1_res;
         remote_client_query_version_res    client_remote_client_query_version_1_res;
+        remote_client_query_scenarioresult_res        client_remote_client_query_scenarioresult_1_res;
         remote_client_query_tag_res        client_remote_client_query_tag_1_res;
         remote_client_query_alltags_res    client_remote_client_query_alltags_1_res;
         remote_client_query_cmdlog_res     client_remote_client_query_cmdlog_1_res;
@@ -1925,6 +1971,16 @@ void *daf_prog_dispatcher_1(void *data)
         _xdr_result = (xdrproc_t) xdr_remote_client_get_unique_ident_res;
         local = (bool_t (*) (char *, void *,  struct svc_req *))client_remote_client_get_unique_ident_1_svc;
         break;
+
+#ifndef DAF_AGENT
+
+    case CLIENT_REMOTE_CLIENT_QUERY_SCENARIORESULT:
+        _xdr_argument = (xdrproc_t) xdr_remote_client_query_scenarioresult_args;
+        _xdr_result = (xdrproc_t) xdr_remote_client_query_scenarioresult_res;
+        local = (bool_t (*) (char *, void *,  struct svc_req *))client_remote_client_query_scenarioresult_1_svc;
+        break;
+
+#endif
 
     case CLIENT_REMOTE_CLIENT_QUERY_TAG:
         _xdr_argument = (xdrproc_t) xdr_remote_client_query_tag_args;
@@ -2508,7 +2564,8 @@ int main(int argc, char **argv)
     int                  rc;
 
     // we would like to always get a core file if the DAF server or agent crashes, so set ulimit -c unlimited in *nix
-    if ((rc = set_ulimit_c_unlimited(errmsg, sizeof(errmsg))) != 0) {
+    if ((rc = set_ulimit_c_unlimited(errmsg, sizeof(errmsg))) != 0)
+    {
         printf("main: set_ulimit_c_unlimited returned %d errno %d (%s)\n", rc, errno, strerror(errno));
         printf("      check that the SETUID bit is set on the %s executable\n", DAF_BINARY);
         exit(1);
@@ -2637,12 +2694,13 @@ int main(int argc, char **argv)
         exit_rc = remote_client_cmd(parameters.remotehostname, run_in_shell, parameters.cmdstring, parameters.identstring,  parameters.run_in_background_flag,
                                     parameters.workqueueID_flag, parameters.workqueueID, 0);
 
-    } else if (parameters.start_scenario_flag)
+    }
+    else if (parameters.start_scenario_flag)
     {
 
         exit_rc = remote_client_start_scenario(parameters.remotehostname, parameters.jobname, parameters.project, parameters.phase,
                                                parameters.loglocation, parameters.scenariologfile,
-											   parameters.teststand, parameters.testlevel, parameters.comments, parameters.username, parameters.parameters);
+                                               parameters.teststand, parameters.testlevel, parameters.comments, parameters.username, parameters.parameters);
 
     }
     else if (parameters.get_flag)
@@ -2659,7 +2717,14 @@ int main(int argc, char **argv)
     else if (parameters.query_flag)
     {
 
-        if (parameters.query_tag_flag)
+        if (parameters.query_scenarioresult_flag)
+        {
+
+            exit_rc = remote_client_query_scenarioresult(parameters.remotehostname, parameters.project, parameters.phase, parameters.ID,
+                      parameters.no_headers_flag, parameters.delimiter_flag, parameters.delimiter_string);
+
+        }
+        else if (parameters.query_tag_flag)
         {
 
             exit_rc = remote_client_query_tag(parameters.remotehostname, parameters.tag,

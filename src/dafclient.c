@@ -283,8 +283,9 @@ int remote_client_cmd(char *remotehostname, int run_in_shell, char *cmdstring, c
 /*                                                                                  */
 /* -------------------------------------------------------------------------------- */
 
-int remote_client_start_scenario(char *remotehostname, char *jobname, char *project, char *phase, char*loglocation, char *scenariologfile,
-		                         char *teststand, char *testlevel, char *comments, char *username, parameterlist parameters) {
+int remote_client_start_scenario(char *remotehostname, char *jobname, char *project, char *phase, char *loglocation, char *scenariologfile,
+                                 char *teststand, char *testlevel, char *comments, char *username, parameterlist parameters)
+{
 
 
     remote_client_start_scenario_args  args;
@@ -338,18 +339,31 @@ int remote_client_start_scenario(char *remotehostname, char *jobname, char *proj
             return_rc = E_NOTOK;
         }
 
-        if (remoteresult.remote_client_start_scenario_res_u.outcome.valid_start_scenario == REMOTE_START_SCENARIO_OK) {
-        	snprintf(msg, sizeof(msg), "Scenario started successfully on remote server\n");
-        	print_msg_to_console(msg);
-        } else {
-        	snprintf(msg, sizeof(msg), " %d Failed to start scenario on remote server - %s\n",remoteresult.remote_client_start_scenario_res_u.outcome.valid_start_scenario,
+        if (remoteresult.remote_client_start_scenario_res_u.outcome.valid_start_scenario == REMOTE_START_SCENARIO_OK)
+        {
+            snprintf(msg, sizeof(msg), "testerID:%d;scenarioID:%d;scenarioresultID:%d;testlevelID:%d;teststandID:%d;teststandrecordID:%d;testlevelrecordID:%d\n",
+                     remoteresult.remote_client_start_scenario_res_u.outcome.testerID,
+                     remoteresult.remote_client_start_scenario_res_u.outcome.scenarioID,
+                     remoteresult.remote_client_start_scenario_res_u.outcome.scenarioresultID,
+                     remoteresult.remote_client_start_scenario_res_u.outcome.testlevelID,
+                     remoteresult.remote_client_start_scenario_res_u.outcome.teststandID,
+                     remoteresult.remote_client_start_scenario_res_u.outcome.teststandrecordID,
+                     remoteresult.remote_client_start_scenario_res_u.outcome.testlevelrecordID);
+            print_msg_to_console(msg);
+            snprintf(msg, sizeof(msg), "Scenario started successfully on remote server\n");
+            print_msg_to_console(msg);
+        }
+        else
+        {
+            snprintf(msg, sizeof(msg), " %d Failed to start scenario on remote server - %s\n",remoteresult.remote_client_start_scenario_res_u.outcome.valid_start_scenario,
                      remoteresult.remote_client_start_scenario_res_u.outcome.errmsg);
-        	print_msg_to_console(msg);
-        	return_rc = E_NOTOK;
+            print_msg_to_console(msg);
+            return_rc = E_NOTOK;
         }
 
-        if (remoteresult.remote_client_start_scenario_res_u.outcome.errmsg != NULL) {
-        	free(remoteresult.remote_client_start_scenario_res_u.outcome.errmsg);
+        if (remoteresult.remote_client_start_scenario_res_u.outcome.errmsg != NULL)
+        {
+            free(remoteresult.remote_client_start_scenario_res_u.outcome.errmsg);
         }
 
         if (remote_client->cl_auth != NULL)
@@ -728,9 +742,10 @@ int remote_client_ping_agent(char *remotehostname, bool_t quiet)
 
 int query_slave_tag(char         *remotehostname,
                     Iu32         tag,
-					int          *exit_code,
-					int          *exit_signal,
-					cmd_log_state  *exit_state) {
+                    int          *exit_code,
+                    int          *exit_signal,
+                    cmd_log_state  *exit_state)
+{
 
 
 
@@ -789,10 +804,10 @@ int query_slave_tag(char         *remotehostname,
             if (remoteresult.remote_client_query_tag_res_u.outcome.valid)
             {
 
-                 cmd_log_state_decode(remoteresult.remote_client_query_tag_res_u.outcome.state, state_string, sizeof(state_string));
+                cmd_log_state_decode(remoteresult.remote_client_query_tag_res_u.outcome.state, state_string, sizeof(state_string));
 
-                 *exit_state  = remoteresult.remote_client_query_tag_res_u.outcome.state;
-                 *exit_code   = remoteresult.remote_client_query_tag_res_u.outcome.cmd_exit_code,
+                *exit_state  = remoteresult.remote_client_query_tag_res_u.outcome.state;
+                *exit_code   = remoteresult.remote_client_query_tag_res_u.outcome.cmd_exit_code,
                  *exit_signal = remoteresult.remote_client_query_tag_res_u.outcome.cmd_exit_signal;
 
             }
@@ -810,6 +825,243 @@ int query_slave_tag(char         *remotehostname,
 
     return(return_rc);
 }
+
+int remote_client_query_scenarioresult(char *remotehostname, char *project, char *phase, int ID,
+                                       bool_t no_headers_flag, bool_t delimiter_flag, char *delimiter_string)
+{
+
+
+    remote_client_query_scenarioresult_args  args;
+    remote_client_query_scenarioresult_res   remoteresult;
+    enum clnt_stat                           stat;
+    char                                     msg[MAX_MSG_LEN];
+    char                                     errmsg[MAX_MSG_LEN];
+    int                                      return_rc = E_OK;
+
+    char                          *fmt_title = "%4s %16s %16s %20s %20s %12s %17s %16s %16s %13s %13s %4s %19s %19s %16s %16s %32s %32s %24s\n";
+    char                          *fmt       = "%4d %16s %16s %20s %20s %12s %17d %16d %16d %13d %13d %4d %19s %19s %16s %16s %32s %32s %24s\n";
+    char                          *fmt_title_delim = "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n";
+    char                          *fmt_delim       = "%d%s%s%s%s%s%s%s%s%s%s%s%d%s%d%s%d%s%d%s%d%s%d%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n";
+    CLIENT                        *remote_client;
+
+    /* Create a CLIENT data structure that reference the RPC
+       procedure DAF_PROG, version DAF_VERSION running on the
+       host specified by the 1st command line arg. */
+
+    remote_client = clnt_create(remotehostname, DAF_PROG, DAF_VERSION, "tcp");
+
+    /* Make sure the create worked */
+    if (remote_client == (CLIENT *) NULL)
+    {
+
+        snprintf(errmsg, sizeof(errmsg), "%s clnt_create failed for remote host %s: ", SUBNAME, remotehostname);
+        snprintf(msg, sizeof(msg), "%s\n", clnt_spcreateerror(errmsg));
+        print_msg_to_console(msg);
+        return_rc = E_NOTOK;
+
+    }
+    else
+    {
+
+        memset(&args,      0, sizeof(args));
+        memset(&remoteresult, 0, sizeof(remoteresult));
+
+        args.project           = project;
+        args.phase             = phase;
+        args.scenarioresultID  = ID;
+        args.msglevel = 0;
+
+        if ((stat = clnt_call(remote_client, CLIENT_REMOTE_CLIENT_QUERY_SCENARIORESULT,
+                              (xdrproc_t) xdr_remote_client_query_scenarioresult_args, (caddr_t) &args,
+                              (xdrproc_t) xdr_remote_client_query_scenarioresult_res,  (caddr_t) &remoteresult,
+                              TIMEOUT)) != RPC_SUCCESS)
+        {
+            clnt_stat_decode(stat, errmsg, sizeof(errmsg));
+            snprintf(msg, sizeof(msg) ,"%s: clnt_call() for proc %lu failed - status = %d (%s)\n",
+                     SUBNAME, (long) CLIENT_REMOTE_CLIENT_QUERY_SCENARIORESULT, stat, errmsg);
+            print_msg_to_console(msg);
+            return_rc = E_NOTOK;
+
+        }
+        else
+        {
+
+            if (remoteresult.remote_client_query_scenarioresult_res_u.outcome.valid)
+            {
+
+                if (! no_headers_flag)
+                {
+                    if (delimiter_flag)
+                    {
+
+                        snprintf(msg, sizeof(msg), fmt_title_delim, "ID", delimiter_string, "Project", delimiter_string, "Phase", delimiter_string, "Scenarioname", delimiter_string, "Jobname", delimiter_string, "State", delimiter_string,
+                                 "Actionsinscenario", delimiter_string, "Actionsattempted", delimiter_string, "Actionscompleted", delimiter_string, "Actionspassed", delimiter_string, "Actionsfailed", delimiter_string,
+                                 "Pass", delimiter_string, "Start", delimiter_string, "End", delimiter_string, "Teststand", delimiter_string, "Testlevel", delimiter_string, "Loglocation", delimiter_string,
+                                 "Scenariologfilename", delimiter_string, "Comments");
+                    }
+                    else
+                    {
+                        snprintf(msg, sizeof(msg), fmt_title, "ID", "Project", "Phase", "Scenarioname", "Jobname", "State",
+                                 "Actionsinscenario", "Actionsattempted", "Actionscompleted", "Actionspassed", "Actionsfailed",
+                                 "Pass", "Start", "End", "Teststand", "Testlevel", "Loglocation",
+                                 "Scenariologfilename", "Comments");
+                    }
+
+                    print_string_to_console(msg);
+                }
+
+                if (delimiter_flag)
+                {
+                    snprintf(msg, sizeof(msg), fmt_delim, ID,
+                             delimiter_string,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.project,
+                             delimiter_string,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.phase,
+                             delimiter_string,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.scenarioname,
+                             delimiter_string,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.jobname,
+                             delimiter_string,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.state,
+                             delimiter_string,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.actionsinscenario,
+                             delimiter_string,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.actionsattempted,
+                             delimiter_string,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.actionscompleted,
+                             delimiter_string,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.actionspassed,
+                             delimiter_string,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.actionsfailed,
+                             delimiter_string,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.pass,
+                             delimiter_string,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.start,
+                             delimiter_string,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.end,
+                             delimiter_string,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.teststand,
+                             delimiter_string,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.testlevel,
+                             delimiter_string,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.loglocation,
+                             delimiter_string,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.scenariologfilename,
+                             delimiter_string,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.comments);
+                }
+                else
+                {
+                    snprintf(msg, sizeof(msg), fmt, ID,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.project,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.phase,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.scenarioname,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.jobname,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.state,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.actionsinscenario,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.actionsattempted,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.actionscompleted,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.actionspassed,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.actionsfailed,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.pass,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.start,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.end,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.teststand,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.testlevel,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.loglocation,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.scenariologfilename,
+                             remoteresult.remote_client_query_scenarioresult_res_u.outcome.comments);
+
+                }
+
+                print_string_to_console(msg);
+
+            }
+            else
+            {
+                snprintf(msg, sizeof(msg), "Unable to query scenarioresult (ID=%d) - %s\n", ID, remoteresult.remote_client_query_scenarioresult_res_u.outcome.errmsg);
+                print_string_to_console(msg);
+            }
+
+        }
+
+        if (remote_client->cl_auth != NULL)
+        {
+            auth_destroy(remote_client->cl_auth);
+        }
+
+        clnt_destroy(remote_client);
+
+    }
+
+    if (remoteresult.remote_client_query_scenarioresult_res_u.outcome.errmsg != NULL)
+    {
+        free(remoteresult.remote_client_query_scenarioresult_res_u.outcome.errmsg);
+    }
+
+    if (remoteresult.remote_client_query_scenarioresult_res_u.outcome.project != NULL)
+    {
+        free(remoteresult.remote_client_query_scenarioresult_res_u.outcome.project);
+    }
+
+    if (remoteresult.remote_client_query_scenarioresult_res_u.outcome.phase != NULL)
+    {
+        free(remoteresult.remote_client_query_scenarioresult_res_u.outcome.phase);
+    }
+
+    if (remoteresult.remote_client_query_scenarioresult_res_u.outcome.scenarioname != NULL)
+    {
+        free(remoteresult.remote_client_query_scenarioresult_res_u.outcome.scenarioname);
+    }
+
+    if (remoteresult.remote_client_query_scenarioresult_res_u.outcome.jobname != NULL)
+    {
+        free(remoteresult.remote_client_query_scenarioresult_res_u.outcome.jobname);
+    }
+
+    if (remoteresult.remote_client_query_scenarioresult_res_u.outcome.state != NULL)
+    {
+        free(remoteresult.remote_client_query_scenarioresult_res_u.outcome.state);
+    }
+
+    if (remoteresult.remote_client_query_scenarioresult_res_u.outcome.start != NULL)
+    {
+        free(remoteresult.remote_client_query_scenarioresult_res_u.outcome.start);
+    }
+
+    if (remoteresult.remote_client_query_scenarioresult_res_u.outcome.end != NULL)
+    {
+        free(remoteresult.remote_client_query_scenarioresult_res_u.outcome.end);
+    }
+
+    if (remoteresult.remote_client_query_scenarioresult_res_u.outcome.teststand != NULL)
+    {
+        free(remoteresult.remote_client_query_scenarioresult_res_u.outcome.teststand);
+    }
+
+    if (remoteresult.remote_client_query_scenarioresult_res_u.outcome.testlevel != NULL)
+    {
+        free(remoteresult.remote_client_query_scenarioresult_res_u.outcome.testlevel);
+    }
+
+    if (remoteresult.remote_client_query_scenarioresult_res_u.outcome.loglocation != NULL)
+    {
+        free(remoteresult.remote_client_query_scenarioresult_res_u.outcome.loglocation);
+    }
+
+    if (remoteresult.remote_client_query_scenarioresult_res_u.outcome.scenariologfilename != NULL)
+    {
+        free(remoteresult.remote_client_query_scenarioresult_res_u.outcome.scenariologfilename);
+    }
+
+    if (remoteresult.remote_client_query_scenarioresult_res_u.outcome.comments != NULL)
+    {
+        free(remoteresult.remote_client_query_scenarioresult_res_u.outcome.comments);
+    }
+
+    return (return_rc);
+}
+
 
 /* -------------------------------------------------------------------------------- */
 /*                                                                                  */
